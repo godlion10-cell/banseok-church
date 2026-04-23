@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <circle cx="256" cy="256" r="248" fill="white" stroke="#003D4C" stroke-width="2"/>
+  
+  <!-- Final New Symbol (Olive Green + Dark Navy) -->
+  <g transform="translate(80, 140) scale(1.8)">
+    <!-- Top Left Green Piece -->
+    <path d="M5 0 L45 5 L40 40 L0 35 Z" fill="#8A9A0F" />
+    <!-- Top Right Navy Piece -->
+    <path d="M55 5 L85 0 L90 45 L60 50 Z" fill="#003D4C" />
+    <!-- Bottom Left Navy Piece -->
+    <path d="M0 50 L40 55 L45 140 L5 135 Z" fill="#003D4C" />
+    <!-- Bottom Right Navy Piece -->
+    <path d="M55 65 L90 55 L85 140 L50 145 Z" fill="#003D4C" />
+  </g>
+  
+  <!-- Text Stacked -->
+  <text x="270" y="245" font-family="'Noto Sans KR', sans-serif" font-weight="900" font-size="110" fill="#8A9A0F">반석</text>
+  <text x="270" y="375" font-family="'Noto Sans KR', sans-serif" font-weight="900" font-size="110" fill="#003D4C">교회</text>
+</svg>

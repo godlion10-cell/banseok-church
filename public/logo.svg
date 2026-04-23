@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <!-- New Symbol from Image -->
+  <g transform="translate(10, 10) scale(0.6)">
+    <!-- Top Left Green Piece -->
+    <path d="M5 0 L45 5 L40 40 L0 35 Z" fill="#8A9A0F" />
+    <!-- Top Right Navy Piece -->
+    <path d="M55 5 L85 0 L90 45 L60 50 Z" fill="#003D4C" />
+    <!-- Bottom Left Navy Piece -->
+    <path d="M0 50 L40 55 L45 140 L5 135 Z" fill="#003D4C" />
+    <!-- Bottom Right Navy Piece -->
+    <path d="M55 65 L90 55 L85 140 L50 145 Z" fill="#003D4C" />
+  </g>
+
+  <!-- Tagline -->
+  <text x="85" y="35" font-family="'Noto Sans KR', sans-serif" font-size="14" fill="#8A9A0F" letter-spacing="2">은혜 위에 바로 서는</text>
+
+  <!-- Main Title -->
+  <text x="80" y="95" font-family="'Noto Sans KR', sans-serif" font-weight="900" font-size="54" fill="#003D4C">반석교회</text>
+</svg>

@@ -1,0 +1,29 @@
+{
+  "name": "geojebanseok",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.2",
+    "@prisma/adapter-libsql": "^7.7.0",
+    "@prisma/client": "^7.6.0",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "prisma": "^7.6.0",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "node-domexception": "npm:domexception@^4.0.0"
+  }
+}

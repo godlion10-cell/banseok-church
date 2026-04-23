@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Sermon {
+  id        String   @id @default(cuid())
+  category  String   
+  title     String
+  content   String?  
+  videoId   String?  
+  date      DateTime @default(now())
+}
+
+model News {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model WorshipOrder {
+  id        String   @id @default(cuid())
+  category  String   @unique 
+  title     String   
+  content   String   
+}
+
+model Schedule {
+  id        String   @id @default(cuid())
+  title     String
+  time      String
+  place     String
+  officer   String
+  order     Int      @default(0)
+}
