@@ -162,14 +162,7 @@ export default function HomeClient() {
     }
   };
 
-  // 오늘의 말씀 토스트 알림
-  useEffect(() => {
-    const randomVerse = GRACE_VERSES[Math.floor(Math.random() * GRACE_VERSES.length)];
-    setTodayVerse(randomVerse);
-    setShowToast(true);
-    const timer = setTimeout(() => setShowToast(false), 5000);
-    return () => clearTimeout(timer);
-  }, []);
+
 
   useEffect(() => {
     const sync = async () => {
