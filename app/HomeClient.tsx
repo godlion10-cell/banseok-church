@@ -106,10 +106,26 @@ export default function HomeClient() {
   const [showMiniPlayer, setShowMiniPlayer] = useState(true);
   const [activeFilter, setActiveFilter] = useState('전체');
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+  const [fontSize, setFontSize] = useState(1);
+  const [isAudioOnly, setIsAudioOnly] = useState(false);
 
   // 팝업 열기/닫기 (스크롤 잠금)
   const openPopup = (video: any) => { setPopupVideo(video); document.body.style.overflow = 'hidden'; };
-  const closePopup = () => { setPopupVideo(null); document.body.style.overflow = ''; };
+  const closePopup = () => { setPopupVideo(null); setIsAudioOnly(false); document.body.style.overflow = ''; };
+
+  // 말씀 공유 (카톡/문자 등)
+  const handleShare = (sermon: any) => {
+    if (navigator.share) {
+      navigator.share({
+        title: sermon.title,
+        text: `${sermon.title} (${sermon.content || ''})`,
+        url: sermon.videoId ? `https://www.youtube.com/watch?v=${sermon.videoId}` : 'https://www.youtube.com/@petros-church',
+      }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(`https://www.youtube.com/watch?v=${sermon.videoId}`);
+      alert('링크가 복사되었습니다!');
+    }
+  };
 
   const [newsItems, setNewsItems] = useState<any[]>([]);
   const [sermonItems, setSermonItems] = useState<any[]>([]);
@@ -519,18 +535,34 @@ export default function HomeClient() {
               </div>
               <button onClick={closePopup} style={{ background: 'none', border: 'none', color: 'white', fontSize: '2.5rem', cursor: 'pointer', padding: '0 10px', lineHeight: 1 }}>×</button>
             </div>
-            {/* 유튜브 영상 */}
+            {/* 유튜브 영상 / 오디오 모드 */}
             <div style={{ width: '100%', aspectRatio: '16/9', backgroundColor: '#000', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-              <iframe width="100%" height="100%"
-                src={popupVideo.videoId ? `https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1` : `https://www.youtube.com/embed/live_stream?channel=UCc_eP0i4YwSQmQ9du5-RHbA&autoplay=1`}
-                title="YouTube video player" frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen />
+              {isAudioOnly ? (
+                <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1a1a2e, #16213e)', color: '#fff' }}>
+                  <div style={{ fontSize: '4rem', marginBottom: '10px' }}>🎧</div>
+                  <p style={{ margin: 0, fontSize: '1rem' }}>데이터 절약 모드 (소리만 재생)</p>
+                  <iframe width="1" height="1" src={popupVideo.videoId ? `https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1` : ''} style={{ opacity: 0, position: 'absolute' }} />
+                </div>
+              ) : (
+                <iframe width="100%" height="100%"
+                  src={popupVideo.videoId ? `https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1` : `https://www.youtube.com/embed/live_stream?channel=UCc_eP0i4YwSQmQ9du5-RHbA&autoplay=1`}
+                  title="YouTube video player" frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen />
+              )}
             </div>
-            {/* 하단 정보 */}
-            {popupVideo.content && (
-              <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '12px', fontSize: '0.9rem', textAlign: 'center' }}>{popupVideo.content}</p>
-            )}
+            {/* 팝업 액션 버튼 */}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+              <button onClick={() => setIsAudioOnly(!isAudioOnly)}
+                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', background: isAudioOnly ? '#5C3A40' : '#333', color: '#fff', fontSize: '0.9rem' }}>
+                {isAudioOnly ? '📺 영상 보기' : '🎧 소리만 듣기'}
+              </button>
+              <button onClick={() => handleShare(popupVideo)}
+                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', background: '#333', color: '#fff', fontSize: '0.9rem' }}>
+                📤 말씀 공유하기
+              </button>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontSize: '0.8rem', textAlign: 'center' }}>📱 가로로 눅히면 더 크게 보입니다.</p>
           </div>
         </div>
       )}
@@ -538,12 +570,11 @@ export default function HomeClient() {
       {/* 📺 따라다니는 미니 방송국 (우측 하단 PIP) */}
       {isLive && showMiniPlayer && !popupVideo && (
         <div style={{
-          position: 'fixed', bottom: '30px', right: '30px', width: '320px',
+          position: 'fixed', bottom: '90px', right: '15px', width: '300px',
           backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden',
           boxShadow: '0 15px 35px rgba(0,0,0,0.2)', zIndex: 9000,
           border: '2px solid #D32F2F', animation: 'fadeInUp 0.5s ease-out',
         }}>
-          {/* 미니 플레이어 헤더 */}
           <div style={{ backgroundColor: '#D32F2F', color: 'white', padding: '8px 15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
               <span style={{ color: '#FFEB3B' }}>● LIVE</span> 실시간 예배 중
@@ -551,23 +582,40 @@ export default function HomeClient() {
             <button onClick={() => setShowMiniPlayer(false)}
               style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.1rem', cursor: 'pointer', lineHeight: 1 }}>✖</button>
           </div>
-          {/* 미니 영상 (음소거 자동재생) */}
           <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#000' }}>
             <iframe width="100%" height="100%"
               src={liveVideoId ? `https://www.youtube.com/embed/${liveVideoId}?autoplay=1&mute=1&controls=0&modestbranding=1` : `https://www.youtube.com/embed/live_stream?channel=UCc_eP0i4YwSQmQ9du5-RHbA&autoplay=1&mute=1&controls=0`}
               style={{ border: 'none', pointerEvents: 'none' }} />
-            {/* 투명 유리판: 클릭 시 극장 팝업 */}
             <div onClick={() => openPopup({ videoId: liveVideoId, title: '실시간 예배 방송', category: 'LIVE' })}
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.05)' }}
-              title="클릭하여 소리와 함께 크게 보기">
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.05)' }}>
               <span style={{ color: '#fff', fontSize: '2rem', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>▶</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 🤫 푸터: 5번 빠르게 클릭하면 관리자 페이지로 이동 */}
-      <footer className={styles.footer} onClick={handleSecretClick} style={{ cursor: 'default', userSelect: 'none' }}>
+      {/* 🏠 모바일 하단 고정 네비 */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, width: '100%', height: '70px',
+        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)',
+        borderTop: '1px solid #eee', display: 'flex', zIndex: 10000,
+      }}>
+        <div onClick={() => setActiveSection('about')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: activeSection === 'about' ? '#5C3A40' : '#999', fontWeight: activeSection === 'about' ? 700 : 400, fontSize: '0.75rem', gap: '2px' }}>
+          <span style={{ fontSize: '1.3rem' }}>🏠</span> 홈
+        </div>
+        <div onClick={() => setActiveSection('sermon')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: activeSection === 'sermon' ? '#5C3A40' : '#999', fontWeight: activeSection === 'sermon' ? 700 : 400, fontSize: '0.75rem', gap: '2px' }}>
+          <span style={{ fontSize: '1.3rem' }}>⛪</span> 예배
+        </div>
+        <div onClick={() => setActiveSection('location')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: activeSection === 'location' ? '#5C3A40' : '#999', fontWeight: activeSection === 'location' ? 700 : 400, fontSize: '0.75rem', gap: '2px' }}>
+          <span style={{ fontSize: '1.3rem' }}>📍</span> 지도
+        </div>
+        <div onClick={() => window.location.href = 'tel:01098255020'} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#999', fontSize: '0.75rem', gap: '2px' }}>
+          <span style={{ fontSize: '1.3rem' }}>📞</span> 문의
+        </div>
+      </div>
+
+      {/* 🤫 푸터 */}
+      <footer className={styles.footer} onClick={handleSecretClick} style={{ cursor: 'default', userSelect: 'none', paddingBottom: '80px' }}>
         <p>© 2026 대한예수교장로회 반석교회 · 거제시 연초면 소오비길 40-6</p>
       </footer>
     </div>
