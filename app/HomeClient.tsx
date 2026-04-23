@@ -336,7 +336,7 @@ export default function HomeClient() {
                     </button>
                   </div>
                 ) : (
-                  <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #172554, #1e3a5f)', padding: '2rem', gap: '0.8rem', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                  <div style={{ width: '100%', height: '250px', borderRadius: '15px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #172554, #1e3a5f)', padding: '2rem', gap: '0.8rem', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
                     <div style={{ fontSize: '3rem' }}>✝️</div>
                     <h3 style={{ color: '#fff', margin: 0 }}>지금은 예배 시간이 아닙니다</h3>
                     <p style={{ color: '#bfdbfe', margin: 0 }}>예배 시간에 실시간 방송이 시작됩니다.</p>
