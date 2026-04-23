@@ -214,41 +214,41 @@ export default function HomeClient() {
   return (
     <div className={styles.mainContainer}>
 
-      {/* ✨ 오늘의 말씀 토스트 팝업 */}
-      {showToast && (
-        <div style={{
-          position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,0.88)', color: 'white', padding: '14px 28px',
-          borderRadius: '50px', zIndex: 20000, width: '90%', maxWidth: '550px',
-          textAlign: 'center', fontSize: '0.9rem', lineHeight: 1.5,
-          animation: 'slideDown 0.5s ease-out', boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
-        }}>
-          <span style={{ color: '#FFEB3B', marginRight: '8px' }}>✨ 오늘의 말씀:</span>
-          {todayVerse}
-        </div>
-      )}
-
-      {/* 📱 PWA 앱 설치 유도 배너 */}
+      {/* ===== 상단 바 (앱 설치 + 오늘의 말씀 마퀴) ===== */}
       {showInstallBanner && (
         <div style={{
-          background: '#5C3A40', color: 'white', padding: '10px 20px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          fontSize: '0.88rem',
+          background: '#5C3A40', color: 'white', display: 'flex', alignItems: 'center',
+          height: '38px', fontSize: '0.82rem', overflow: 'hidden', position: 'relative',
         }}>
-          <span>📢 거제반석교회 앱을 설치해 보세요!</span>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          {/* 앱 설치 영역 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 15px', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <span>거제 반석교회 앱을 설치해 보세요!</span>
             <button onClick={() => alert('브라우저 설정에서 [홈 화면에 추가]를 눌러주세요!')}
-              style={{ background: '#FFEB3B', border: 'none', color: '#333', padding: '5px 15px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>설치</button>
-            <button onClick={() => setShowInstallBanner(false)}
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>✕</button>
+              style={{ background: '#FFEB3B', border: 'none', color: '#333', padding: '3px 12px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.78rem' }}>설치</button>
           </div>
+          {/* 마퀴 흘러가는 오늘의 말씀 */}
+          <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+            <div style={{
+              display: 'inline-block', whiteSpace: 'nowrap',
+              animation: 'marqueeScroll 25s linear infinite',
+              color: 'rgba(255,255,255,0.85)', fontSize: '0.8rem',
+            }}>
+              ✨ 오늘의 말씀: {todayVerse}
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              ✨ 오늘의 말씀: {todayVerse}
+            </div>
+          </div>
+          {/* 닫기 버튼 */}
+          <button onClick={() => setShowInstallBanner(false)}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', cursor: 'pointer', padding: '0 12px', flexShrink: 0 }}>×</button>
         </div>
       )}
 
-      {/* ===== HEADER ===== */}
+      {/* ===== 메인 헤더 ===== */}
       <header className={styles.header}>
-        <div className={styles.logo} onClick={() => setActiveSection('about')}>
+        <div className={styles.logo} onClick={() => setActiveSection('about')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img src="/church-logo.png" alt="거제반석교회" style={{ height: '44px', width: 'auto' }} />
+          <span style={{ fontSize: '0.7rem', color: '#8B7355', fontWeight: 500, letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>은혜 위에 바로 서는</span>
         </div>
         <button className={styles.mobileMenuBtn} onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? '✕' : '☰'}
