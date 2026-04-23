@@ -245,7 +245,7 @@ export default function HomeClient() {
         </div>
       )}
 
-      {/* ===== HEADER ===== */
+      {/* ===== HEADER ===== */}
       <header className={styles.header}>
         <div className={styles.logo} onClick={() => setActiveSection('about')}>
           <img src="/church-logo.png" alt="거제반석교회" style={{ height: '44px', width: 'auto' }} />
