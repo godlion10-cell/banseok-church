@@ -217,30 +217,30 @@ export default function HomeClient() {
       {/* ===== 상단 바 (앱 설치 + 오늘의 말씀 마퀴) ===== */}
       {showInstallBanner && (
         <div style={{
-          background: '#5C3A40', color: 'white', display: 'flex', alignItems: 'center',
-          height: '38px', fontSize: '0.82rem', overflow: 'hidden', position: 'relative',
+          background: '#1c1c1c', color: '#fff', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', padding: '5px 20px', overflow: 'hidden',
         }}>
           {/* 앱 설치 영역 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 15px', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            <span>거제 반석교회 앱을 설치해 보세요!</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+            <span style={{ fontSize: '14px' }}>거제 반석교회 앱을 설치해 보세요!</span>
             <button onClick={() => alert('브라우저 설정에서 [홈 화면에 추가]를 눌러주세요!')}
-              style={{ background: '#FFEB3B', border: 'none', color: '#333', padding: '3px 12px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.78rem' }}>설치</button>
+              style={{ background: '#ffda00', border: 'none', color: '#000', padding: '5px 15px', borderRadius: '4px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>설치</button>
           </div>
           {/* 마퀴 흘러가는 오늘의 말씀 */}
-          <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
             <div style={{
               display: 'inline-block', whiteSpace: 'nowrap',
-              animation: 'marqueeScroll 25s linear infinite',
-              color: 'rgba(255,255,255,0.85)', fontSize: '0.8rem',
+              animation: 'marqueeScroll 30s linear infinite',
+              color: '#ffda00', fontSize: '14px',
             }}>
-              ✨ 오늘의 말씀: {todayVerse}
+              오늘의 말씀: {todayVerse}
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              ✨ 오늘의 말씀: {todayVerse}
+              오늘의 말씀: {todayVerse}
             </div>
           </div>
           {/* 닫기 버튼 */}
           <button onClick={() => setShowInstallBanner(false)}
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', cursor: 'pointer', padding: '0 12px', flexShrink: 0 }}>×</button>
+            style={{ background: 'none', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer', padding: 0, marginLeft: '20px' }}>×</button>
         </div>
       )}
 
