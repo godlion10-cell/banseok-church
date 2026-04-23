@@ -7,6 +7,15 @@ import styles from './page.module.css';
 // ===== 헬퍼 =====
 function getNextWorship(): string { return '주일 오전 9시 주일대예배'; }
 
+// 오늘의 은혜 말씀 리스트 (접속 시 랜덤)
+const GRACE_VERSES = [
+  "여호와는 나의 목자시니 내게 부족함이 없으리로다 (시 23:1)",
+  "내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라 (빌 4:13)",
+  "여호와를 기쁘하는 것이 너희의 힘이니라 (느 8:10)",
+  "하나님을 사랑하는 자들에게는 모든 것이 합력하여 선을 이루느니라 (롬 8:28)",
+  "너희는 가만히 있어 내가 하나님 됨을 알지어다 (시 46:10)",
+];
+
 type SectionKey = 'about' | 'vision' | 'sermon' | 'news' | 'schedule' | 'location';
 
 const NAV_ITEMS: { key: SectionKey; label: string }[] = [
@@ -109,6 +118,10 @@ export default function HomeClient() {
   const [expandedMonth, setExpandedMonth] = useState<string>('4월');
   const [fontSize, setFontSize] = useState(1);
   const [isAudioOnly, setIsAudioOnly] = useState(false);
+  const [todayVerse, setTodayVerse] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [showFabMenu, setShowFabMenu] = useState(false);
+  const [showInstallBanner, setShowInstallBanner] = useState(true);
 
   // 팝업 열기/닫기 (스크롤 잠금)
   const openPopup = (video: any) => { setPopupVideo(video); document.body.style.overflow = 'hidden'; };
@@ -145,6 +158,15 @@ export default function HomeClient() {
       window.location.href = '/admin';
     }
   };
+
+  // 오늘의 말씀 토스트 알림
+  useEffect(() => {
+    const randomVerse = GRACE_VERSES[Math.floor(Math.random() * GRACE_VERSES.length)];
+    setTodayVerse(randomVerse);
+    setShowToast(true);
+    const timer = setTimeout(() => setShowToast(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const sync = async () => {
@@ -191,7 +213,39 @@ export default function HomeClient() {
 
   return (
     <div className={styles.mainContainer}>
-      {/* ===== HEADER ===== */}
+
+      {/* ✨ 오늘의 말씀 토스트 팝업 */}
+      {showToast && (
+        <div style={{
+          position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(0,0,0,0.88)', color: 'white', padding: '14px 28px',
+          borderRadius: '50px', zIndex: 20000, width: '90%', maxWidth: '550px',
+          textAlign: 'center', fontSize: '0.9rem', lineHeight: 1.5,
+          animation: 'slideDown 0.5s ease-out', boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
+        }}>
+          <span style={{ color: '#FFEB3B', marginRight: '8px' }}>✨ 오늘의 말씀:</span>
+          {todayVerse}
+        </div>
+      )}
+
+      {/* 📱 PWA 앱 설치 유도 배너 */}
+      {showInstallBanner && (
+        <div style={{
+          background: '#5C3A40', color: 'white', padding: '10px 20px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          fontSize: '0.88rem',
+        }}>
+          <span>📢 거제반석교회 앱을 설치해 보세요!</span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => alert('브라우저 설정에서 [홈 화면에 추가]를 눌러주세요!')}
+              style={{ background: '#FFEB3B', border: 'none', color: '#333', padding: '5px 15px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>설치</button>
+            <button onClick={() => setShowInstallBanner(false)}
+              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* ===== HEADER ===== */
       <header className={styles.header}>
         <div className={styles.logo} onClick={() => setActiveSection('about')}>
           <img src="/church-logo.png" alt="거제반석교회" style={{ height: '44px', width: 'auto' }} />
@@ -661,6 +715,22 @@ export default function HomeClient() {
         </div>
       )}
 
+      {/* 👆 FAB 플로팅 퀸 메뉴 */}
+      <div style={{ position: 'fixed', bottom: '90px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+        {showFabMenu && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+            <button onClick={() => alert('신협 131-017-687642 (대한예수교장로회 반석교회)')}
+              style={{ background: 'white', border: '1px solid #ddd', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', boxShadow: '0 3px 10px rgba(0,0,0,0.1)', cursor: 'pointer', fontSize: '0.85rem' }}>💰 온라인 헌금</button>
+            <button onClick={() => alert('기도제목을 보내주세요! (010-9825-5020)')}
+              style={{ background: 'white', border: '1px solid #ddd', padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', boxShadow: '0 3px 10px rgba(0,0,0,0.1)', cursor: 'pointer', fontSize: '0.85rem' }}>🙏 기도요청</button>
+          </div>
+        )}
+        <button onClick={() => setShowFabMenu(!showFabMenu)}
+          style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#E11D48', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '0.75rem', boxShadow: '0 5px 15px rgba(225,29,72,0.4)', cursor: 'pointer', transition: 'transform 0.2s' }}>
+          {showFabMenu ? '✕' : 'Quick'}
+        </button>
+      </div>
+
       {/* 🏠 모바일 하단 고정 네비 */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, width: '100%', height: '70px',
@@ -672,6 +742,9 @@ export default function HomeClient() {
         </div>
         <div onClick={() => setActiveSection('sermon')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: activeSection === 'sermon' ? '#5C3A40' : '#999', fontWeight: activeSection === 'sermon' ? 700 : 400, fontSize: '0.75rem', gap: '2px' }}>
           <span style={{ fontSize: '1.3rem' }}>⛪</span> 예배
+        </div>
+        <div onClick={() => setActiveSection('news')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: activeSection === 'news' ? '#5C3A40' : '#999', fontWeight: activeSection === 'news' ? 700 : 400, fontSize: '0.75rem', gap: '2px' }}>
+          <span style={{ fontSize: '1.3rem' }}>🌱</span> 새가족
         </div>
         <div onClick={() => setActiveSection('location')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: activeSection === 'location' ? '#5C3A40' : '#999', fontWeight: activeSection === 'location' ? 700 : 400, fontSize: '0.75rem', gap: '2px' }}>
           <span style={{ fontSize: '1.3rem' }}>📍</span> 지도

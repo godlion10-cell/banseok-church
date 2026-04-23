@@ -70,3 +70,9 @@ h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 700; color: var(--color-primary
 ::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
 
 ::selection { background-color: rgba(193, 156, 114, 0.3); color: var(--color-primary); }
+
+/* 토스트 팝업 애니메이션 */
+@keyframes slideDown {
+  from { top: -100px; opacity: 0; }
+  to { top: 20px; opacity: 1; }
+}
