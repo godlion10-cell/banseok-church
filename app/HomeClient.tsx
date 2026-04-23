@@ -357,55 +357,54 @@ export default function HomeClient() {
                 ))}
               </div>
 
-              {/* 설교 카드 + AI 요약 오버레이 */}
+              {/* 설교 카드 (감성 타이포그래피) */}
               {displaySermons.length > 0 && (
                 <div style={{ marginBottom: '60px' }}>
-                  <h3 style={{ borderLeft: '5px solid #5C3A40', paddingLeft: '15px', marginBottom: '20px', color: '#5C3A40', fontSize: '1.2rem' }}>
+                  <h3 style={{ borderLeft: '5px solid #5C3A40', paddingLeft: '15px', marginBottom: '25px', color: '#5C3A40', fontSize: '1.2rem' }}>
                     최근 설교 말씀
                   </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
                     {displaySermons
                       .filter((s: any) => activeFilter === '전체' || s.category === activeFilter)
-                      .map((s: any) => (
-                      <div key={s.id} style={{ position: 'relative', backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.05)', transition: 'transform 0.2s', cursor: 'pointer' }}
+                      .map((s: any) => {
+                        const bgColor = s.category === '주일오전' ? '#5C3A40' : s.category === '수요예배' ? '#8C7A6B' : '#4A5568';
+                        return (
+                      <div key={s.id} style={{ position: 'relative', backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', transition: 'transform 0.3s', cursor: 'pointer' }}
                         onClick={() => openPopup(s)}
                         onMouseEnter={() => setHoveredCardId(s.id)}
                         onMouseLeave={() => setHoveredCardId(null)}
-                        onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-5px)')}
+                        onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-8px)')}
                         onMouseOut={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
-                        {s.videoId ? (
-                          <div style={{ width: '100%', aspectRatio: '16/9', backgroundColor: '#000' }}>
-                            <img src={`https://img.youtube.com/vi/${s.videoId}/hqdefault.jpg`} alt={s.title}
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {/* 감성 타이포그래피 헤더 */}
+                        <div style={{ height: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '25px', textAlign: 'center', backgroundColor: bgColor, color: '#fff' }}>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 700, lineHeight: 1.4, fontFamily: "'Nanum Myeongjo', serif", marginBottom: '10px' }}>
+                            "{s.title}"
                           </div>
-                        ) : (
-                          <div style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg, #5C3A40, #8C6A70)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontSize: '2.5rem' }}>🎤</span>
-                          </div>
-                        )}
-                        <div style={{ padding: '20px' }}>
-                          <span style={{ backgroundColor: '#5C3A40', color: '#FFF', padding: '4px 10px', borderRadius: '5px', fontSize: '0.8rem' }}>{s.category}</span>
-                          <h4 style={{ margin: '10px 0 5px', color: '#333', fontSize: '1rem' }}>{s.title}</h4>
-                          <p style={{ color: '#666', fontSize: '0.85rem', margin: 0 }}>{s.content} | {s.date ? new Date(s.date).toLocaleDateString('ko-KR') : ''}</p>
+                          <div style={{ fontSize: '0.85rem', opacity: 0.75, fontWeight: 300 }}>{s.content || s.verse || ''}</div>
+                        </div>
+                        {/* 카드 하단 정보 */}
+                        <div style={{ padding: '18px 20px' }}>
+                          <span style={{ display: 'inline-block', padding: '2px 8px', border: `1px solid ${bgColor}`, borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', color: bgColor, marginBottom: '8px' }}>{s.category}</span>
+                          <p style={{ color: '#777', fontSize: '0.85rem', margin: 0 }}>{s.date ? new Date(s.date).toLocaleDateString('ko-KR') : ''} | {s.pastor || ''}</p>
                         </div>
                         {/* AI 요약 오버레이 (hover 시 등장) */}
                         {s.summary && (
                           <div style={{
                             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                            backgroundColor: 'rgba(92, 58, 64, 0.95)', color: 'white',
-                            padding: '25px', boxSizing: 'border-box',
+                            backgroundColor: 'rgba(0, 0, 0, 0.88)', color: 'white',
+                            padding: '30px', boxSizing: 'border-box',
                             display: 'flex', flexDirection: 'column', justifyContent: 'center',
                             opacity: hoveredCardId === s.id ? 1 : 0,
                             transition: 'opacity 0.3s ease', pointerEvents: 'none',
                           }}>
-                            <h4 style={{ color: '#FFEB3B', marginBottom: '12px', fontSize: '0.9rem' }}>✨ AI 핵심 요약</h4>
-                            <ul style={{ paddingLeft: '18px', fontSize: '0.9rem', lineHeight: '1.7', margin: 0 }}>
+                            <h4 style={{ color: '#FFEB3B', marginBottom: '15px', fontSize: '0.9rem' }}>✨ 말씀 핵심 요약</h4>
+                            <ul style={{ paddingLeft: '18px', fontSize: '0.9rem', lineHeight: '1.8', margin: 0 }}>
                               {(Array.isArray(s.summary) ? s.summary : [s.summary]).map((line: string, idx: number) => <li key={idx}>{line}</li>)}
                             </ul>
                           </div>
                         )}
                       </div>
-                    ))}
+                    );})}
                   </div>
                 </div>
               )}
