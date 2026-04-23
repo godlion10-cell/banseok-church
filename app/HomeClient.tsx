@@ -345,10 +345,22 @@ export default function HomeClient() {
                     </button>
                   </div>
                 ) : (
-                  <div style={{ width: '100%', height: '250px', borderRadius: '15px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', padding: '2rem', gap: '0.8rem', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
-                    <div style={{ fontSize: '3rem' }}>✝️</div>
-                    <h3 style={{ color: '#fff', margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>지금은 예배 시간이 아닙니다</h3>
-                    <p style={{ color: '#94a3b8', margin: 0 }}>아래에서 오늘의 생수를 채워보세요</p>
+                  <div style={{ width: '100%', minHeight: '280px', borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1E293B, #0F172A)', padding: '30px', textAlign: 'center', color: 'white' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '10px' }}>✝️</div>
+                    <h3 style={{ color: '#fff', margin: 0, fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '15px' }}>지금은 예배 시간이 아닙니다</h3>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', width: '100%', maxWidth: '350px' }}>
+                      {[
+                        { name: '새벽기도회', time: '매일 오전 5:30' },
+                        { name: '주일대예배', time: '오전 9:00 / 11:00' },
+                        { name: '주일오후예배', time: '오후 2:00' },
+                        { name: '수요삼일예배', time: '오후 7:30' },
+                      ].map((svc, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.1)' : 'none', fontSize: '0.9rem' }}>
+                          <span style={{ color: '#94A3B8' }}>{svc.name}</span>
+                          <span style={{ fontWeight: 'bold', color: '#F1F5F9' }}>{svc.time}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -389,26 +401,24 @@ export default function HomeClient() {
                           </div>
                           <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 400 }}>{s.content || ''}</div>
                         </div>
-                        {/* 카드 하단 정보 */}
-                        <div style={{ padding: '20px' }}>
-                          <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', color: '#fff', background: gradient, boxShadow: '0 2px 5px rgba(0,0,0,0.2)', marginBottom: '8px' }}>{s.category}</span>
-                          <div style={{ fontSize: '1rem', color: '#444', fontWeight: 'bold', marginTop: '5px' }}>{s.pastor || ''}</div>
-                          <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '3px' }}>{s.date ? new Date(s.date).toLocaleDateString('ko-KR') : ''}</div>
+                        {/* 카드 하단 (뱃지만) */}
+                        <div style={{ padding: '15px 20px', minHeight: '50px', display: 'flex', alignItems: 'center' }}>
+                          <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '5px', fontSize: '0.75rem', fontWeight: 'bold', color: '#fff', background: gradient }}>{s.category}</span>
                         </div>
-                        {/* AI 요약 오버레이 */}
+                        {/* AI 요약 오버레이 (센터 정렬 + 확대) */}
                         {s.summary && (
                           <div style={{
                             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)', color: 'white',
+                            backgroundColor: 'rgba(0, 0, 0, 0.92)', color: 'white',
                             padding: '30px', boxSizing: 'border-box',
-                            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center',
                             opacity: hoveredCardId === s.id ? 1 : 0,
                             transition: 'opacity 0.3s ease', pointerEvents: 'none',
                           }}>
-                            <h4 style={{ color: '#38BDF8', marginBottom: '15px', fontSize: '0.9rem', fontWeight: 'bold' }}>✨ 말씀 핵심 요약</h4>
-                            <ul style={{ paddingLeft: '18px', fontSize: '0.9rem', lineHeight: '1.8', margin: 0 }}>
-                              {(Array.isArray(s.summary) ? s.summary : [s.summary]).map((line: string, idx: number) => <li key={idx}>{line}</li>)}
-                            </ul>
+                            <h4 style={{ color: '#FFEB3B', marginBottom: '15px', fontSize: '1rem', fontWeight: 'bold' }}>✨ 말씀 요약</h4>
+                            <div>
+                              {(Array.isArray(s.summary) ? s.summary : [s.summary]).map((line: string, idx: number) => <p key={idx} style={{ fontSize: '1.15rem', lineHeight: '1.6', marginBottom: '10px', fontWeight: 500, wordBreak: 'keep-all' }}>{line}</p>)}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -423,7 +433,7 @@ export default function HomeClient() {
                   <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#333', marginBottom: '8px' }}>
                     💧 다시 채우는 생수
                   </h3>
-                  <p style={{ color: '#888', marginBottom: '25px', fontSize: '0.95rem' }}>지난 1월부터 4월까지, 우리에게 주신 말씀의 발자취입니다.</p>
+                  <p style={{ color: '#888', marginBottom: '25px', fontSize: '0.95rem' }}>지난 말씀의 은혜로 영혼을 새롭게 채우는 시간</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {archiveData.map((data) => (
                       <div key={data.month} style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.04)', marginBottom: '10px', border: '1px solid #f1f5f9' }}>
@@ -434,27 +444,27 @@ export default function HomeClient() {
                             padding: '18px 25px', background: expandedMonth === data.month ? '#f8fafc' : '#fff',
                             border: 'none', cursor: 'pointer', color: '#334155', transition: 'background 0.2s',
                           }}>
-                          <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{data.month} 말씀</span>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#4A5568' }}>{data.month}의 말씀</span>
                           <span style={{ fontSize: '1rem' }}>{expandedMonth === data.month ? '▲' : '▼'}</span>
                         </button>
                         {/* 예배 목록 */}
                         {expandedMonth === data.month && (
                           <div>
                             {data.sermons.map((sermon: any) => {
-                              const badgeBg = sermon.category?.includes('주일') ? '#9f1239' : sermon.category?.includes('수요') ? '#0f766e' : '#78350f';
+                              const badgeBg = sermon.category?.includes('주일') ? '#9F1239' : '#475569';
                               return (
                                 <div key={sermon.id} onClick={() => openPopup(sermon)}
                                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 25px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s' }}
                                   onMouseOver={(e) => e.currentTarget.style.background = '#F8FAFC'}
                                   onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, overflow: 'hidden' }}>
-                                    <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 'bold', color: '#fff', background: badgeBg, whiteSpace: 'nowrap' }}>{sermon.category}</span>
-                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{sermon.shortDate || ''}</span>
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 500, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sermon.title}</span>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1, overflow: 'hidden' }}>
+                                    <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', color: '#fff', background: badgeBg, whiteSpace: 'nowrap' }}>{sermon.category}</span>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: 500, color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sermon.title}</span>
                                   </div>
+                                  <span style={{ fontSize: '0.8rem', color: '#A0AEC0', margin: '0 15px', whiteSpace: 'nowrap' }}>{sermon.shortDate || ''}</span>
                                   <button onClick={(e) => { e.stopPropagation(); openPopup(sermon); }}
                                     style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                    예배하기
+                                    예배드림
                                   </button>
                                 </div>
                               );
