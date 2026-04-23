@@ -104,6 +104,8 @@ export default function HomeClient() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [popupVideo, setPopupVideo] = useState<any>(null);
   const [showMiniPlayer, setShowMiniPlayer] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('전체');
+  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
 
   // 팝업 열기/닫기 (스크롤 잠금)
   const openPopup = (video: any) => { setPopupVideo(video); document.body.style.overflow = 'hidden'; };
@@ -327,16 +329,32 @@ export default function HomeClient() {
                 )}
               </div>
 
-              {/* 이번 달 말씀 카드 */}
+              {/* 스마트 태그 필터 */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '30px' }}>
+                {['전체', '주일오전', '수요예배', '새벽기도'].map(tag => (
+                  <button key={tag} onClick={() => setActiveFilter(tag)}
+                    style={{
+                      padding: '8px 20px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s',
+                      backgroundColor: activeFilter === tag ? '#5C3A40' : '#e8e0d8',
+                      color: activeFilter === tag ? '#fff' : '#5C3A40',
+                    }}>{tag}</button>
+                ))}
+              </div>
+
+              {/* 설교 카드 + AI 요약 오버레이 */}
               {displaySermons.length > 0 && (
                 <div style={{ marginBottom: '60px' }}>
                   <h3 style={{ borderLeft: '5px solid #5C3A40', paddingLeft: '15px', marginBottom: '20px', color: '#5C3A40', fontSize: '1.2rem' }}>
                     최근 설교 말씀
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
-                    {displaySermons.map((s: any) => (
-                      <div key={s.id} style={{ backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.05)', transition: 'transform 0.2s', cursor: 'pointer' }}
+                    {displaySermons
+                      .filter((s: any) => activeFilter === '전체' || s.category === activeFilter)
+                      .map((s: any) => (
+                      <div key={s.id} style={{ position: 'relative', backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.05)', transition: 'transform 0.2s', cursor: 'pointer' }}
                         onClick={() => openPopup(s)}
+                        onMouseEnter={() => setHoveredCardId(s.id)}
+                        onMouseLeave={() => setHoveredCardId(null)}
                         onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-5px)')}
                         onMouseOut={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
                         {s.videoId ? (
@@ -354,6 +372,22 @@ export default function HomeClient() {
                           <h4 style={{ margin: '10px 0 5px', color: '#333', fontSize: '1rem' }}>{s.title}</h4>
                           <p style={{ color: '#666', fontSize: '0.85rem', margin: 0 }}>{s.content} | {s.date ? new Date(s.date).toLocaleDateString('ko-KR') : ''}</p>
                         </div>
+                        {/* AI 요약 오버레이 (hover 시 등장) */}
+                        {s.summary && (
+                          <div style={{
+                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                            backgroundColor: 'rgba(92, 58, 64, 0.95)', color: 'white',
+                            padding: '25px', boxSizing: 'border-box',
+                            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                            opacity: hoveredCardId === s.id ? 1 : 0,
+                            transition: 'opacity 0.3s ease', pointerEvents: 'none',
+                          }}>
+                            <h4 style={{ color: '#FFEB3B', marginBottom: '12px', fontSize: '0.9rem' }}>✨ AI 핵심 요약</h4>
+                            <ul style={{ paddingLeft: '18px', fontSize: '0.9rem', lineHeight: '1.7', margin: 0 }}>
+                              {(Array.isArray(s.summary) ? s.summary : [s.summary]).map((line: string, idx: number) => <li key={idx}>{line}</li>)}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
