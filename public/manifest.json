@@ -1,28 +1,23 @@
 {
   "name": "거제반석교회",
   "short_name": "반석교회",
-  "description": "은혜 위에 바로 서는 반석교회 - 대한예수교 장로회 합동측",
+  "description": "대한예수교장로회 거제반석교회 - 반석 위에 굳게 서는 교회",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#5b272f",
+  "background_color": "#FDFBF7",
+  "theme_color": "#5C3A40",
   "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "ko",
   "icons": [
     {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
+      "src": "/icon.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
-  ],
-  "screenshots": [],
-  "categories": ["lifestyle", "education"]
+  ]
 }
