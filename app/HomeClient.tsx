@@ -103,6 +103,7 @@ export default function HomeClient() {
   const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [popupVideo, setPopupVideo] = useState<any>(null);
+  const [showMiniPlayer, setShowMiniPlayer] = useState(true);
 
   // 팝업 열기/닫기 (스크롤 잠금)
   const openPopup = (video: any) => { setPopupVideo(video); document.body.style.overflow = 'hidden'; };
@@ -496,6 +497,37 @@ export default function HomeClient() {
             {popupVideo.content && (
               <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '12px', fontSize: '0.9rem', textAlign: 'center' }}>{popupVideo.content}</p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 📺 따라다니는 미니 방송국 (우측 하단 PIP) */}
+      {isLive && showMiniPlayer && !popupVideo && (
+        <div style={{
+          position: 'fixed', bottom: '30px', right: '30px', width: '320px',
+          backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden',
+          boxShadow: '0 15px 35px rgba(0,0,0,0.2)', zIndex: 9000,
+          border: '2px solid #D32F2F', animation: 'fadeInUp 0.5s ease-out',
+        }}>
+          {/* 미니 플레이어 헤더 */}
+          <div style={{ backgroundColor: '#D32F2F', color: 'white', padding: '8px 15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
+              <span style={{ color: '#FFEB3B' }}>● LIVE</span> 실시간 예배 중
+            </span>
+            <button onClick={() => setShowMiniPlayer(false)}
+              style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.1rem', cursor: 'pointer', lineHeight: 1 }}>✖</button>
+          </div>
+          {/* 미니 영상 (음소거 자동재생) */}
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#000' }}>
+            <iframe width="100%" height="100%"
+              src={liveVideoId ? `https://www.youtube.com/embed/${liveVideoId}?autoplay=1&mute=1&controls=0&modestbranding=1` : `https://www.youtube.com/embed/live_stream?channel=UCc_eP0i4YwSQmQ9du5-RHbA&autoplay=1&mute=1&controls=0`}
+              style={{ border: 'none', pointerEvents: 'none' }} />
+            {/* 투명 유리판: 클릭 시 극장 팝업 */}
+            <div onClick={() => openPopup({ videoId: liveVideoId, title: '실시간 예배 방송', category: 'LIVE' })}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.05)' }}
+              title="클릭하여 소리와 함께 크게 보기">
+              <span style={{ color: '#fff', fontSize: '2rem', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>▶</span>
+            </div>
           </div>
         </div>
       )}
