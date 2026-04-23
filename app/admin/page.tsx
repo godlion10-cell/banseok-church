@@ -89,6 +89,7 @@ export default function AdminPage() {
           <button className={`${s.sidebarLink} ${tab === 'schedules' ? s.sidebarLinkActive : ''}`} onClick={() => { setTab('schedules'); resetForms(); }}>📅 예배시간</button>
           <button className={`${s.sidebarLink} ${tab === 'worshipOrders' ? s.sidebarLinkActive : ''}`} onClick={() => { setTab('worshipOrders'); resetForms(); }}>📋 예배순서</button>
         </nav>
+        <a href="/admin/ai" className={s.sidebarLink} style={{ display: 'block', textAlign: 'center', marginTop: '0.5rem', background: 'linear-gradient(135deg, rgba(193,156,114,0.15), rgba(91,39,47,0.1))', border: '1px solid rgba(193,156,114,0.2)', textDecoration: 'none' }}>🤖 AI 어시스턴트</a>
         <button onClick={handleLogout} className={s.sidebarBack} style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem' }}>🚪 로그아웃</button>
         <a href="/" className={s.sidebarBack}>← 홈페이지로 돌아가기</a>
       </aside>

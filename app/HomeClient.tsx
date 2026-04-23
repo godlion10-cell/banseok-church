@@ -90,10 +90,10 @@ const MINISTRY_CARDS = [
 ];
 
 const PILLARS = [
-  { emoji: '🪨', title: '견고한 반석', desc: '그리스도 위에 세워진 흔들리지 않는 신앙' },
-  { emoji: '🙏', title: '변함없는 신실함', desc: '어떤 환경에서도 주님을 신뢰하는 믿음' },
-  { emoji: '💪', title: '강건한 공동체', desc: '서로 사랑하고 세워주는 그리스도의 몸' },
-  { emoji: '🌱', title: '다음 세대 세움', desc: '미래 세대에 신앙을 전수하는 교회' },
+  { icon: '/vision/icon-solid.png', title: '견고한 반석', desc: '그리스도 위에 세워진 흔들리지 않는 신앙' },
+  { icon: '/vision/icon-steadfast.png', title: '변함없는 신실함', desc: '어떤 환경에서도 주님을 신뢰하는 믿음' },
+  { icon: '/vision/icon-strong.png', title: '강건한 공동체', desc: '서로 사랑하고 세워주는 그리스도의 몸' },
+  { icon: '/vision/icon-build.png', title: '다음 세대 세움', desc: '미래 세대에 신앙을 전수하는 교회' },
 ];
 
 export default function HomeClient() {
@@ -198,48 +198,82 @@ export default function HomeClient() {
 
         {/* ── 비전과 사명 ── */}
         {activeSection === 'vision' && (
-          <section className={styles.tabSection}>
-            <div className={styles.vpHeader}>
-              <h2 className={styles.vpTitle}>Stand on Grace</h2>
-              <p className={styles.vpSubtitle}>은혜 위에 서다 — 거제반석교회의 비전</p>
-            </div>
-            <div className={styles.vpMinistryRow}>
-              <div className={styles.vpTreeWrap}>
-                <div style={{ fontSize: '8rem', lineHeight: 1 }}>🌳</div>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '0.5rem' }}>반석 위에 뿌리내린 나무</p>
+          <section style={{ backgroundColor: '#FDFBF7', padding: '60px 20px', width: '100%', overflow: 'hidden' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+              {/* 1. 타이틀 영역 */}
+              <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+                <h1 style={{ color: '#5C3A40', fontSize: '3rem', fontWeight: 'bold', margin: '0 0 10px 0', fontFamily: "'Nanum Myeongjo', serif" }}>
+                  Stand on Grace
+                </h1>
+                <p style={{ color: '#8C7A6B', fontSize: '1.2rem', margin: 0, fontWeight: 700 }}>
+                  은혜 위에 서다 — 거제반석교회의 비전
+                </p>
               </div>
-              <div className={styles.vpMinistryCards}>
-                {MINISTRY_CARDS.map((m, i) => (
-                  <div key={i} className={styles.vpMCard}>
-                    <span className={styles.vpMLabel} style={{ backgroundColor: m.color }}>{m.badge}</span>
-                    <h4>{m.title}</h4>
-                    <p>{m.desc}</p>
-                    <span className={styles.vpMVerse}>{m.verse}</span>
+
+              {/* 2. 메인 비전 영역 (좌측 웅장한 거대 나무 vs 우측 3대 핵심) */}
+              <div style={{ display: 'flex', flexDirection: 'row', gap: '60px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '100px' }}>
+
+                {/* 좌측: 여백을 잘라내고 '나무 알맹이'만 꽉 차게 확대 + 실사 느낌 필터 */}
+                <div style={{ flex: '1.5 1 400px', textAlign: 'center' }}>
+                  <div style={{
+                    width: '100%', height: '500px',
+                    overflow: 'hidden',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(253,251,247,0) 70%)',
+                  }}>
+                    <img src="/vision/tree.png" alt="반석 위에 뿌리내린 나무"
+                      style={{
+                        height: '100%',
+                        mixBlendMode: 'darken',
+                        transform: 'scale(2.2)',
+                        objectFit: 'contain',
+                        filter: 'contrast(1.2) saturate(1.3) brightness(0.95) drop-shadow(0px 15px 25px rgba(0,0,0,0.4))',
+                        transition: 'all 0.3s ease',
+                      }} />
                   </div>
-                ))}
+                  <p style={{ color: '#333', fontWeight: 'bold', marginTop: '20px', fontSize: '1.3rem' }}>
+                    반석 위에 뿌리내린 나무
+                  </p>
+                </div>
+
+                {/* 우측: UP / IN / OUT 카드 */}
+                <div style={{ flex: '1 1 350px', display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                  {MINISTRY_CARDS.map((m, i) => (
+                    <div key={i} style={{ backgroundColor: '#FFF', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', transition: 'transform 0.2s ease' }}>
+                      <span style={{ backgroundColor: m.color, color: '#FFF', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '15px' }}>{m.badge}</span>
+                      <h3 style={{ margin: '0 0 10px 0', color: '#333', fontSize: '1.3rem', fontWeight: 'bold' }}>{m.title}</h3>
+                      <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '1rem', lineHeight: '1.6' }}>{m.desc}</p>
+                      <span style={{ color: '#B7791F', fontSize: '0.9rem', fontWeight: 'bold' }}>{m.verse}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className={styles.vpPillarsSection}>
-              <h3 className={styles.vpPillarsTitle}>반석교회 4대 지향점</h3>
-              <div className={styles.vpPillarsGrid}>
-                {PILLARS.map((p, i) => (
-                  <div key={i} className={styles.vpPillarItem}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{p.emoji}</div>
-                    <h4>{p.title}</h4>
-                    <p>{p.desc}</p>
-                  </div>
-                ))}
+
+              {/* 3. 4대 지향점 영역 */}
+              <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                <h2 style={{ color: '#5C3A40', fontSize: '2rem', margin: '0 0 40px 0', fontFamily: "'Nanum Myeongjo', serif" }}>반석교회 4대 지향점</h2>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                  {PILLARS.map((p, i) => (
+                    <div key={i} style={{ backgroundColor: '#FFF', padding: '35px 25px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.04)', flex: '1 1 200px', maxWidth: '260px', textAlign: 'center' }}>
+                      <img src={p.icon} alt={p.title} style={{ width: '80px', height: '80px', marginBottom: '20px', mixBlendMode: 'darken' }} />
+                      <h4 style={{ color: '#5C3A40', margin: '0 0 15px 0', fontSize: '1.2rem', fontWeight: 'bold' }}>{p.title}</h4>
+                      <p style={{ color: '#666', fontSize: '0.95rem', margin: 0, wordBreak: 'keep-all', lineHeight: '1.5' }}>{p.desc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className={styles.vpVisionBanner}>
-              <div className={styles.vpBannerImg}>
-                <div style={{ fontSize: '5rem' }}>🪨</div>
+
+              {/* 4. 하단 결론 영역 */}
+              <div style={{ backgroundColor: '#F4ECE1', padding: '40px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '30px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <img src="/vision/stones.png" alt="반석" style={{ width: '80px', mixBlendMode: 'darken' }} />
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#5C3A40', fontSize: '1.5rem', fontFamily: "'Nanum Myeongjo', serif" }}>반석 위에 세워진 교회</h3>
+                  <p style={{ margin: '0 0 5px 0', color: '#555', lineHeight: '1.7' }}>예수 그리스도를 머릿돌 삼아, 말씀과 기도로 든든히 세워져 가는 공동체입니다.</p>
+                  <p style={{ margin: 0, color: '#8C7A6B', fontStyle: 'italic', fontSize: '0.9rem' }}>마태복음 16:18 — &quot;내가 이 반석 위에 내 교회를 세우리니&quot;</p>
+                </div>
               </div>
-              <div className={styles.vpBannerText}>
-                <h3>반석 위에 세워진 교회</h3>
-                <p>예수 그리스도를 머릿돌 삼아, 말씀과 기도로 든든히 세워져 가는 공동체입니다.</p>
-                <span className={styles.vpBannerVerse}>마태복음 16:18 — "내가 이 반석 위에 내 교회를 세우리니"</span>
-              </div>
+
             </div>
           </section>
         )}
@@ -363,9 +397,16 @@ export default function HomeClient() {
                 <div className={styles.infoItem}><span className={styles.infoLabel}>🎥 유튜브</span><span><a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-logo-gold)', fontWeight: 600 }}>@petros-church</a></span></div>
               </div>
               <div className={styles.mapFrame}>
-                <a href="https://map.kakao.com/?q=경상남도 거제시 연초면 소오비길 40-6" target="_blank" rel="noopener noreferrer" className={styles.mapPlaceholder}>
-                  <span>🗺️</span><span>카카오맵에서 보기</span><span>거제시 연초면 소오비길 40-6</span>
-                </a>
+                <iframe
+                  src="https://maps.google.com/maps?q=거제시%20연초면%20소오비길%2040-6&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen={true}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="거제반석교회 위치"
+                />
               </div>
             </div>
           </section>

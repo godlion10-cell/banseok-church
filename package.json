@@ -9,6 +9,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@libsql/client": "^0.17.2",
     "@prisma/adapter-libsql": "^7.7.0",
     "@prisma/client": "^7.6.0",

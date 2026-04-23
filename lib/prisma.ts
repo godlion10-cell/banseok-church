@@ -1,6 +1,7 @@
 // lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
-import { PrismaLibSql } from '@prisma/adapter-libsql';
+// /web 버전: 네이티브 바이너리(.node) 없이 HTTP로만 Turso에 연결
+import { PrismaLibSql } from '@prisma/adapter-libsql/web';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
