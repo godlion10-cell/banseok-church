@@ -214,24 +214,17 @@ export default function HomeClient() {
               {/* 2. 메인 비전 영역 (좌측 웅장한 거대 나무 vs 우측 3대 핵심) */}
               <div style={{ display: 'flex', flexDirection: 'row', gap: '60px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '100px' }}>
 
-                {/* 좌측: 여백을 잘라내고 '나무 알맹이'만 꽉 차게 확대 + 실사 느낌 필터 */}
-                <div style={{ flex: '1.5 1 400px', textAlign: 'center' }}>
+                {/* 좌측: 나무 영역 (여백을 무시하고 강제로 줌인!) */}
+                <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {/* div 배경으로 넣고 backgroundSize로 확 당김 */}
                   <div style={{
-                    width: '100%', height: '500px',
-                    overflow: 'hidden',
-                    display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(253,251,247,0) 70%)',
-                  }}>
-                    <img src="/vision/tree.png" alt="반석 위에 뿌리내린 나무"
-                      style={{
-                        height: '100%',
-                        mixBlendMode: 'darken',
-                        transform: 'scale(2.2)',
-                        objectFit: 'contain',
-                        filter: 'contrast(1.2) saturate(1.3) brightness(0.95) drop-shadow(0px 15px 25px rgba(0,0,0,0.4))',
-                        transition: 'all 0.3s ease',
-                      }} />
-                  </div>
+                    width: '100%', height: '450px',
+                    backgroundImage: 'url("/vision/tree.png")',
+                    backgroundSize: '180%',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    mixBlendMode: 'darken',
+                  }} />
                   <p style={{ color: '#333', fontWeight: 'bold', marginTop: '20px', fontSize: '1.3rem' }}>
                     반석 위에 뿌리내린 나무
                   </p>

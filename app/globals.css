@@ -38,7 +38,7 @@ html, body {
   overflow-wrap: break-word;
 }
 
-*, *::before, *::after { box-sizing: inherit; }
+*, *::before, *::after { box-sizing: inherit; word-break: keep-all; overflow-wrap: break-word; }
 
 a { text-decoration: none; color: inherit; }
 
