@@ -348,7 +348,7 @@ export default function HomeClient() {
                   <div style={{ width: '100%', height: '250px', borderRadius: '15px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', padding: '2rem', gap: '0.8rem', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
                     <div style={{ fontSize: '3rem' }}>✝️</div>
                     <h3 style={{ color: '#fff', margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>지금은 예배 시간이 아닙니다</h3>
-                    <p style={{ color: '#94a3b8', margin: 0 }}>아래에서 은혜의 말씀을 선택해주세요</p>
+                    <p style={{ color: '#94a3b8', margin: 0 }}>아래에서 오늘의 생수를 채워보세요</p>
                   </div>
                 )}
               </div>
@@ -359,7 +359,7 @@ export default function HomeClient() {
                   <button key={tag} onClick={() => setActiveFilter(tag)}
                     style={{
                       padding: '8px 20px', borderRadius: '25px', border: '1px solid #ddd', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s',
-                      backgroundColor: activeFilter === tag ? '#334155' : '#fff',
+                      backgroundColor: activeFilter === tag ? '#5C3A40' : '#fff',
                       color: activeFilter === tag ? '#fff' : '#555',
                     }}>{tag}</button>
                 ))}
@@ -417,23 +417,24 @@ export default function HomeClient() {
                 </div>
               )}
 
-              {/* 🗂️ 월별 말씀 저장소 (아코디언) */}
+              {/* 💧 다시 채우는 생수 (아코디언) */}
               {archiveData.length > 0 && (
-                <div style={{ marginTop: '50px', marginBottom: '40px' }}>
-                  <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#333', marginBottom: '20px' }}>
-                    🗂️ 2026년 말씀 저장소
+                <div style={{ marginTop: '60px', marginBottom: '40px' }}>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#333', marginBottom: '8px' }}>
+                    💧 다시 채우는 생수
                   </h3>
+                  <p style={{ color: '#888', marginBottom: '25px', fontSize: '0.95rem' }}>지난 1월부터 4월까지, 우리에게 주신 말씀의 발자취입니다.</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {archiveData.map((data) => (
-                      <div key={data.month} style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                      <div key={data.month} style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.04)', marginBottom: '10px', border: '1px solid #f1f5f9' }}>
                         {/* 월별 헤더 */}
                         <button onClick={() => setExpandedMonth(expandedMonth === data.month ? '' : data.month)}
                           style={{
                             width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '18px 20px', background: expandedMonth === data.month ? '#E2E8F0' : '#F1F5F9',
+                            padding: '18px 25px', background: expandedMonth === data.month ? '#f8fafc' : '#fff',
                             border: 'none', cursor: 'pointer', color: '#334155', transition: 'background 0.2s',
                           }}>
-                          <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{data.month} 은혜의 말씀</span>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{data.month} 말씀</span>
                           <span style={{ fontSize: '1rem' }}>{expandedMonth === data.month ? '▲' : '▼'}</span>
                         </button>
                         {/* 예배 목록 */}
@@ -443,17 +444,17 @@ export default function HomeClient() {
                               const badgeBg = sermon.category?.includes('주일') ? '#9f1239' : sermon.category?.includes('수요') ? '#0f766e' : '#78350f';
                               return (
                                 <div key={sermon.id} onClick={() => openPopup(sermon)}
-                                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #E2E8F0', cursor: 'pointer', transition: 'background 0.2s' }}
+                                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 25px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s' }}
                                   onMouseOver={(e) => e.currentTarget.style.background = '#F8FAFC'}
                                   onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, overflow: 'hidden' }}>
                                     <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 'bold', color: '#fff', background: badgeBg, whiteSpace: 'nowrap' }}>{sermon.category}</span>
-                                    <span style={{ fontSize: '0.85rem', color: '#64748B', whiteSpace: 'nowrap' }}>{sermon.shortDate || ''}</span>
+                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{sermon.shortDate || ''}</span>
                                     <span style={{ fontSize: '0.95rem', fontWeight: 500, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sermon.title}</span>
                                   </div>
                                   <button onClick={(e) => { e.stopPropagation(); openPopup(sermon); }}
-                                    style={{ background: '#334155', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                    ▶ 재생
+                                    style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                    예배하기
                                   </button>
                                 </div>
                               );
