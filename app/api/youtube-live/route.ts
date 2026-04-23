@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const CHANNEL_ID = 'UCc_eP0i4YwSQmQ9du5-RHbA';
-const CHANNEL_HANDLE = 'petros-church';
+const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || 'UCc_eP0i4YwSQmQ9du5-RHbA';
+const API_KEY = process.env.YOUTUBE_API_KEY;
 
 function isWorshipTime(): boolean {
   const now = new Date();
@@ -21,9 +21,32 @@ function isWorshipTime(): boolean {
   );
 }
 
-async function getVideoIdFromChannelLive(): Promise<{ videoId: string; title: string } | null> {
+// 💡 유튜브 API로 라이브 감지 (정확하고 안정적)
+async function getLiveStreamFromAPI(): Promise<{ videoId: string; title: string; thumbnail: string } | null> {
+  if (!API_KEY) return null;
   try {
-    const res = await fetch(`https://www.youtube.com/@${CHANNEL_HANDLE}/live`, {
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&type=video&eventType=live&key=${API_KEY}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    const data = await res.json();
+
+    if (data.items && data.items.length > 0) {
+      const liveVideo = data.items[0];
+      return {
+        videoId: liveVideo.id.videoId,
+        title: liveVideo.snippet.title,
+        thumbnail: liveVideo.snippet.thumbnails?.high?.url || '',
+      };
+    }
+  } catch (error) {
+    console.error('유튜브 API 라이브 감지 오류:', error);
+  }
+  return null;
+}
+
+// 🔄 HTML 스크래핑 폴백 (API 키가 없거나 할당량 초과 시)
+async function getLiveStreamFromScrape(): Promise<{ videoId: string; title: string } | null> {
+  try {
+    const res = await fetch(`https://www.youtube.com/@petros-church/live`, {
       cache: 'no-store',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -41,19 +64,38 @@ async function getVideoIdFromChannelLive(): Promise<{ videoId: string; title: st
   } catch { return null; }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const result = await getVideoIdFromChannelLive();
-    if (result) {
-      return NextResponse.json({ live: true, videoId: result.videoId, title: result.title, method: 'scrape' });
+    // 1차: 유튜브 API로 정확한 라이브 감지
+    const apiResult = await getLiveStreamFromAPI();
+    if (apiResult) {
+      return NextResponse.json({
+        live: true, videoId: apiResult.videoId, title: apiResult.title,
+        thumbnail: apiResult.thumbnail, method: 'youtube-api'
+      });
     }
+
+    // 2차: API 실패 시 HTML 스크래핑 폴백
+    const scrapeResult = await getLiveStreamFromScrape();
+    if (scrapeResult) {
+      return NextResponse.json({
+        live: true, videoId: scrapeResult.videoId, title: scrapeResult.title, method: 'scrape-fallback'
+      });
+    }
+
+    // 3차: 예배 시간 기반 폴백
     if (isWorshipTime()) {
-      return NextResponse.json({ live: true, videoId: null, title: '실시간 예배', method: 'time-fallback', channelId: CHANNEL_ID });
+      return NextResponse.json({
+        live: true, videoId: null, title: '실시간 예배', method: 'time-fallback', channelId: CHANNEL_ID
+      });
     }
+
     return NextResponse.json({ live: false, videoId: null, title: '' });
   } catch {
     if (isWorshipTime()) {
-      return NextResponse.json({ live: true, videoId: null, title: '실시간 예배', method: 'error-fallback', channelId: CHANNEL_ID });
+      return NextResponse.json({
+        live: true, videoId: null, title: '실시간 예배', method: 'error-fallback', channelId: CHANNEL_ID
+      });
     }
     return NextResponse.json({ live: false, videoId: null });
   }

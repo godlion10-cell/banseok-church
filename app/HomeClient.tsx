@@ -177,6 +177,27 @@ export default function HomeClient() {
         </nav>
       </header>
 
+      {/* 🔴 실시간 방송 배너 */}
+      {isLive && (
+        <a
+          href={liveVideoId ? `https://www.youtube.com/watch?v=${liveVideoId}` : `https://www.youtube.com/@petros-church/live`}
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backgroundColor: '#D32F2F', color: 'white',
+            padding: '12px 20px', textDecoration: 'none',
+            fontWeight: 'bold', fontSize: '1.1rem',
+            gap: '10px', zIndex: 9998, flexWrap: 'wrap',
+          }}
+        >
+          <span style={{ fontSize: '0.8rem', color: '#FFEB3B' }}>● LIVE</span>
+          <span>현재 실시간 예배 중</span>
+          <span style={{ fontSize: '0.9rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '4px' }}>
+            참여하기 ➔
+          </span>
+        </a>
+      )}
+
       <main className={styles.contentArea}>
         {/* ── 교회소개 ── */}
         {activeSection === 'about' && (
@@ -273,10 +294,14 @@ export default function HomeClient() {
 
         {/* ── 설교말씀 ── */}
         {activeSection === 'sermon' && (
-          <section className={styles.tabSection}>
-            <h2 className={styles.sectionTitle}>설교 말씀</h2>
-            <div className={styles.sermonContainer}>
-              <div className={styles.sermonMain}>
+          <section style={{ backgroundColor: '#FDFBF7', padding: '60px 20px', width: '100%' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+              <h2 style={{ color: '#5C3A40', fontSize: '2rem', marginBottom: '40px', textAlign: 'center', fontFamily: "'Nanum Myeongjo', serif" }}>
+                예배 다시보기
+              </h2>
+
+              {/* 실시간 방송 영역 */}
+              <div style={{ marginBottom: '50px' }}>
                 {isLive ? (
                   <div className={styles.sermonVideoWrap} style={isExpanded ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999, background: '#000' } : {}}>
                     <iframe width="100%" height="100%"
@@ -288,7 +313,7 @@ export default function HomeClient() {
                     </button>
                   </div>
                 ) : (
-                  <div className={styles.sermonVideoWrap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #172554, #1e3a5f)', padding: '2rem', gap: '0.8rem' }}>
+                  <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #172554, #1e3a5f)', padding: '2rem', gap: '0.8rem', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
                     <div style={{ fontSize: '3rem' }}>✝️</div>
                     <h3 style={{ color: '#fff', margin: 0 }}>지금은 예배 시간이 아닙니다</h3>
                     <p style={{ color: '#bfdbfe', margin: 0 }}>예배 시간에 실시간 방송이 시작됩니다.</p>
@@ -296,14 +321,44 @@ export default function HomeClient() {
                   </div>
                 )}
               </div>
-              <div className={styles.sermonGrid}>
-                {displaySermons.map((s: any) => (
-                  <div key={s.id} className={styles.sermonCard}>
-                    <h4>{s.category}</h4>
-                    <p>{s.title}</p>
-                    <span className={styles.sermonMeta}>{s.content}</span>
+
+              {/* 이번 달 말씀 카드 */}
+              {displaySermons.length > 0 && (
+                <div style={{ marginBottom: '60px' }}>
+                  <h3 style={{ borderLeft: '5px solid #5C3A40', paddingLeft: '15px', marginBottom: '20px', color: '#5C3A40', fontSize: '1.2rem' }}>
+                    최근 설교 말씀
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
+                    {displaySermons.map((s: any) => (
+                      <div key={s.id} style={{ backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.05)', transition: 'transform 0.2s', cursor: 'pointer' }}
+                        onClick={() => s.videoId && window.open(`https://www.youtube.com/watch?v=${s.videoId}`, '_blank')}>
+                        {s.videoId ? (
+                          <div style={{ width: '100%', aspectRatio: '16/9', backgroundColor: '#000' }}>
+                            <img src={`https://img.youtube.com/vi/${s.videoId}/hqdefault.jpg`} alt={s.title}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        ) : (
+                          <div style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg, #5C3A40, #8C6A70)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '2.5rem' }}>🎤</span>
+                          </div>
+                        )}
+                        <div style={{ padding: '20px' }}>
+                          <span style={{ backgroundColor: '#5C3A40', color: '#FFF', padding: '4px 10px', borderRadius: '5px', fontSize: '0.8rem' }}>{s.category}</span>
+                          <h4 style={{ margin: '10px 0 5px', color: '#333', fontSize: '1rem' }}>{s.title}</h4>
+                          <p style={{ color: '#666', fontSize: '0.85rem', margin: 0 }}>{s.content} | {s.date ? new Date(s.date).toLocaleDateString('ko-KR') : ''}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* 유튜브 채널 바로가기 */}
+              <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 28px', backgroundColor: '#FF0000', color: '#FFF', borderRadius: '50px', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none', boxShadow: '0 4px 12px rgba(255,0,0,0.3)', transition: 'all 0.2s' }}>
+                  ▶ 유튜브에서 더 보기
+                </a>
               </div>
             </div>
           </section>
