@@ -7,14 +7,8 @@ import styles from './page.module.css';
 // ===== 헬퍼 =====
 function getNextWorship(): string { return '주일 오전 9시 주일대예배'; }
 
-// 오늘의 은혜 말씀 리스트 (접속 시 랜덤)
-const GRACE_VERSES = [
-  "여호와는 나의 목자시니 내게 부족함이 없으리로다 (시 23:1)",
-  "내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라 (빌 4:13)",
-  "여호와를 기쁘하는 것이 너희의 힘이니라 (느 8:10)",
-  "하나님을 사랑하는 자들에게는 모든 것이 합력하여 선을 이루느니라 (롬 8:28)",
-  "너희는 가만히 있어 내가 하나님 됨을 알지어다 (시 46:10)",
-];
+// 오늘의 말씀 (전광판 마퀴용 문자열)
+const GRACE_VERSES = "✨ 오늘의 말씀: 하나님을 사랑하는 자들에게는 모든 것이 합력하여 선을 이루느니라 (롬 8:28) ✨ 오늘의 말씀: 네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 (시 37:5) ";
 
 type SectionKey = 'about' | 'vision' | 'sermon' | 'news' | 'schedule' | 'location';
 
@@ -62,32 +56,40 @@ const WORSHIP_ORDERS: Record<string, any> = {
   '주일대예배 (1부)': {
     title: '주일 오전 예배 순서',
     groups: [
-      { heading: '◀ 개회 (하나님께 나아감)', rows: [
-        { label: '묵도', content: '', resp: '다같이' },
-        { label: '개회찬송', content: '예수 우리 왕이여 (38장)', resp: '다같이' },
-        { label: '신앙고백', content: '사도신경', resp: '다같이' },
-        { label: '교독문', content: '134번 (부활절2)', resp: '다같이' },
-        { label: '찬송', content: '할렐루야 우리 예수 (161장)', resp: '다같이' },
-      ]},
-      { heading: '◀ 말씀의 선포', rows: [
-        { label: '성경봉독', content: '고린도전서 15:1~10', resp: '다같이' },
-        { label: '말씀', content: '부활, 죽음을 이기는 하나님의 소망', resp: '이주민 목사', bold: true },
-        { label: '합심기도', content: '', resp: '다같이' },
-      ]},
+      {
+        heading: '◀ 개회 (하나님께 나아감)', rows: [
+          { label: '묵도', content: '', resp: '다같이' },
+          { label: '개회찬송', content: '예수 우리 왕이여 (38장)', resp: '다같이' },
+          { label: '신앙고백', content: '사도신경', resp: '다같이' },
+          { label: '교독문', content: '134번 (부활절2)', resp: '다같이' },
+          { label: '찬송', content: '할렐루야 우리 예수 (161장)', resp: '다같이' },
+        ]
+      },
+      {
+        heading: '◀ 말씀의 선포', rows: [
+          { label: '성경봉독', content: '고린도전서 15:1~10', resp: '다같이' },
+          { label: '말씀', content: '부활, 죽음을 이기는 하나님의 소망', resp: '이주민 목사', bold: true },
+          { label: '합심기도', content: '', resp: '다같이' },
+        ]
+      },
     ],
   },
   '주일대예배 (2부)': {
     title: '주일 오전 예배 순서',
     groups: [
-      { heading: '◀ 개회', rows: [
-        { label: '묵도', content: '', resp: '다같이' },
-        { label: '개회찬송', content: '예수 우리 왕이여 (38장)', resp: '다같이' },
-        { label: '찬송', content: '할렐루야 우리 예수 (161장)', resp: '다같이' },
-      ]},
-      { heading: '◀ 말씀', rows: [
-        { label: '성경봉독', content: '고린도전서 15:1~10', resp: '다같이' },
-        { label: '말씀', content: '부활, 죽음을 이기는 하나님의 소망', resp: '이주민 목사', bold: true },
-      ]},
+      {
+        heading: '◀ 개회', rows: [
+          { label: '묵도', content: '', resp: '다같이' },
+          { label: '개회찬송', content: '예수 우리 왕이여 (38장)', resp: '다같이' },
+          { label: '찬송', content: '할렐루야 우리 예수 (161장)', resp: '다같이' },
+        ]
+      },
+      {
+        heading: '◀ 말씀', rows: [
+          { label: '성경봉독', content: '고린도전서 15:1~10', resp: '다같이' },
+          { label: '말씀', content: '부활, 죽음을 이기는 하나님의 소망', resp: '이주민 목사', bold: true },
+        ]
+      },
     ],
   },
 };
@@ -134,7 +136,7 @@ export default function HomeClient() {
         title: sermon.title,
         text: `${sermon.title} (${sermon.content || ''})`,
         url: sermon.videoId ? `https://www.youtube.com/watch?v=${sermon.videoId}` : 'https://www.youtube.com/@petros-church',
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       navigator.clipboard?.writeText(`https://www.youtube.com/watch?v=${sermon.videoId}`);
       alert('링크가 복사되었습니다!');
@@ -191,11 +193,11 @@ export default function HomeClient() {
         // DB에 예배순서가 있으면 WORSHIP_ORDERS를 덮어씀
         if (data.worshipOrders?.length > 0) {
           data.worshipOrders.forEach((wo: any) => {
-            try { WORSHIP_ORDERS[wo.category] = { title: wo.title, groups: JSON.parse(wo.content) }; } catch {}
+            try { WORSHIP_ORDERS[wo.category] = { title: wo.title, groups: JSON.parse(wo.content) }; } catch { }
           });
         }
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const displayNews = newsItems.length > 0 ? newsItems : FALLBACK_NEWS;
@@ -214,28 +216,26 @@ export default function HomeClient() {
   return (
     <div className={styles.mainContainer}>
 
-      {/* ===== 상단 바 (앱 설치 + 오늘의 말씀 마퀴) ===== */}
+      {/* ===== 상단 전광판 (앱 설치 + 흐르는 말씀) ===== */}
       {showInstallBanner && (
         <div style={{
-          background: '#1c1c1c', color: '#fff', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', padding: '5px 20px', overflow: 'hidden',
+          background: '#1c1c1c', height: '45px', display: 'flex', alignItems: 'center',
+          position: 'sticky', top: 0, zIndex: 2000, padding: '0 15px', overflow: 'hidden',
         }}>
           {/* 앱 설치 영역 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-            <span style={{ fontSize: '14px' }}>거제 반석교회 앱을 설치해 보세요!</span>
-            <button onClick={() => alert('브라우저 설정에서 [홈 화면에 추가]를 눌러주세요!')}
-              style={{ background: '#ffda00', border: 'none', color: '#000', padding: '5px 15px', borderRadius: '4px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>설치</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, zIndex: 2, background: '#1c1c1c', paddingRight: '15px' }}>
+            <span style={{ color: 'white', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>거제반석교회 앱 설치</span>
+            <button onClick={() => alert('홈 화면에 추가를 눌러주세요!')}
+              style={{ background: '#ffda00', color: 'black', border: 'none', padding: '3px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer' }}>설치</button>
           </div>
-          {/* 마퀴 흘러가는 오늘의 말씀 */}
-          <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
+          {/* 마퀴 흐르는 말씀 */}
+          <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
             <div style={{
               display: 'inline-block', whiteSpace: 'nowrap',
               animation: 'marqueeScroll 30s linear infinite',
-              color: '#ffda00', fontSize: '14px',
+              color: '#ffda00', fontSize: '0.85rem', fontWeight: 500,
             }}>
-              오늘의 말씀: {todayVerse}
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              오늘의 말씀: {todayVerse}
+              {GRACE_VERSES} &nbsp;&nbsp; {GRACE_VERSES}
             </div>
           </div>
           {/* 닫기 버튼 */}
@@ -399,21 +399,11 @@ export default function HomeClient() {
                     </button>
                   </div>
                 ) : (
-                  <div style={{ width: '100%', minHeight: '280px', borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1E293B, #0F172A)', padding: '30px', textAlign: 'center', color: 'white' }}>
-                    <div style={{ fontSize: '2rem', marginBottom: '10px' }}>✝️</div>
+                  <div style={{ width: '100%', minHeight: '250px', borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1E293B, #0F172A)', padding: '40px', textAlign: 'center', color: 'white' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>✝️</div>
                     <h3 style={{ color: '#fff', margin: 0, fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '15px' }}>지금은 예배 시간이 아닙니다</h3>
-                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px', width: '100%', maxWidth: '350px' }}>
-                      {[
-                        { name: '새벽기도회', time: '매일 오전 5:30' },
-                        { name: '주일대예배', time: '오전 9:00 / 11:00' },
-                        { name: '주일오후예배', time: '오후 2:00' },
-                        { name: '수요삼일예배', time: '오후 7:30' },
-                      ].map((svc, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.1)' : 'none', fontSize: '0.9rem' }}>
-                          <span style={{ color: '#94A3B8' }}>{svc.name}</span>
-                          <span style={{ fontWeight: 'bold', color: '#F1F5F9' }}>{svc.time}</span>
-                        </div>
-                      ))}
+                    <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '10px 25px', borderRadius: '30px', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.2)' }}>
+                      다음 예배: 주일 대예배 (오전 9시 / 11시)
                     </div>
                   </div>
                 )}
@@ -440,43 +430,44 @@ export default function HomeClient() {
                       .map((s: any) => {
                         const gradient = s.category?.includes('주일') ? 'linear-gradient(135deg, #701a75, #9f1239)'
                           : s.category?.includes('수요') ? 'linear-gradient(135deg, #064e3b, #0f766e)'
-                          : 'linear-gradient(135deg, #451a03, #78350f)';
+                            : 'linear-gradient(135deg, #451a03, #78350f)';
                         return (
-                      <div key={s.id} style={{ position: 'relative', backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', transition: 'transform 0.3s, box-shadow 0.3s', cursor: 'pointer' }}
-                        onClick={() => openPopup(s)}
-                        onMouseEnter={() => setHoveredCardId(s.id)}
-                        onMouseLeave={() => setHoveredCardId(null)}
-                        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.08)'; }}>
-                        {/* 그라데이션 타이포그래피 헤더 */}
-                        <div style={{ height: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '25px', textAlign: 'center', background: gradient, color: '#fff' }}>
-                          <div style={{ fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.4, fontFamily: "'Nanum Myeongjo', serif", marginBottom: '10px', textShadow: '1px 1px 3px rgba(0,0,0,0.3)' }}>
-                            "{s.title}"
-                          </div>
-                          <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 400 }}>{s.content || ''}</div>
-                        </div>
-                        {/* 카드 하단 (뱃지만) */}
-                        <div style={{ padding: '15px 20px', minHeight: '50px', display: 'flex', alignItems: 'center' }}>
-                          <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '5px', fontSize: '0.75rem', fontWeight: 'bold', color: '#fff', background: gradient }}>{s.category}</span>
-                        </div>
-                        {/* AI 요약 오버레이 (센터 정렬 + 확대) */}
-                        {s.summary && (
-                          <div style={{
-                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                            backgroundColor: 'rgba(0, 0, 0, 0.92)', color: 'white',
-                            padding: '30px', boxSizing: 'border-box',
-                            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center',
-                            opacity: hoveredCardId === s.id ? 1 : 0,
-                            transition: 'opacity 0.3s ease', pointerEvents: 'none',
-                          }}>
-                            <h4 style={{ color: '#FFEB3B', marginBottom: '15px', fontSize: '1rem', fontWeight: 'bold' }}>✨ 말씀 요약</h4>
-                            <div>
-                              {(Array.isArray(s.summary) ? s.summary : [s.summary]).map((line: string, idx: number) => <p key={idx} style={{ fontSize: '1.15rem', lineHeight: '1.6', marginBottom: '10px', fontWeight: 500, wordBreak: 'keep-all' }}>{line}</p>)}
+                          <div key={s.id} style={{ position: 'relative', backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', transition: 'transform 0.3s, box-shadow 0.3s', cursor: 'pointer' }}
+                            onClick={() => openPopup(s)}
+                            onMouseEnter={() => setHoveredCardId(s.id)}
+                            onMouseLeave={() => setHoveredCardId(null)}
+                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.08)'; }}>
+                            {/* 그라데이션 타이포그래피 헤더 */}
+                            <div style={{ height: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '25px', textAlign: 'center', background: gradient, color: '#fff' }}>
+                              <div style={{ fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.4, fontFamily: "'Nanum Myeongjo', serif", marginBottom: '10px', textShadow: '1px 1px 3px rgba(0,0,0,0.3)' }}>
+                                "{s.title}"
+                              </div>
+                              <div style={{ fontSize: '0.9rem', opacity: 0.9, fontWeight: 400 }}>{s.content || ''}</div>
                             </div>
+                            {/* 카드 하단 (뱃지만) */}
+                            <div style={{ padding: '15px 20px', minHeight: '50px', display: 'flex', alignItems: 'center' }}>
+                              <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '5px', fontSize: '0.75rem', fontWeight: 'bold', color: '#fff', background: gradient }}>{s.category}</span>
+                            </div>
+                            {/* AI 요약 오버레이 (센터 정렬 + 확대) */}
+                            {s.summary && (
+                              <div style={{
+                                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                                backgroundColor: 'rgba(0, 0, 0, 0.92)', color: 'white',
+                                padding: '30px', boxSizing: 'border-box',
+                                display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center',
+                                opacity: hoveredCardId === s.id ? 1 : 0,
+                                transition: 'opacity 0.3s ease', pointerEvents: 'none',
+                              }}>
+                                <h4 style={{ color: '#FFEB3B', marginBottom: '15px', fontSize: '1rem', fontWeight: 'bold' }}>✨ 말씀 요약</h4>
+                                <div>
+                                  {(Array.isArray(s.summary) ? s.summary : [s.summary]).map((line: string, idx: number) => <p key={idx} style={{ fontSize: '1.15rem', lineHeight: '1.6', marginBottom: '10px', fontWeight: 500, wordBreak: 'keep-all' }}>{line}</p>)}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    );})}
+                        );
+                      })}
                   </div>
                 </div>
               )}
@@ -505,7 +496,7 @@ export default function HomeClient() {
                         {expandedMonth === data.month && (
                           <div>
                             {data.sermons.map((sermon: any) => {
-                              const badgeBg = sermon.category?.includes('주일') ? '#9F1239' : '#475569';
+                              const badgeBg = sermon.category?.includes('주일') ? '#9f1239' : '#0f766e';
                               return (
                                 <div key={sermon.id} onClick={() => openPopup(sermon)}
                                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 25px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s' }}
@@ -517,8 +508,8 @@ export default function HomeClient() {
                                   </div>
                                   <span style={{ fontSize: '0.8rem', color: '#A0AEC0', margin: '0 15px', whiteSpace: 'nowrap' }}>{sermon.shortDate || ''}</span>
                                   <button onClick={(e) => { e.stopPropagation(); openPopup(sermon); }}
-                                    style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                    예배드림
+                                    style={{ background: '#334155', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                    예배 보기
                                   </button>
                                 </div>
                               );
