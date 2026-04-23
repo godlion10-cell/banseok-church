@@ -102,6 +102,11 @@ export default function HomeClient() {
   const [isLive, setIsLive] = useState(false);
   const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [popupVideo, setPopupVideo] = useState<any>(null);
+
+  // 팝업 열기/닫기 (스크롤 잠금)
+  const openPopup = (video: any) => { setPopupVideo(video); document.body.style.overflow = 'hidden'; };
+  const closePopup = () => { setPopupVideo(null); document.body.style.overflow = ''; };
 
   const [newsItems, setNewsItems] = useState<any[]>([]);
   const [sermonItems, setSermonItems] = useState<any[]>([]);
@@ -179,23 +184,22 @@ export default function HomeClient() {
 
       {/* 🔴 실시간 방송 배너 */}
       {isLive && (
-        <a
-          href={liveVideoId ? `https://www.youtube.com/watch?v=${liveVideoId}` : `https://www.youtube.com/@petros-church/live`}
-          target="_blank" rel="noopener noreferrer"
+        <div
+          onClick={() => openPopup({ videoId: liveVideoId, title: '실시간 예배 방송', category: 'LIVE' })}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             backgroundColor: '#D32F2F', color: 'white',
-            padding: '12px 20px', textDecoration: 'none',
+            padding: '12px 20px', cursor: 'pointer',
             fontWeight: 'bold', fontSize: '1.1rem',
             gap: '10px', zIndex: 9998, flexWrap: 'wrap',
           }}
         >
-          <span style={{ fontSize: '0.8rem', color: '#FFEB3B' }}>● LIVE</span>
-          <span>현재 실시간 예배 중</span>
-          <span style={{ fontSize: '0.9rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '4px' }}>
+          <span style={{ fontSize: '0.8rem', color: '#FFEB3B', animation: 'fadeSlideIn 1s infinite' }}>● LIVE</span>
+          <strong>생방송 예배 중: 클릭하여 시청</strong>
+          <span style={{ fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.5)', padding: '2px 8px', borderRadius: '4px' }}>
             참여하기 ➔
           </span>
-        </a>
+        </div>
       )}
 
       <main className={styles.contentArea}>
@@ -331,7 +335,9 @@ export default function HomeClient() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
                     {displaySermons.map((s: any) => (
                       <div key={s.id} style={{ backgroundColor: '#FFF', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.05)', transition: 'transform 0.2s', cursor: 'pointer' }}
-                        onClick={() => s.videoId && window.open(`https://www.youtube.com/watch?v=${s.videoId}`, '_blank')}>
+                        onClick={() => openPopup(s)}
+                        onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-5px)')}
+                        onMouseOut={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
                         {s.videoId ? (
                           <div style={{ width: '100%', aspectRatio: '16/9', backgroundColor: '#000' }}>
                             <img src={`https://img.youtube.com/vi/${s.videoId}/hqdefault.jpg`} alt={s.title}
@@ -460,6 +466,39 @@ export default function HomeClient() {
           </section>
         )}
       </main>
+
+      {/* 🎬 극장식 팝업 (모달) */}
+      {popupVideo && (
+        <div onClick={closePopup} style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.92)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 99999,
+        }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '90%', maxWidth: '1000px', position: 'relative' }}>
+            {/* 상단: 카테고리 + 제목 + 닫기 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: '#FFEB3B', border: '1px solid #FFEB3B', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>{popupVideo.category || '설교'}</span>
+                <span style={{ color: 'white', fontSize: '1.2rem', fontWeight: 'bold' }}>{popupVideo.title}</span>
+              </div>
+              <button onClick={closePopup} style={{ background: 'none', border: 'none', color: 'white', fontSize: '2.5rem', cursor: 'pointer', padding: '0 10px', lineHeight: 1 }}>×</button>
+            </div>
+            {/* 유튜브 영상 */}
+            <div style={{ width: '100%', aspectRatio: '16/9', backgroundColor: '#000', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+              <iframe width="100%" height="100%"
+                src={popupVideo.videoId ? `https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1` : `https://www.youtube.com/embed/live_stream?channel=UCc_eP0i4YwSQmQ9du5-RHbA&autoplay=1`}
+                title="YouTube video player" frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen />
+            </div>
+            {/* 하단 정보 */}
+            {popupVideo.content && (
+              <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '12px', fontSize: '0.9rem', textAlign: 'center' }}>{popupVideo.content}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 🤫 푸터: 5번 빠르게 클릭하면 관리자 페이지로 이동 */}
       <footer className={styles.footer} onClick={handleSecretClick} style={{ cursor: 'default', userSelect: 'none' }}>
