@@ -18,7 +18,10 @@ export default function ChatbotWidget() {
   const [isMobile, setIsMobile] = useState(false);
   const [isVoiceAndViewOn, setIsVoiceAndViewOn] = useState(false); 
   const [largeSubtitle, setLargeSubtitle] = useState('');
-  const [isListening, setIsListening] = useState(false); 
+  const [isListening, setIsListening] = useState(false);
+  // 📝 대화형 이음돌 보고 모드
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportContent, setReportContent] = useState('');
 
   const [messages, setMessages] = useState<Message[]>([
     { 
@@ -102,6 +105,26 @@ export default function ChatbotWidget() {
     }, 600);
   };
 
+  // 📲 텔레그램 전송 실행 (보고서 완성 후)
+  const sendReportToTelegram = async (content: string) => {
+    try {
+      const res = await fetch('/api/telegram-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessages(prev => [...prev, { sender: 'bot', text: '✅ 목사님 텔레그램으로 보고서가 전송 완료되었습니다! 수고하셨습니다. 🙏' }]);
+      } else {
+        setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 전송 중 오류가 발생했습니다. 다시 시도해주세요.' }]);
+      }
+    } catch {
+      setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 네트워크 오류가 발생했습니다.' }]);
+    }
+    setReportContent('');
+  };
+
   /* 🧠 반석이의 중앙 통제 뇌 (Training Mode) */
   const analyzeAndRespond = (userText: string) => {
     // 1. 유저 권한 확인 (성도인가 사장님인가)
@@ -118,6 +141,30 @@ export default function ChatbotWidget() {
     let botReply = "사장님(성도님), 말씀하신 내용을 찾고 있습니다... 🔍";
     let actionLabel: string | undefined = undefined;
     let actionLink: string | undefined = undefined;
+
+    // ⚡ 보고 종료 트리거 — '끝/저장/전송/완료' 감지
+    if (isReporting && (userText.includes("끝") || userText.includes("저장") || userText.includes("전송") || userText.includes("완료"))) {
+      const finalReport = reportContent.trim();
+      botReply = `알겠습니다! 입력하신 내용을 정리하여 이음돌 보고서를 완성했습니다. 📝\n\n[보고서 초안]\n${finalReport}\n\n이대로 사장님 텔레그램으로 보낼까요?`;
+      actionLabel = "✅ 예, 전송하세요";
+      actionLink = "TELEGRAM_SEND";
+      setIsReporting(false);
+      setTimeout(() => {
+        setMessages(prev => [...prev, { sender: 'bot', text: botReply, actionLabel: "✅ 예, 전송하세요", actionLink: "TELEGRAM_SEND" }]);
+        speakAndView(botReply);
+      }, 500);
+      return;
+    }
+
+    // 📝 보고 내용 수집 중 (계속 듣기)
+    if (isReporting) {
+      setReportContent(prev => prev + '\n' + userText);
+      botReply = "네, 계속 말씀해 주세요. ✍️ (마지막에 '끝' 또는 '전송'이라고 해주세요!)";
+      setTimeout(() => {
+        setMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
+      }, 300);
+      return;
+    }
 
     // 🕐 컨텍스트 우선: 예배 시간 + 주보 요청
     if (isWorshipTime && (userText.includes("주보") || userText.includes("순서"))) {
@@ -165,19 +212,23 @@ export default function ChatbotWidget() {
     else if (userText.includes("크게") || userText.includes("돋보기") || userText.includes("읽어줘")) {
       botReply = "화면 오른쪽 아래의 🔍 돋보기 버튼을 누르시면 글자를 크게 보거나 목소리로 들으실 수 있어요!";
     }
-    // 6. [이음돌 보고] 관리자/성도 분기
-    else if (userText.includes("이음돌") || userText.includes("모임 보고")) {
+    // 6. [이음돌 보고] 🏁 대화형 보고 모드 시작!
+    else if (userText.includes("이음돌") && userText.includes("보고")) {
       if (isAdmin) {
         botReply = "관리자님, 현재 접수된 이음돌 모임 보고서들을 정리해 드릴까요?";
         actionLabel = "👑 이음돌 전체 현황";
         actionLink = "/admin/ieumdol-status";
       } else {
-        botReply = "이음돌 리더님, 오늘 모임 은혜로우셨나요? 😊\n\n모인 분들의 [성함]과 [기도 제목]을 말씀해 주시면 제가 사장님(목사님)께 텔레그램으로 즉시 보고하겠습니다!";
-        actionLabel = "📝 이음돌 보고서 작성";
-        actionLink = "/ieumdol/report";
+        setIsReporting(true);
+        setReportContent('');
+        botReply = "이음돌 리더님, 모임 내용을 편하게 말씀해 주세요. 😊\n\n🎤 성도 이름과 기도제목을 하나씩 말씀해 주시면 됩니다.\n\n다 말씀하신 후 [끝] 또는 [전송]이라고 하시면 제가 정리해서 목사님께 텔레그램으로 보내드릴게요!";
       }
     }
-    // 🕐 주일 자동 인사 (예배 시간에 아무 말이나 하면)
+    // 이음돌 단순 언급
+    else if (userText.includes("이음돌") || userText.includes("모임")) {
+      botReply = "이음돌 모임 보고를 하시려면 '이음돌 보고'라고 말씀해 주세요! 📝";
+    }
+    // 🕐 주일 자동 인사
     else if (isSunday && hour >= 8 && hour <= 13) {
       botReply = "오늘은 주일입니다! 은혜로운 예배 되세요. 🙏 주보를 보시려면 '주보'라고 말씀해 주세요.";
     }
@@ -278,7 +329,13 @@ export default function ChatbotWidget() {
                   {msg.actionLabel && (
                     <div style={{ marginTop: '8px', textAlign: 'left' }}>
                       <button 
-                        onClick={() => msg.actionLink ? router.push(msg.actionLink) : null}
+                        onClick={() => {
+                          if (msg.actionLink === 'TELEGRAM_SEND') {
+                            sendReportToTelegram(reportContent);
+                          } else if (msg.actionLink) {
+                            router.push(msg.actionLink);
+                          }
+                        }}
                         style={{ padding: '10px 15px', background: theme.primary, color: 'white', border: 'none', borderRadius: '15px', fontSize: '0.95rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', transition: 'transform 0.2s' }}
                         onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
                         onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}>
