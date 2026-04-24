@@ -8,7 +8,8 @@ export default function PilgrimMapPage() {
     { path: '/cross-hill', icon: '✝️', name: '십자가 언덕', desc: '죄의 짐을 내려놓는 곳', color: '#B91C1C' },
     { path: '/armory', icon: '🛡️', name: '무기고', desc: '영적 전쟁을 위한 전신갑주 무장', color: '#1E3A8A' },
     { path: '/valley', icon: '🌑', name: '사망의 음침한 골짜기', desc: '어두운 밤, 주님의 위로를 만나는 곳', color: '#4F46E5' },
-    { path: '/vanity-fair', icon: '🎪', name: '허영의 시장', desc: '세상의 유혹을 이기는 15분 말씀 집중', color: '#0F172A' }
+    { path: '/vanity-fair', icon: '🎪', name: '허영의 시장', desc: '세상의 유혹을 이기는 15분 말씀 집중', color: '#0F172A' },
+    { path: '/joy-mountain', icon: '⛰️', name: '기쁨의 산', desc: '천성을 바라보며 비전을 세우는 곳', color: '#166534' }
   ];
 
   return (
