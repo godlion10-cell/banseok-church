@@ -102,14 +102,43 @@ export default function ChatbotWidget() {
     }, 600);
   };
 
-  // 🌐 통합 키워드 분석 엔진
+  /* 🧠 반석이의 중앙 통제 뇌 (Training Mode) */
   const analyzeAndRespond = (userText: string) => {
+    // 1. 유저 권한 확인 (성도인가 사장님인가)
+    const userRole = isAdmin ? "OWNER" : "SAINT";
+
+    // 2. 시간/장소 파악
+    const now = new Date();
+    const isSunday = now.getDay() === 0;
+    const isWednesday = now.getDay() === 3;
+    const isFriday = now.getDay() === 5;
+    const hour = now.getHours();
+    const isWorshipTime = (isSunday && hour >= 9 && hour <= 13) || (isWednesday && hour >= 19 && hour <= 21) || (isFriday && hour >= 20 && hour <= 22);
+
     let botReply = "사장님(성도님), 말씀하신 내용을 찾고 있습니다... 🔍";
     let actionLabel: string | undefined = undefined;
     let actionLink: string | undefined = undefined;
 
+    // 🕐 컨텍스트 우선: 예배 시간 + 주보 요청
+    if (isWorshipTime && (userText.includes("주보") || userText.includes("순서"))) {
+      botReply = isSunday 
+        ? "오늘 주일예배 주보입니다! 은혜로운 예배 되세요. 🙏" 
+        : isWednesday ? "수요예배 순서를 안내합니다." : "금요기도회 순서를 안내합니다.";
+      actionLabel = "📜 오늘 주보 보기";
+      actionLink = "/bulletin";
+    }
+    // 👑 관리자 전용 명령
+    else if (userRole === "OWNER" && (userText.includes("통계") || userText.includes("관리") || userText.includes("현황"))) {
+      botReply = "관리자 모드를 가동합니다. 모든 엔진 가동률 확인 중... 전 성도 현황 대시보드를 열겠습니다.";
+      actionLabel = "👑 관리자 마스터 뷰";
+      actionLink = "/admin/bible-status";
+    }
+    else if (userRole === "OWNER") {
+      analyzeAdminCommand(userText);
+      return;
+    }
     // 1. [제4엔진] 설교 라디오
-    if (userText.includes("설교") || userText.includes("라디오") || userText.includes("말씀 듣기")) {
+    else if (userText.includes("설교") || userText.includes("라디오") || userText.includes("말씀 듣기")) {
       botReply = "데이터를 아껴주는 '설교 라디오' 방으로 모실까요? 화면을 꺼도 목사님 말씀이 계속 나옵니다.";
       actionLabel = "📻 라디오 모드 가기";
       actionLink = "/sermon-radio";
@@ -132,15 +161,13 @@ export default function ChatbotWidget() {
       actionLabel = "📖 성경 일독 매니저";
       actionLink = "/bible-manager";
     }
-    // 5. [제1엔진] 돋보기/음성 (우측 하단 위젯 안내)
+    // 5. [제1엔진] 돋보기/음성 안내
     else if (userText.includes("크게") || userText.includes("돋보기") || userText.includes("읽어줘")) {
       botReply = "화면 오른쪽 아래의 🔍 돋보기 버튼을 누르시면 글자를 크게 보거나 목소리로 들으실 수 있어요!";
     }
-    // 6. [관리자 모드 특수 명령]
-    else if (isAdmin && (userText.includes("통계") || userText.includes("관리"))) {
-      botReply = "관리자님, 전 성도의 성경 일독 현황과 헌금 대시보드를 열람하시겠습니까?";
-      actionLabel = "👑 관리자 마스터 뷰";
-      actionLink = "/admin/bible-status";
+    // 🕐 주일 자동 인사 (예배 시간에 아무 말이나 하면)
+    else if (isSunday && hour >= 8 && hour <= 13) {
+      botReply = "오늘은 주일입니다! 은혜로운 예배 되세요. 🙏 주보를 보시려면 '주보'라고 말씀해 주세요.";
     }
 
     // 🔊 대형 자막+음성과 함께 응답 출력
