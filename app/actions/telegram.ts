@@ -28,3 +28,9 @@ export async function sendAdminLoginAlert() {
   const text = "🔔 [시스템 알림] 거제반석교회 관리자 모드에 접속했습니다.";
   return sendTelegramAlert(text);
 }
+
+export async function sendEumdolReport(data: { eumdolName: string; leaderName: string; attendance: number; members: { name: string; prayer: string }[]; note: string }) {
+  const memberLines = data.members.map(m => `  • ${m.name}: ${m.prayer || '(없음)'}`).join('\n');
+  const text = `📑 [이음돌 예배 보고]\n\n🪨 이음돌: ${data.eumdolName}\n👤 리더: ${data.leaderName}\n👥 참석: ${data.attendance}명\n\n🙏 성도별 기도제목:\n${memberLines}\n\n📝 보고사항: ${data.note || '(없음)'}\n\n⏰ ${new Date().toLocaleString('ko-KR')}`;
+  return sendTelegramAlert(text);
+}
