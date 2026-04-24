@@ -1,6 +1,7 @@
 // @ts-nocheck
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 
 
@@ -120,6 +121,9 @@ export default function HomeClient() {
           {['교회소개', '비전과사명', '설교말씀', '교회소식', '예배안내', '오시는길'].map(tab => (
             <button key={tab} className={`ch-nav-link ${activeTab === tab ? 'ch-nav-active' : ''}`} onClick={() => { setActiveTab(tab); setShowMobileMenu(false); }}>{tab}</button>
           ))}
+          <Link href="/pilgrim" style={{ fontWeight: 'bold', color: '#D97706', textDecoration: 'none', marginLeft: '15px', whiteSpace: 'nowrap' }}>
+            🗺️ 영적 순례길
+          </Link>
         </nav>
         <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
       </header>
