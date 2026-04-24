@@ -12,20 +12,16 @@ export default function AdminLoginPage() {
     if (password === 'banseok1004') {
       setIsLoggedIn(true);
       
-      // 📱 텔레그램으로 알림 보내기 (환경변수 연동 완료!)
-      const BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
-      const CHAT_ID = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
+      // 📱 텔레그램으로 알림 보내기
+      const BOT_TOKEN = "8538286497:AAG0QaI4dnjsBMmv82gMNpWiLlYYGdyeBFg";
+      const CHAT_ID = "8747696435";
       const text = "🔔 [시스템 알림] 거제반석교회 관리자 모드에 접속했습니다.";
 
-      if (BOT_TOKEN && CHAT_ID) {
-        try {
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`);
-          console.log("텔레그램 발송 성공!");
-        } catch (error) {
-          console.error("텔레그램 발송 오류:", error);
-        }
-      } else {
-        console.error("환경변수(.env)에 토큰이나 ID가 없습니다!");
+      try {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`);
+        console.log("텔레그램 발송 성공!");
+      } catch (error) {
+        console.error("텔레그램 발송 오류:", error);
       }
     } else {
       alert('비밀번호가 틀렸습니다. 다시 입력해주세요.');
