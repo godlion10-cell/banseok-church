@@ -305,7 +305,7 @@ export default function ChatbotWidget() {
         </div>
       )}
 
-      <div style={{ position: 'fixed', bottom: isMobile ? '20px' : '30px', left: isMobile ? '20px' : '30px', zIndex: 999999 }}>
+      <div style={{ position: 'fixed', bottom: isMobile ? '85px' : '30px', left: isMobile ? '20px' : '30px', zIndex: 999999 }}>
         
         {isOpen && (
           <div style={{ width: isMobile ? 'calc(100vw - 40px)' : '360px', height: '520px', background: 'white', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', overflow: 'hidden', marginBottom: '15px', border: isAdmin ? '2px solid #7C3AED' : '1px solid #F1F5F9', animation: 'fadeInUp 0.3s' }}>
