@@ -1,8 +1,9 @@
 "use server";
 
 export async function sendTelegramAlert(text: string) {
-  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  // "use server" 파일이라 이 값은 서버에서만 실행됨 — 브라우저에 절대 안 보임!
+  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8538286497:AAG0QaI4dnjsBMmv82gMNpWiLlYYGdyeBFg";
+  const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "8747696435";
 
   if (!BOT_TOKEN || !CHAT_ID) {
     console.error("서버 환경변수에 TELEGRAM_BOT_TOKEN 또는 TELEGRAM_CHAT_ID가 없습니다!");
