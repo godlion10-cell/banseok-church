@@ -72,7 +72,7 @@ export default function HomeClient() {
       try {
         const old = localStorage.getItem(CACHE_KEY);
         if (old) { setSermons(JSON.parse(old)); setIsLoading(false); return; }
-      } catch {}
+      } catch { }
       setSermons(FALLBACK_SERMONS);
       setIsLoading(false);
     });
@@ -117,7 +117,7 @@ export default function HomeClient() {
           <img src="/church-logo.png" alt="반석교회" className="ch-logo-img" />
         </div>
         <nav className={`ch-nav ${showMobileMenu ? 'ch-nav-open' : ''}`}>
-          {['교회소개','비전과사명','설교말씀','교회소식','예배안내','오시는길'].map(tab => (
+          {['교회소개', '비전과사명', '설교말씀', '교회소식', '예배안내', '오시는길'].map(tab => (
             <button key={tab} className={`ch-nav-link ${activeTab === tab ? 'ch-nav-active' : ''}`} onClick={() => { setActiveTab(tab); setShowMobileMenu(false); }}>{tab}</button>
           ))}
         </nav>
@@ -162,23 +162,36 @@ export default function HomeClient() {
         {/* ===== 비전과사명 탭 ===== */}
         {activeTab === '비전과사명' && (
           <div className="tab-content">
-            <div className="vision-wrapper">
-              <div className="vision-header">
+            <div className="vision-page-container">
+              <div className="vision-top-header">
                 <h2>Stand on Grace!!</h2>
                 <p>거제반석교회 목회 철학</p>
               </div>
-              <div className="tree-container">
-                <div className="tree-box fruit"><span className="t-badge">열매</span><div className="t-icon">🍇</div><h4>사역의 가치 (生命)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
-                <div className="tree-box pillar"><span className="t-badge">기둥</span><div className="t-icon">⛪</div><h4>신앙의 본질 (恩惠)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
-                <div className="tree-box root"><span className="t-badge">뿌리</span><div className="t-icon">🌳</div><h4>복음의 진리 (盤石)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
+              <div className="core-tree-layout">
+                <div className="tree-line"></div>
+                <div className="tree-item">
+                  <div className="tree-circle">🍇<br/>열매</div>
+                  <div className="tree-content"><h4>사역의 가치 (生命)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
+                </div>
+                <div className="tree-item">
+                  <div className="tree-circle">⛪<br/>기둥</div>
+                  <div className="tree-content"><h4>신앙의 본질 (恩惠)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
+                </div>
+                <div className="tree-item">
+                  <div className="tree-circle">🌳<br/>뿌리</div>
+                  <div className="tree-content"><h4>복음의 진리 (盤石)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
+                </div>
               </div>
-              <div className="four-pillars-grid">
-                <div className="p-card"><div className="p-icon">💎</div><h4>단단한 교회</h4><p>하나님의 진리로 순전해지며</p></div>
-                <div className="p-card"><div className="p-icon">🛡️</div><h4>강건한 교회</h4><p>예수의 생명력으로 세상을 이김</p></div>
-                <div className="p-card"><div className="p-icon">🌱</div><h4>세우는 교회</h4><p>다음 세대를 리더로 키우고</p></div>
-                <div className="p-card"><div className="p-icon">⚓</div><h4>굳건한 교회</h4><p>모든 영역에 하나님 나라를 확장함</p></div>
+              <div className="vision-four-grid">
+                <div className="v-card"><div className="v-icon">💎</div><h4>단단한 교회</h4><p>하나님의 진리로 순전해지며</p></div>
+                <div className="v-card"><div className="v-icon">🛡️</div><h4>강건한 교회</h4><p>예수의 생명력으로 세상을 이김</p></div>
+                <div className="v-card"><div className="v-icon">🌱</div><h4>세우는 교회</h4><p>다음 세대를 리더로 키우고</p></div>
+                <div className="v-card"><div className="v-icon">⚓</div><h4>굳건한 교회</h4><p>모든 영역에 하나님 나라를 확장함</p></div>
               </div>
-              <div className="stone-banner"><h3>하나님의 손에 붙잡힌 매끄러운 돌</h3><p>다윗의 물맷돌처럼 성도 각 사람이 하나님의 도구가 되어 세상을 이기는 비전입니다.</p></div>
+              <div className="bottom-stone-banner">
+                <div className="stone-icon">🪨</div>
+                <div className="stone-text"><h3>하나님의 손에 붙잡힌 매끄러운 돌</h3><p>다윗의 물맷돌처럼 성도 각 사람이 하나님의 도구가 되어 세상을 이기는 비전입니다.</p></div>
+              </div>
             </div>
           </div>
         )}
@@ -213,8 +226,8 @@ export default function HomeClient() {
                   <div key={s.id} onClick={() => setPopupVideo(s)} className="lc" style={{ background: s.gradient }}>
                     <div className="lh"><h3 style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>"{s.title}"</h3></div>
                     <div className="l-summary-overlay">
-                       <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 말씀 요약 안내</h4>
-                       <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>아래 재생 버튼을 눌러 생생한 은혜의 말씀을 들어보세요.</p></div>
+                      <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 말씀 요약 안내</h4>
+                      <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>아래 재생 버튼을 눌러 생생한 은혜의 말씀을 들어보세요.</p></div>
                     </div>
                   </div>
                 ))}
@@ -246,10 +259,10 @@ export default function HomeClient() {
         {/* ===== 교회소식 탭 ===== */}
         {activeTab === '교회소식' && (
           <div className="tab-content">
-            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>📢 반석교회 소식</h3></div>
+            <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>📢 반석교회 소식</h3></div>
             <div className="news-grid">
-              {[{title:'헌영 및 등록 안내',content:'헌영하고 축하합니다! 반석교회는 대한예수교장로회 소속으로 활동 중입니다.\n📺 유튜브: @petros-church\n🏦 십일조헌금: 농협 131-017-687642\n🏦 감사헌금: 농협 131-018-242250'},{title:'홈페이지 및 교회 소식',content:'반석교회 홈페이지가 새롭게 만들어졌습니다!'},{title:'부활주일 감사',content:'할렐루야! 오늘은 부활주일입니다.'},{title:'부활절 이벤트 동참',content:'본당 입구에 좋아하는 말씀 구절을 적어주세요.'},{title:'오늘 세례식 안내',content:'세인 세례: 은혜를 나누시고 헌영해 주세요.'},{title:'부활절 합동예배',content:'오늘 오후에는 거제지역 합동예배로 모입니다. (거정교회 / 14:30)'},{title:'찬생목 축제 일정',content:'다음 주일에는 찬양생목 축제하는 시간을 갖습니다.'},{title:'성전 보수 공사',content:'본당 바닥 및 냉방 벽 공사가 시작됩니다. 기도 부탁드립니다.'},{title:'선교 지원 소개',content:'은혜를 나누시고 헌영하고 축하합니다.'},{title:'선교사 성경캠프 참여',content:'5월 5주간 진행 예정입니다.'}].map((n,idx)=>(
-                <div key={idx} className="news-card"><h3>{idx+1}. {n.title}</h3><p style={{whiteSpace:'pre-line'}}>{n.content}</p></div>
+              {[{ title: '헌영 및 등록 안내', content: '헌영하고 축하합니다! 반석교회는 대한예수교장로회 소속으로 활동 중입니다.\n📺 유튜브: @petros-church\n🏦 십일조헌금: 농협 131-017-687642\n🏦 감사헌금: 농협 131-018-242250' }, { title: '홈페이지 및 교회 소식', content: '반석교회 홈페이지가 새롭게 만들어졌습니다!' }, { title: '부활주일 감사', content: '할렐루야! 오늘은 부활주일입니다.' }, { title: '부활절 이벤트 동참', content: '본당 입구에 좋아하는 말씀 구절을 적어주세요.' }, { title: '오늘 세례식 안내', content: '세인 세례: 은혜를 나누시고 헌영해 주세요.' }, { title: '부활절 합동예배', content: '오늘 오후에는 거제지역 합동예배로 모입니다. (거정교회 / 14:30)' }, { title: '찬생목 축제 일정', content: '다음 주일에는 찬양생목 축제하는 시간을 갖습니다.' }, { title: '성전 보수 공사', content: '본당 바닥 및 냉방 벽 공사가 시작됩니다. 기도 부탁드립니다.' }, { title: '선교 지원 소개', content: '은혜를 나누시고 헌영하고 축하합니다.' }, { title: '선교사 성경캠프 참여', content: '5월 5주간 진행 예정입니다.' }].map((n, idx) => (
+                <div key={idx} className="news-card"><h3>{idx + 1}. {n.title}</h3><p style={{ whiteSpace: 'pre-line' }}>{n.content}</p></div>
               ))}
             </div>
           </div>
@@ -258,18 +271,18 @@ export default function HomeClient() {
         {/* ===== 예배안내 탭 ===== */}
         {activeTab === '예배안내' && (
           <div className="tab-content">
-            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>🙏 예배안내</h3></div>
+            <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>🙏 예배안내</h3></div>
             <div className="worship-wrap">
               <div className="worship-table-wrap">
                 <table className="schedule-tbl"><tbody>
-                  {[{title:'주일예배 (1부)',time:'오전 09:00',place:'2층 본당',officer:'이주민 목사'},{title:'주일예배 (2부)',time:'오전 11:00',place:'2층 본당',officer:'이주민 목사'},{title:'주일오후예배',time:'오후 01:50',place:'2층 본당',officer:'이주민 목사'},{title:'주일 첫소망',time:'오전 10:00',place:'3층 교육관',officer:'김미정'},{title:'주일 대예배',time:'오전 11:00',place:'3층 교육관',officer:'김미정'},{title:'수요 저녁예배',time:'수 07:30',place:'2층 본당',officer:'이주민 목사'},{title:'금요기도회',time:'금 08:00',place:'2층 본당',officer:'이주민 목사'},{title:'새벽예배',time:'오전 05:30',place:'2층 본당',officer:'이주민 목사'}].map((s,i)=>(
+                  {[{ title: '주일예배 (1부)', time: '오전 09:00', place: '2층 본당', officer: '이주민 목사' }, { title: '주일예배 (2부)', time: '오전 11:00', place: '2층 본당', officer: '이주민 목사' }, { title: '주일오후예배', time: '오후 01:50', place: '2층 본당', officer: '이주민 목사' }, { title: '주일 첫소망', time: '오전 10:00', place: '3층 교육관', officer: '김미정' }, { title: '주일 대예배', time: '오전 11:00', place: '3층 교육관', officer: '김미정' }, { title: '수요 저녁예배', time: '수 07:30', place: '2층 본당', officer: '이주민 목사' }, { title: '금요기도회', time: '금 08:00', place: '2층 본당', officer: '이주민 목사' }, { title: '새벽예배', time: '오전 05:30', place: '2층 본당', officer: '이주민 목사' }].map((s, i) => (
                     <tr key={i} className="worship-row"><th>{s.title}</th><td><span className="sch-time">{s.time}</span></td><td>{s.place}</td><td>{s.officer}</td></tr>
                   ))}
                 </tbody></table>
                 <div className="worship-verse">
-                  <div style={{fontSize:'2rem',opacity:0.4}}>✝️</div>
-                  <div style={{fontFamily:"'Nanum Myeongjo',serif",fontSize:'0.95rem',color:'#5b272f',fontStyle:'italic',opacity:0.75,maxWidth:380,lineHeight:1.9}}>"예배드리려 하거든 신령과 진리로 예배드려야 하느니라"</div>
-                  <div style={{marginTop:'0.5rem',fontSize:'0.8rem',color:'#c19c72',fontWeight:600}}>요한복음 4:24</div>
+                  <div style={{ fontSize: '2rem', opacity: 0.4 }}>✝️</div>
+                  <div style={{ fontFamily: "'Nanum Myeongjo',serif", fontSize: '0.95rem', color: '#5b272f', fontStyle: 'italic', opacity: 0.75, maxWidth: 380, lineHeight: 1.9 }}>"예배드리려 하거든 신령과 진리로 예배드려야 하느니라"</div>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#c19c72', fontWeight: 600 }}>요한복음 4:24</div>
                 </div>
               </div>
             </div>
@@ -279,18 +292,18 @@ export default function HomeClient() {
         {/* ===== 오시는길 탭 ===== */}
         {activeTab === '오시는길' && (
           <div className="tab-content">
-            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>📍 오시는 길</h3></div>
+            <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>📍 오시는 길</h3></div>
             <div className="location-wrap">
               <div className="location-info">
-                <h3 style={{fontFamily:"'Nanum Myeongjo',serif",fontSize:'1.6rem',color:'#5b272f',marginBottom:'2rem',lineHeight:1.3}}>대한예수교장로회<br/>거제반석교회</h3>
+                <h3 style={{ fontFamily: "'Nanum Myeongjo',serif", fontSize: '1.6rem', color: '#5b272f', marginBottom: '2rem', lineHeight: 1.3 }}>대한예수교장로회<br />거제반석교회</h3>
                 <div className="loc-item"><span className="loc-label">🏠 주소</span><span>경상남도 거제시 연초면 소오비길 40-6</span></div>
                 <div className="loc-item"><span className="loc-label">📞 문의</span><span>이주민 목사 (010.9825.5020)</span></div>
                 <div className="loc-item"><span className="loc-label">⏰ 예배</span><span>주일 오전 9시 / 11시, 수요 수 7:30, 금요 금 8시</span></div>
-                <div className="loc-item"><span className="loc-label">📺 유튜브</span><span><a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{color:'#c19c72',fontWeight:600}}>@petros-church</a></span></div>
+                <div className="loc-item"><span className="loc-label">📺 유튜브</span><span><a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{ color: '#c19c72', fontWeight: 600 }}>@petros-church</a></span></div>
               </div>
               <div className="map-frame">
                 <a href="https://map.kakao.com/?q=경상남도 거제시 연초면 소오비길 40-6" target="_blank" rel="noopener noreferrer" className="map-placeholder">
-                  <span style={{fontSize:'2.5rem'}}>🗺️</span><span style={{fontWeight:700,fontSize:'1.1rem'}}>카카오맵에서 보기</span><span style={{fontSize:'0.85rem',color:'#888'}}>거제시 연초면 소오비길 40-6</span>
+                  <span style={{ fontSize: '2.5rem' }}>🗺️</span><span style={{ fontWeight: 700, fontSize: '1.1rem' }}>카카오맵에서 보기</span><span style={{ fontSize: '0.85rem', color: '#888' }}>거제시 연초면 소오비길 40-6</span>
                 </a>
               </div>
             </div>
@@ -333,11 +346,11 @@ export default function HomeClient() {
             {popupVideo.videoId ? (
               <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1&modestbranding=1&rel=0`} allowFullScreen style={{ border: 'none' }} />
             ) : (
-              <div style={{width:'100%',height:'100%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#1a1a2e,#16213e)',color:'white',textAlign:'center',padding:'20px'}}>
-                <div style={{fontSize:'3rem',marginBottom:'15px'}}>⛪</div>
-                <h3 style={{margin:'0 0 10px 0'}}>유튜브에서 직접 시청해주세요</h3>
-                <p style={{opacity:0.7,marginBottom:'20px',fontSize:'0.95rem'}}>{popupVideo.title}</p>
-                <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{background:'#FF0000',color:'white',padding:'12px 30px',borderRadius:'30px',textDecoration:'none',fontWeight:'bold',fontSize:'1rem'}}>▶ 유튜브 채널 바로가기</a>
+              <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a1a2e,#16213e)', color: 'white', textAlign: 'center', padding: '20px' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '15px' }}>⛪</div>
+                <h3 style={{ margin: '0 0 10px 0' }}>유튜브에서 직접 시청해주세요</h3>
+                <p style={{ opacity: 0.7, marginBottom: '20px', fontSize: '0.95rem' }}>{popupVideo.title}</p>
+                <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{ background: '#FF0000', color: 'white', padding: '12px 30px', borderRadius: '30px', textDecoration: 'none', fontWeight: 'bold', fontSize: '1rem' }}>▶ 유튜브 채널 바로가기</a>
               </div>
             )}
             <div className="va">
@@ -352,16 +365,16 @@ export default function HomeClient() {
       {showInstallGuide && (
         <div className="mbg" onClick={() => setShowInstallGuide(false)}>
           <div className="bm" onClick={e => e.stopPropagation()}>
-            <h3 style={{fontSize:'1.4rem',fontWeight:'bold',marginBottom:'20px',color:'#1E293B',textAlign:'center'}}>📲 거제반석교회 앱 설치 방법</h3>
-            <div style={{background:'#F8FAFC',padding:'15px',borderRadius:'10px',marginBottom:'15px',textAlign:'left'}}>
-              <h4 style={{color:'#000',marginBottom:'10px'}}>🍎 아이폰 (Safari)</h4>
-              <p style={{fontSize:'0.95rem',color:'#444',lineHeight:'1.6',margin:0}}>1. 화면 맨 아래 <b>[공유 ⍗]</b> 버튼을 누르세요.<br/>2. <b>[홈 화면에 추가 ⊞]</b>를 선택하세요.</p>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '20px', color: '#1E293B', textAlign: 'center' }}>📲 거제반석교회 앱 설치 방법</h3>
+            <div style={{ background: '#F8FAFC', padding: '15px', borderRadius: '10px', marginBottom: '15px', textAlign: 'left' }}>
+              <h4 style={{ color: '#000', marginBottom: '10px' }}>🍎 아이폰 (Safari)</h4>
+              <p style={{ fontSize: '0.95rem', color: '#444', lineHeight: '1.6', margin: 0 }}>1. 화면 맨 아래 <b>[공유 ⍗]</b> 버튼을 누르세요.<br />2. <b>[홈 화면에 추가 ⊞]</b>를 선택하세요.</p>
             </div>
-            <div style={{background:'#F8FAFC',padding:'15px',borderRadius:'10px',marginBottom:'15px',textAlign:'left'}}>
-              <h4 style={{color:'#000',marginBottom:'10px'}}>🤖 갤럭시 (Chrome/삼성인터넷)</h4>
-              <p style={{fontSize:'0.95rem',color:'#444',lineHeight:'1.6',margin:0}}>1. 화면 우측 상단 <b>[메뉴 ⋮]</b> 버튼을 누르세요.<br/>2. <b>[홈 화면에 추가]</b>를 선택하세요.</p>
+            <div style={{ background: '#F8FAFC', padding: '15px', borderRadius: '10px', marginBottom: '15px', textAlign: 'left' }}>
+              <h4 style={{ color: '#000', marginBottom: '10px' }}>🤖 갤럭시 (Chrome/삼성인터넷)</h4>
+              <p style={{ fontSize: '0.95rem', color: '#444', lineHeight: '1.6', margin: 0 }}>1. 화면 우측 상단 <b>[메뉴 ⋮]</b> 버튼을 누르세요.<br />2. <b>[홈 화면에 추가]</b>를 선택하세요.</p>
             </div>
-            <button style={{marginTop:'10px',width:'100%',padding:'15px',background:'#FFEB3B',border:'none',borderRadius:'10px',fontWeight:'bold',color:'#333',fontSize:'1.1rem',cursor:'pointer'}} onClick={() => setShowInstallGuide(false)}>확인했습니다</button>
+            <button style={{ marginTop: '10px', width: '100%', padding: '15px', background: '#FFEB3B', border: 'none', borderRadius: '10px', fontWeight: 'bold', color: '#333', fontSize: '1.1rem', cursor: 'pointer' }} onClick={() => setShowInstallGuide(false)}>확인했습니다</button>
           </div>
         </div>
       )}
@@ -414,40 +427,40 @@ export default function HomeClient() {
         .about-btn-outline{padding:14px 28px;background:transparent;color:#c19c72;border:2px solid #c19c72;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.3s;font-family:inherit}
         .about-btn-outline:hover{background:rgba(193,156,114,0.1)}
 
-        /* ✅ 비전 페이지 전용 CSS 추가 */
-        .vision-wrapper { display: flex; flex-direction: column; gap: 40px; padding: 20px 0; }
-        
-        .vision-header { background: #111827; color: white; padding: 40px 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .vision-header h2 { font-size: 2.2rem; color: #D97706; margin-bottom: 10px; font-weight: 800; }
-        .vision-header p { font-size: 1.2rem; font-weight: bold; }
-
-        .tree-container { display: flex; flex-direction: column; gap: 15px; position: relative; }
-        .tree-container::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #E5E7EB; transform: translateX(-50%); z-index: -1; }
-        .tree-box { background: white; padding: 25px; border-radius: 15px; border: 2px solid #F3F4F6; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .t-badge { display: inline-block; background: #D97706; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; }
-        .t-icon { font-size: 2rem; margin-bottom: 8px; }
-        .tree-box h4 { font-size: 1.2rem; color: #1F2937; margin-bottom: 8px; font-weight: bold; }
-        .tree-box p { color: #4B5563; font-size: 0.95rem; line-height: 1.5; word-break: keep-all; }
-        .dk .tree-box { background: #1E293B; border-color: #334155; }
-        .dk .tree-box h4 { color: #eee; }
-        .dk .tree-box p { color: #aaa; }
-        
-        .four-pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .p-card { background: white; padding: 25px 15px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #1E3A8A; transition: transform 0.2s; }
-        .p-card:hover { transform: translateY(-5px); }
-        .dk .p-card { background: #1E293B; }
-        .p-icon { font-size: 2.5rem; margin-bottom: 15px; }
-        .p-card h4 { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: #111827; }
-        .dk .p-card h4 { color: #c19c72; }
-        .p-card p { font-size: 0.9rem; color: #6B7280; word-break: keep-all; }
-        .dk .p-card p { color: #aaa; }
-
-        .stone-banner { background: linear-gradient(135deg, #1E3A8A, #111827); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-top: 10px; }
-        .stone-banner h3 { font-size: 1.4rem; color: #FCD34D; margin-bottom: 10px; font-weight: bold; }
-        .stone-banner p { font-size: 1rem; line-height: 1.6; opacity: 0.9; }
-
-        @media (max-width: 768px) {
-           .tree-container::before { display: none; }
+        /* ✅ 비전 페이지 전용 CSS */
+        .vision-page-container { display: flex; flex-direction: column; gap: 50px; max-width: 800px; margin: 0 auto; }
+        .vision-top-header { text-align: center; background: #0F172A; color: white; padding: 40px 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .vision-top-header h2 { color: #FBBF24; font-size: 2.2rem; font-weight: 900; margin-bottom: 10px; }
+        .vision-top-header p { font-size: 1.2rem; font-weight: bold; }
+        .core-tree-layout { position: relative; display: flex; flex-direction: column; gap: 30px; padding-left: 20px; }
+        .tree-line { position: absolute; left: 60px; top: 20px; bottom: 20px; width: 4px; background: #CBD5E1; z-index: 1; }
+        .tree-item { display: flex; align-items: center; gap: 20px; z-index: 2; }
+        .tree-circle { width: 80px; height: 80px; background: #1E3A8A; color: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); flex-shrink: 0; text-align: center; line-height: 1.3; border: 3px solid white; }
+        .tree-content { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex: 1; border-left: 5px solid #1E3A8A; }
+        .tree-content h4 { color: #1E293B; font-weight: 800; font-size: 1.2rem; margin-bottom: 8px; }
+        .tree-content p { color: #475569; font-size: 1rem; word-break: keep-all; line-height: 1.5; }
+        .dk .tree-circle { background: #334155; border-color: #475569; }
+        .dk .tree-content { background: #1E293B; border-left-color: #475569; }
+        .dk .tree-content h4 { color: #eee; }
+        .dk .tree-content p { color: #aaa; }
+        .vision-four-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .v-card { background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #E2E8F0; transition: transform 0.2s; }
+        .v-card:hover { transform: translateY(-5px); }
+        .dk .v-card { background: #1E293B; border-color: #334155; }
+        .v-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .v-card h4 { font-weight: bold; color: #0F172A; font-size: 1.1rem; margin-bottom: 10px; }
+        .dk .v-card h4 { color: #c19c72; }
+        .v-card p { font-size: 0.9rem; color: #64748B; word-break: keep-all; }
+        .dk .v-card p { color: #aaa; }
+        .bottom-stone-banner { background: linear-gradient(135deg, #1E3A8A, #111827); color: white; padding: 30px; border-radius: 15px; display: flex; align-items: center; gap: 20px; }
+        .stone-icon { font-size: 3.5rem; }
+        .stone-text h3 { color: #FDE047; font-size: 1.4rem; font-weight: bold; margin-bottom: 8px; }
+        .stone-text p { font-size: 1rem; opacity: 0.9; line-height: 1.5; word-break: keep-all; }
+        @media (max-width: 600px) {
+          .vision-four-grid { grid-template-columns: 1fr; }
+          .bottom-stone-banner { flex-direction: column; text-align: center; }
+          .tree-line { left: 40px; }
+          .tree-circle { width: 60px; height: 60px; font-size: 0.75rem; }
         }
 
         /* 교회소식 */
