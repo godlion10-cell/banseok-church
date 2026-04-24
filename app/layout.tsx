@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import AccessibilityWidget from './components/AccessibilityWidget';
-import ChatbotWidget from './components/ChatbotWidget';
+// ✅ 스마트 엔진들
+import ChatbotWidget from '@/app/components/ChatbotWidget';
+import AccessibilityWidget from '@/app/components/AccessibilityWidget';
 
 export const metadata: Metadata = {
-  title: '거제반석교회 | 반석 위에 굳게 서는 교회',
-  description: '대한예수교장로회 거제반석교회 — 하나님의 손에 붙잡혀 세상을 이기는 교회. 경남 거제시 연초면 소오비길 40-6',
+  title: '거제반석교회 - 스마트 성전',
+  description: '영적 순례의 길과 AI 비서가 함께하는 거제반석교회입니다.',
   keywords: '거제반석교회, 반석교회, 거제도교회, 이주민목사, 장로교',
   manifest: '/manifest.json',
   icons: {
@@ -26,7 +27,11 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="ko">
       <head>
@@ -36,10 +41,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="반석교회" />
       </head>
-      <body>
-        {children}
-        <AccessibilityWidget />
+      <body style={{ margin: 0, padding: 0 }}>
+        {/* 실제 홈페이지 콘텐츠 */}
+        <main>
+          {children}
+        </main>
+
+        {/* 🚨 스마트 엔진 배치 — 스크롤 내려도 화면에 항상 고정 */}
+        {/* 좌측 하단: AI 비서 반석이 */}
         <ChatbotWidget />
+        {/* 우측 하단: 어르신 전용 돋보기/TTS 위젯 */}
+        <AccessibilityWidget />
       </body>
     </html>
   );
