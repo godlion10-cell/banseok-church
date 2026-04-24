@@ -162,23 +162,24 @@ export default function HomeClient() {
         {/* ===== 비전과사명 탭 ===== */}
         {activeTab === '비전과사명' && (
           <div className="tab-content">
-            <div className="vision-header"><h2 className="vision-title">Stand on Grace</h2><p className="vision-subtitle">은혜 위에 서다 — 거제반석교회의 비전</p></div>
-            <div className="vision-ministry-row">
-              <div className="vision-tree"><div style={{fontSize:'8rem',lineHeight:1}}>🌳</div><p style={{color:'#888',fontSize:'0.85rem',marginTop:'0.5rem'}}>반석 위에 뿌리내린 나무</p></div>
-              <div className="vision-cards">
-                {[{color:'#5b272f',badge:'UP · 예배',title:'하나님을 향한 예배',desc:'온 마음과 뜻과 힘을 다하여 하나님께 예배하는 공동체',verse:'요 4:24'},{color:'#c19c72',badge:'IN · 양육',title:'말씀으로 세워지는 제자',desc:'성경 말씀을 통해 성도를 그리스도인으로 빚어가는',verse:'딤후 3:16-17'},{color:'#02385C',badge:'OUT · 선교',title:'세상을 향한 선교',desc:'복음을 전하고 사랑을 나누며 이 땅의 사명을 감당하는 공동체',verse:'마 28:19-20'}].map((m,i)=>(
-                  <div key={i} className="vision-mcard"><span className="vision-badge" style={{backgroundColor:m.color}}>{m.badge}</span><h4>{m.title}</h4><p>{m.desc}</p><span className="vision-verse">{m.verse}</span></div>
-                ))}
+            <div className="vision-wrapper">
+              <div className="vision-header">
+                <h2>Stand on Grace!!</h2>
+                <p>반석교회 목회 철학</p>
               </div>
-            </div>
-            <div className="vision-pillars"><h3 className="vision-pillars-title">반석교회 4대 지향점</h3>
-              <div className="vision-pillars-grid">
-                {[{emoji:'⛪',title:'견고한 반석',desc:'그리스도 위에 세워지고 흔들리지 않는 신앙'},{emoji:'💎',title:'변함없는 신뢰',desc:'어떤 환경에서도 주님을 신뢰하는 믿음'},{emoji:'🤝',title:'강건한 공동체',desc:'서로 사랑하고 세워주는 그리스도의 몸'},{emoji:'🌱',title:'다음 세대 양육',desc:'미래 세대의 신앙을 계승하는 교회'}].map((p,i)=>(
-                  <div key={i} className="vision-pillar"><div style={{fontSize:'2.5rem',marginBottom:'0.5rem'}}>{p.emoji}</div><h4>{p.title}</h4><p>{p.desc}</p></div>
-                ))}
+              <div className="tree-container">
+                <div className="tree-box fruit"><span className="t-badge">열매</span><h4>사역의 가치 (생명)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
+                <div className="tree-box pillar"><span className="t-badge">기둥</span><h4>신앙의 본질 (은혜)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
+                <div className="tree-box root"><span className="t-badge">뿌리</span><h4>복음의 진리 (반석)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
               </div>
+              <div className="four-pillars-grid">
+                <div className="p-card"><div className="p-icon">💎</div><h4>단단한 교회</h4><p>하나님의 진리로 순전해지며</p></div>
+                <div className="p-card"><div className="p-icon">🛡️</div><h4>강건한 교회</h4><p>예수의 생명력으로 세상을 이김</p></div>
+                <div className="p-card"><div className="p-icon">🌱</div><h4>세우는 교회</h4><p>다음 세대를 리더로 키우고</p></div>
+                <div className="p-card"><div className="p-icon">⚓</div><h4>굳건한 교회</h4><p>모든 영역에 하나님 나라를 확장함</p></div>
+              </div>
+              <div className="stone-banner"><h3>하나님의 손에 붙잡힌 매끄러운 돌</h3><p>다윗의 물맷돌처럼 성도 각 사람이 하나님의 도구가 되어 세상을 이기는 비전입니다.</p></div>
             </div>
-            <div className="vision-banner"><div style={{fontSize:'5rem'}}>⛪</div><div><h3>반석 위에 세워진 교회</h3><p>예수 그리스도를 머릿돌 삼아, 말씀과 기도로 든든히 세워져 가는 공동체입니다.</p><span className="vision-banner-verse">마태복음 16:18 — "이 반석 위에 내 교회를 세우리니"</span></div></div>
           </div>
         )}
 
@@ -413,39 +414,40 @@ export default function HomeClient() {
         .about-btn-outline{padding:14px 28px;background:transparent;color:#c19c72;border:2px solid #c19c72;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.3s;font-family:inherit}
         .about-btn-outline:hover{background:rgba(193,156,114,0.1)}
 
-        /* 비전과사명 */
-        .vision-header{text-align:center;padding:40px 20px;background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:20px;margin-bottom:30px}
-        .vision-title{color:#c19c72;font-size:2.2rem;font-family:'Nanum Myeongjo',serif;margin:0 0 8px}
-        .vision-subtitle{color:rgba(255,255,255,0.7);font-size:1rem;margin:0}
-        .vision-ministry-row{display:flex;gap:30px;margin:30px 0;align-items:flex-start;flex-wrap:wrap}
-        .vision-tree{text-align:center;flex-shrink:0}
-        .vision-cards{display:flex;flex-direction:column;gap:16px;flex:1;min-width:280px}
-        .vision-mcard{background:white;border-radius:16px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,0.06);transition:transform 0.3s}
-        .vision-mcard:hover{transform:translateY(-4px)}
-        .dk .vision-mcard{background:#1E293B}
-        .vision-mcard h4{margin:10px 0 6px;color:#333;font-size:1.05rem}
-        .dk .vision-mcard h4{color:#eee}
-        .vision-mcard p{color:#666;font-size:0.9rem;margin:0;line-height:1.6}
-        .dk .vision-mcard p{color:#aaa}
-        .vision-badge{display:inline-block;color:white;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700}
-        .vision-verse{font-size:0.8rem;color:#c19c72;font-weight:600;margin-top:8px;display:block}
-        .vision-pillars{margin-top:40px;text-align:center}
-        .vision-pillars-title{font-size:1.3rem;color:#5b272f;margin-bottom:20px;font-weight:800}
-        .dk .vision-pillars-title{color:#c19c72}
-        .vision-pillars-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
-        .vision-pillar{background:white;border-radius:16px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
-        .dk .vision-pillar{background:#1E293B}
-        .vision-pillar h4{color:#5b272f;margin:8px 0 6px}
-        .dk .vision-pillar h4{color:#c19c72}
-        .vision-pillar p{color:#666;font-size:0.85rem;margin:0;line-height:1.6}
-        .dk .vision-pillar p{color:#aaa}
-        .vision-banner{display:flex;align-items:center;gap:30px;background:linear-gradient(135deg,#f8f4ef,#fff);border-radius:20px;padding:30px;margin-top:40px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
-        .dk .vision-banner{background:linear-gradient(135deg,#1E293B,#334155)}
-        .vision-banner h3{color:#5b272f;margin:0 0 10px;font-size:1.2rem}
-        .dk .vision-banner h3{color:#c19c72}
-        .vision-banner p{color:#555;line-height:1.8;margin:0 0 10px;font-size:0.95rem}
-        .dk .vision-banner p{color:#aaa}
-        .vision-banner-verse{font-size:0.85rem;color:#c19c72;font-style:italic}
+        /* ✅ 비전 페이지 전용 CSS 추가 */
+        .vision-wrapper { display: flex; flex-direction: column; gap: 40px; padding: 20px 0; }
+        
+        .vision-header { background: #111827; color: white; padding: 40px 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .vision-header h2 { font-size: 2.2rem; color: #D97706; margin-bottom: 10px; font-weight: 800; }
+        .vision-header p { font-size: 1.2rem; font-weight: bold; }
+
+        .tree-container { display: flex; flex-direction: column; gap: 15px; position: relative; }
+        .tree-container::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #E5E7EB; transform: translateX(-50%); z-index: -1; }
+        .tree-box { background: white; padding: 25px; border-radius: 15px; border: 2px solid #F3F4F6; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .t-badge { display: inline-block; background: #D97706; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; }
+        .tree-box h4 { font-size: 1.2rem; color: #1F2937; margin-bottom: 8px; font-weight: bold; }
+        .tree-box p { color: #4B5563; font-size: 0.95rem; line-height: 1.5; word-break: keep-all; }
+        .dk .tree-box { background: #1E293B; border-color: #334155; }
+        .dk .tree-box h4 { color: #eee; }
+        .dk .tree-box p { color: #aaa; }
+        
+        .four-pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .p-card { background: white; padding: 25px 15px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #1E3A8A; transition: transform 0.2s; }
+        .p-card:hover { transform: translateY(-5px); }
+        .dk .p-card { background: #1E293B; }
+        .p-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .p-card h4 { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: #111827; }
+        .dk .p-card h4 { color: #c19c72; }
+        .p-card p { font-size: 0.9rem; color: #6B7280; word-break: keep-all; }
+        .dk .p-card p { color: #aaa; }
+
+        .stone-banner { background: linear-gradient(135deg, #1E3A8A, #111827); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-top: 10px; }
+        .stone-banner h3 { font-size: 1.4rem; color: #FCD34D; margin-bottom: 10px; font-weight: bold; }
+        .stone-banner p { font-size: 1rem; line-height: 1.6; opacity: 0.9; }
+
+        @media (max-width: 768px) {
+           .tree-container::before { display: none; }
+        }
 
         /* 교회소식 */
         .news-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:25px}
