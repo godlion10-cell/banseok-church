@@ -26,6 +26,7 @@ export default function HomeClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
   const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   // 🤫 비밀 관리자 진입: 푸터 5번 클릭
   const secretClickCount = useRef(0);
@@ -101,6 +102,9 @@ export default function HomeClient() {
   const filteredSermons = sermons.filter(s =>
     (activeFilter === '전체' || s.category.includes(activeFilter)) && s.title.includes(searchTerm)
   );
+
+  useEffect(() => { setIsMounted(true); }, []);
+  if (!isMounted) return null;
 
   return (
     <div className={`pw ${isDarkMode ? 'dk' : 'lt'}`}>
