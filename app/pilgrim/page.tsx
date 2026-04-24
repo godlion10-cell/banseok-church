@@ -3,55 +3,31 @@ import React from 'react';
 import Link from 'next/link';
 
 export default function PilgrimMapPage() {
+  const routes = [
+    { path: '/narrow-gate', icon: '🚪', name: '좁은 문', desc: '생명의 길로 들어서는 첫걸음', color: '#D97706' },
+    { path: '/cross-hill', icon: '✝️', name: '십자가 언덕', desc: '죄의 짐을 내려놓는 곳', color: '#B91C1C' },
+    { path: '/armory', icon: '🛡️', name: '무기고', desc: '영적 전쟁을 위한 전신갑주 무장', color: '#1E3A8A' }
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', background: '#FDFBF7', padding: '40px 20px', fontFamily: 'sans-serif' }}>
-      
+    <div style={{ minHeight: '100vh', background: '#FDFBF7', padding: '40px 20px' }}>
       <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-        <h2 style={{ color: '#1E3A8A', fontSize: '2.5rem', fontWeight: '900', marginBottom: '10px' }}>🗺️ 영적 순례길</h2>
-        <p style={{ color: '#4B5563', fontSize: '1.1rem' }}>거제반석교회 성도님들을 위한 디지털 천로역정 여정입니다.</p>
+        <h2 style={{ color: '#1E3A8A', fontSize: '2.5rem', fontWeight: '900' }}>🗺️ 영적 순례길 지도</h2>
+        <p>거제반석교회 순례자들을 위한 여정입니다.</p>
       </div>
 
       <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        
-        {/* ✅ 활성화된 첫 번째 여정 : 십자가 언덕 */}
-        <Link href="/cross-hill" style={{ textDecoration: 'none' }}>
-          <div style={{ background: 'linear-gradient(135deg, #111827, #374151)', padding: '30px', borderRadius: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', transition: 'transform 0.2s', cursor: 'pointer' }}
-               onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-               onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-            <div>
-              <h3 style={{ fontSize: '1.5rem', color: '#FCA5A5', marginBottom: '10px' }}>✝️ 십자가 언덕 (입장 가능)</h3>
-              <p style={{ color: '#D1D5DB', fontSize: '0.95rem' }}>누구에게도 말하지 못한 무거운 짐을 십자가 앞에 익명으로 내려놓는 곳입니다.</p>
+        {routes.map((route, i) => (
+          <Link href={route.path} key={i} style={{ textDecoration: 'none' }}>
+            <div style={{ background: 'white', padding: '25px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderLeft: `6px solid ${route.color}` }}>
+              <div>
+                <h3 style={{ color: route.color, fontSize: '1.3rem', marginBottom: '5px' }}>{route.icon} {route.name}</h3>
+                <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>{route.desc}</p>
+              </div>
+              <div style={{ fontSize: '1.5rem' }}>👉</div>
             </div>
-            <div style={{ fontSize: '2rem' }}>👉</div>
-          </div>
-        </Link>
-
-        {/* ✅ 활성화된 두 번째 여정 : 좁은 문 */}
-        <Link href="/narrow-gate" style={{ textDecoration: 'none' }}>
-          <div style={{ background: 'linear-gradient(135deg, #78350F, #D97706)', padding: '30px', borderRadius: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', transition: 'transform 0.2s', cursor: 'pointer' }}
-               onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-               onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-            <div>
-              <h3 style={{ fontSize: '1.5rem', color: '#FEF3C7', marginBottom: '10px' }}>🚪 좁은 문 (입장 가능)</h3>
-              <p style={{ color: '#FDE68A', fontSize: '0.95rem' }}>새가족을 위한 따뜻한 환영과 복음의 기초 안내소</p>
-            </div>
-            <div style={{ fontSize: '2rem' }}>👉</div>
-          </div>
-        </Link>
-
-        {/* ✅ 활성화된 세 번째 여정 : 무기고 */}
-        <Link href="/armory" style={{ textDecoration: 'none' }}>
-          <div style={{ background: 'linear-gradient(135deg, #1E3A8A, #3B82F6)', padding: '30px', borderRadius: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', transition: 'transform 0.2s', cursor: 'pointer' }}
-               onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-               onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-            <div>
-              <h3 style={{ fontSize: '1.5rem', color: '#BFDBFE', marginBottom: '10px' }}>🛡️ 무기고 (입장 가능)</h3>
-              <p style={{ color: '#93C5FD', fontSize: '0.95rem' }}>영적 성장의 발자취를 기록하고 전신갑주를 입는 곳</p>
-            </div>
-            <div style={{ fontSize: '2rem' }}>👉</div>
-          </div>
-        </Link>
-
+          </Link>
+        ))}
       </div>
     </div>
   );
