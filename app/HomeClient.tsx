@@ -106,7 +106,8 @@ export default function HomeClient() {
   useEffect(() => {
     setIsMounted(true); // 디자인 옷 입기 완료!
   }, []);
-  if (!isMounted) return null;
+  // 디자인이 적용되기 전(isMounted가 false)에는 깜빡이는 쌩얼 대신 깔끔한 배경색만 보여줌
+  if (!isMounted) return <div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7' }} />;
 
   return (
     <div className={`pw ${isDarkMode ? 'dk' : 'lt'}`}>
