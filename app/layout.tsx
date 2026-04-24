@@ -3,6 +3,7 @@ import './globals.css';
 // ✅ 스마트 엔진들
 import ChatbotWidget from '@/app/components/ChatbotWidget';
 import AccessibilityWidget from '@/app/components/AccessibilityWidget';
+import WelcomeEngine from '@/app/components/WelcomeEngine';
 
 export const metadata: Metadata = {
   title: '거제반석교회 - 스마트 성전',
@@ -52,6 +53,8 @@ export default function RootLayout({
         <ChatbotWidget />
         {/* 우측 하단: 어르신 전용 돋보기/TTS 위젯 */}
         <AccessibilityWidget />
+        {/* 📍 위치 기반 환영 엔진 */}
+        <WelcomeEngine />
       </body>
     </html>
   );
