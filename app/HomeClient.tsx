@@ -170,11 +170,15 @@ export default function HomeClient() {
           ) : (
             <div className="ll">
               {filteredSermons.map(s => (
-                <div key={s.id} onClick={() => setPopupVideo(s)} className="lc">
-                  <div className="lh" style={{ background: s.gradient }}><h3>"{s.title}"</h3></div>
-                  <div className="ls">
-                    <h4 style={{ color: '#5C3A40', marginBottom: '15px' }}>✨ 말씀 요약 안내</h4>
-                    <div style={{ fontSize: `${fontSize}rem` }}><p>아래 재생 버튼을 눌러 생생한 은혜의 말씀을 들어보세요.</p></div>
+                <div key={s.id} onClick={() => setPopupVideo(s)} className="lc" style={{ background: s.gradient }}>
+                  <div className="lh">
+                    <h3 style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>"{s.title}"</h3>
+                  </div>
+                  <div className="l-summary-overlay">
+                     <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 말씀 요약 안내</h4>
+                     <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}>
+                        <p>아래 재생 버튼을 눌러 생생한 은혜의 말씀을 들어보세요.</p>
+                     </div>
                   </div>
                 </div>
               ))}
@@ -330,11 +334,11 @@ export default function HomeClient() {
         .st{font-size:1.1rem;font-weight:bold}
 
         .ll{display:flex;flex-direction:column;gap:25px}
-        .lc{background:white;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);cursor:pointer}
-        .dk .lc{background:#1E293B}
-        .lh{padding:30px;text-align:center;color:white}
-        .ls{padding:30px;text-align:center}
-        .ls p{line-height:1.8;margin-bottom:10px;font-weight:500}
+        .lc{position:relative;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);cursor:pointer;min-height:200px}
+        .lh{padding:40px 30px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:200px}
+        .l-summary-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;opacity:0;transition:opacity 0.3s}
+        .lc:hover .l-summary-overlay{opacity:1}
+        .l-summary-overlay p{line-height:1.8;margin-bottom:10px;font-weight:500}
 
         .arc{margin-top:60px}
         .arc-t{font-size:1.6rem;font-weight:800;margin-bottom:10px}
