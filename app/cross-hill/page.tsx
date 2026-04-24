@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { sendPrayerToTelegram } from '../actions/telegram';
+import { sendPrayerToTelegram } from './actions';
 
 export default function CrossHillPage() {
   const [prayer, setPrayer] = useState('');

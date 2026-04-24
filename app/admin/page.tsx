@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { sendAdminLoginAlert } from '../actions/telegram';
+import { sendAdminLoginAlert } from './actions';
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
