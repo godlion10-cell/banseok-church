@@ -136,13 +136,18 @@ export default function HomeClient() {
 
         {/* ===== 교회소개 탭 ===== */}
         {activeTab === '교회소개' && (
-          <div className="tab-content">
-            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>⛪ 거제반석교회를 소개합니다</h3></div>
-            <div className="info-section">
-              <div className="info-card"><h4>🏛️ 교회 연혁</h4><p>대한예수교장로회 거제반석교회는 하나님의 말씀 위에 굳게 서서, 거제 지역사회에 복음의 빛을 전하고 있습니다.</p></div>
-              <div className="info-card"><h4>📍 위치</h4><p>경남 거제시 연초면 소오비길 40-6</p></div>
-              <div className="info-card"><h4>📞 연락처</h4><p>전화 문의는 교회 사무실로 연락 바랍니다.</p></div>
-              <div className="info-card"><h4>👨‍💼 담임목사</h4><p>이주민 목사</p></div>
+          <div className="tab-content about-hero">
+            <div className="about-bg"></div>
+            <div className="about-content">
+              <div className="about-tagline">그리스도를 사랑하는 모든 공동체</div>
+              <h1 className="about-title">
+                <span className="about-gold">하나님의 손에 붙잡혀</span>
+                <span className="about-burgundy">세상을 이기는 교회</span>
+              </h1>
+              <div className="about-buttons">
+                <button onClick={() => setActiveTab('설교말씀')} className="about-btn-primary">다시가는 예배 참여하기</button>
+                <button onClick={() => setActiveTab('비전과사명')} className="about-btn-outline">비전과 사명 보기</button>
+              </div>
             </div>
           </div>
         )}
@@ -150,13 +155,23 @@ export default function HomeClient() {
         {/* ===== 비전과사명 탭 ===== */}
         {activeTab === '비전과사명' && (
           <div className="tab-content">
-            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>🌟 비전과 사명</h3><p style={{marginTop:'10px',opacity:0.8}}>반석 위에 굳게 서는 교회</p></div>
-            <div className="info-section">
-              <div className="info-card"><h4>📖 교회 표어</h4><p style={{fontSize:`${fontSize}rem`,lineHeight:'1.8'}}>"여호와는 나의 반석이시요 나의 요새시요 나를 건지시는 이시요" (시편 18:2)</p></div>
-              <div className="info-card"><h4>🙏 예배 사명</h4><p>하나님께 합당한 예배를 드리며, 말씀 중심의 삶을 실천합니다.</p></div>
-              <div className="info-card"><h4>❤️ 섬김 사명</h4><p>이웃을 사랑하고 지역사회를 섬기며, 선교의 사명을 감당합니다.</p></div>
-              <div className="info-card"><h4>🌱 양육 사명</h4><p>성도의 영적 성장을 위해 제자훈련과 소그룹 양육에 힘씁니다.</p></div>
+            <div className="vision-header"><h2 className="vision-title">Stand on Grace</h2><p className="vision-subtitle">은혜 위에 서다 — 거제반석교회의 비전</p></div>
+            <div className="vision-ministry-row">
+              <div className="vision-tree"><div style={{fontSize:'8rem',lineHeight:1}}>🌳</div><p style={{color:'#888',fontSize:'0.85rem',marginTop:'0.5rem'}}>반석 위에 뿌리내린 나무</p></div>
+              <div className="vision-cards">
+                {[{color:'#5b272f',badge:'UP · 예배',title:'하나님을 향한 예배',desc:'온 마음과 뜻과 힘을 다하여 하나님께 예배하는 공동체',verse:'요 4:24'},{color:'#c19c72',badge:'IN · 양육',title:'말씀으로 세워지는 제자',desc:'성경 말씀을 통해 성도를 그리스도인으로 빚어가는',verse:'딤후 3:16-17'},{color:'#02385C',badge:'OUT · 선교',title:'세상을 향한 선교',desc:'복음을 전하고 사랑을 나누며 이 땅의 사명을 감당하는 공동체',verse:'마 28:19-20'}].map((m,i)=>(
+                  <div key={i} className="vision-mcard"><span className="vision-badge" style={{backgroundColor:m.color}}>{m.badge}</span><h4>{m.title}</h4><p>{m.desc}</p><span className="vision-verse">{m.verse}</span></div>
+                ))}
+              </div>
             </div>
+            <div className="vision-pillars"><h3 className="vision-pillars-title">반석교회 4대 지향점</h3>
+              <div className="vision-pillars-grid">
+                {[{emoji:'⛪',title:'견고한 반석',desc:'그리스도 위에 세워지고 흔들리지 않는 신앙'},{emoji:'💎',title:'변함없는 신뢰',desc:'어떤 환경에서도 주님을 신뢰하는 믿음'},{emoji:'🤝',title:'강건한 공동체',desc:'서로 사랑하고 세워주는 그리스도의 몸'},{emoji:'🌱',title:'다음 세대 양육',desc:'미래 세대의 신앙을 계승하는 교회'}].map((p,i)=>(
+                  <div key={i} className="vision-pillar"><div style={{fontSize:'2.5rem',marginBottom:'0.5rem'}}>{p.emoji}</div><h4>{p.title}</h4><p>{p.desc}</p></div>
+                ))}
+              </div>
+            </div>
+            <div className="vision-banner"><div style={{fontSize:'5rem'}}>⛪</div><div><h3>반석 위에 세워진 교회</h3><p>예수 그리스도를 머릿돌 삼아, 말씀과 기도로 든든히 세워져 가는 공동체입니다.</p><span className="vision-banner-verse">마태복음 16:18 — "이 반석 위에 내 교회를 세우리니"</span></div></div>
           </div>
         )}
 
@@ -223,10 +238,11 @@ export default function HomeClient() {
         {/* ===== 교회소식 탭 ===== */}
         {activeTab === '교회소식' && (
           <div className="tab-content">
-            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>📢 교회소식</h3></div>
-            <div className="info-section">
-              <div className="info-card"><h4>📌 이번 주 알림</h4><p>교회 소식은 주보를 통해 확인하실 수 있습니다.</p><button className="bb" style={{marginTop:'15px'}} onClick={() => setShowBulletin(true)}>📄 주보 보기</button></div>
-              <div className="info-card"><h4>🎉 교회 행사</h4><p>각종 교회 행사 및 절기 일정은 예배 시간에 안내됩니다.</p></div>
+            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>📢 반석교회 소식</h3></div>
+            <div className="news-grid">
+              {[{title:'헌영 및 등록 안내',content:'헌영하고 축하합니다! 반석교회는 대한예수교장로회 소속으로 활동 중입니다.\n📺 유튜브: @petros-church\n🏦 십일조헌금: 농협 131-017-687642\n🏦 감사헌금: 농협 131-018-242250'},{title:'홈페이지 및 교회 소식',content:'반석교회 홈페이지가 새롭게 만들어졌습니다!'},{title:'부활주일 감사',content:'할렐루야! 오늘은 부활주일입니다.'},{title:'부활절 이벤트 동참',content:'본당 입구에 좋아하는 말씀 구절을 적어주세요.'},{title:'오늘 세례식 안내',content:'세인 세례: 은혜를 나누시고 헌영해 주세요.'},{title:'부활절 합동예배',content:'오늘 오후에는 거제지역 합동예배로 모입니다. (거정교회 / 14:30)'},{title:'찬생목 축제 일정',content:'다음 주일에는 찬양생목 축제하는 시간을 갖습니다.'},{title:'성전 보수 공사',content:'본당 바닥 및 냉방 벽 공사가 시작됩니다. 기도 부탁드립니다.'},{title:'선교 지원 소개',content:'은혜를 나누시고 헌영하고 축하합니다.'},{title:'선교사 성경캠프 참여',content:'5월 5주간 진행 예정입니다.'}].map((n,idx)=>(
+                <div key={idx} className="news-card"><h3>{idx+1}. {n.title}</h3><p style={{whiteSpace:'pre-line'}}>{n.content}</p></div>
+              ))}
             </div>
           </div>
         )}
@@ -235,15 +251,19 @@ export default function HomeClient() {
         {activeTab === '예배안내' && (
           <div className="tab-content">
             <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>🙏 예배안내</h3></div>
-            <div className="schedule-wrap">
-              <table className="schedule-tbl"><thead><tr><th>예배</th><th>시간</th><th>장소</th></tr></thead><tbody>
-                <tr><td>🌅 새벽기도</td><td className="sch-time">월~토 05:30</td><td>본당</td></tr>
-                <tr><td>⛪ 주일 1부</td><td className="sch-time">08:55</td><td>본당</td></tr>
-                <tr><td>⛪ 주일 2부</td><td className="sch-time">10:40</td><td>본당</td></tr>
-                <tr><td>⛪ 주일 오후</td><td className="sch-time">13:45</td><td>본당</td></tr>
-                <tr><td>📖 수요예배</td><td className="sch-time">수 19:25</td><td>본당</td></tr>
-                <tr><td>🙏 금요기도회</td><td className="sch-time">금 19:50</td><td>본당</td></tr>
-              </tbody></table>
+            <div className="worship-wrap">
+              <div className="worship-table-wrap">
+                <table className="schedule-tbl"><tbody>
+                  {[{title:'주일예배 (1부)',time:'오전 09:00',place:'2층 본당',officer:'이주민 목사'},{title:'주일예배 (2부)',time:'오전 11:00',place:'2층 본당',officer:'이주민 목사'},{title:'주일오후예배',time:'오후 01:50',place:'2층 본당',officer:'이주민 목사'},{title:'주일 첫소망',time:'오전 10:00',place:'3층 교육관',officer:'김미정'},{title:'주일 대예배',time:'오전 11:00',place:'3층 교육관',officer:'김미정'},{title:'수요 저녁예배',time:'수 07:30',place:'2층 본당',officer:'이주민 목사'},{title:'금요기도회',time:'금 08:00',place:'2층 본당',officer:'이주민 목사'},{title:'새벽예배',time:'오전 05:30',place:'2층 본당',officer:'이주민 목사'}].map((s,i)=>(
+                    <tr key={i} className="worship-row"><th>{s.title}</th><td><span className="sch-time">{s.time}</span></td><td>{s.place}</td><td>{s.officer}</td></tr>
+                  ))}
+                </tbody></table>
+                <div className="worship-verse">
+                  <div style={{fontSize:'2rem',opacity:0.4}}>✝️</div>
+                  <div style={{fontFamily:"'Nanum Myeongjo',serif",fontSize:'0.95rem',color:'#5b272f',fontStyle:'italic',opacity:0.75,maxWidth:380,lineHeight:1.9}}>"예배드리려 하거든 신령과 진리로 예배드려야 하느니라"</div>
+                  <div style={{marginTop:'0.5rem',fontSize:'0.8rem',color:'#c19c72',fontWeight:600}}>요한복음 4:24</div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -252,11 +272,18 @@ export default function HomeClient() {
         {activeTab === '오시는길' && (
           <div className="tab-content">
             <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>📍 오시는 길</h3></div>
-            <div className="info-section">
-              <div className="info-card"><h4>🏠 주소</h4><p>경남 거제시 연초면 소오비길 40-6</p></div>
-              <div className="info-card" style={{textAlign:'center'}}>
-                <a href="https://map.kakao.com/link/to/거제반석교회,34.868,128.694" target="_blank" rel="noopener noreferrer" style={{display:'block',padding:'15px',background:'#FEE500',color:'black',borderRadius:'10px',textDecoration:'none',fontWeight:'bold',marginBottom:'10px'}}>🚗 카카오내비로 길찾기</a>
-                <a href="https://map.naver.com/v5/search/거제반석교회" target="_blank" rel="noopener noreferrer" style={{display:'block',padding:'15px',background:'#03C75A',color:'white',borderRadius:'10px',textDecoration:'none',fontWeight:'bold'}}>🗺️ 네이버지도로 보기</a>
+            <div className="location-wrap">
+              <div className="location-info">
+                <h3 style={{fontFamily:"'Nanum Myeongjo',serif",fontSize:'1.6rem',color:'#5b272f',marginBottom:'2rem',lineHeight:1.3}}>대한예수교장로회<br/>거제반석교회</h3>
+                <div className="loc-item"><span className="loc-label">🏠 주소</span><span>경상남도 거제시 연초면 소오비길 40-6</span></div>
+                <div className="loc-item"><span className="loc-label">📞 문의</span><span>이주민 목사 (010.9825.5020)</span></div>
+                <div className="loc-item"><span className="loc-label">⏰ 예배</span><span>주일 오전 9시 / 11시, 수요 수 7:30, 금요 금 8시</span></div>
+                <div className="loc-item"><span className="loc-label">📺 유튜브</span><span><a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{color:'#c19c72',fontWeight:600}}>@petros-church</a></span></div>
+              </div>
+              <div className="map-frame">
+                <a href="https://map.kakao.com/?q=경상남도 거제시 연초면 소오비길 40-6" target="_blank" rel="noopener noreferrer" className="map-placeholder">
+                  <span style={{fontSize:'2.5rem'}}>🗺️</span><span style={{fontWeight:700,fontSize:'1.1rem'}}>카카오맵에서 보기</span><span style={{fontSize:'0.85rem',color:'#888'}}>거제시 연초면 소오비길 40-6</span>
+                </a>
               </div>
             </div>
           </div>
@@ -364,22 +391,89 @@ export default function HomeClient() {
 
         .tab-content{animation:fadeIn 0.3s ease}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        .info-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:25px}
-        .info-card{background:white;border-radius:16px;padding:25px;box-shadow:0 4px 12px rgba(0,0,0,0.06);border-left:4px solid #c19c72;transition:transform 0.3s}
-        .info-card:hover{transform:translateY(-4px)}
-        .dk .info-card{background:#1E293B;border-left-color:#c19c72}
-        .info-card h4{color:#5b272f;margin:0 0 12px;font-size:1.1rem}
-        .dk .info-card h4{color:#c19c72}
-        .info-card p{color:#555;line-height:1.8;margin:0;font-size:0.95rem}
-        .dk .info-card p{color:#aaa}
-        .schedule-wrap{margin-top:25px}
+
+        /* 교회소개 히어로 */
+        .about-hero{position:relative;min-height:420px;display:flex;align-items:center;justify-content:center;border-radius:20px;overflow:hidden}
+        .about-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)}
+        .about-content{position:relative;z-index:1;text-align:center;padding:40px 20px}
+        .about-tagline{color:#c19c72;font-size:0.95rem;letter-spacing:0.15em;margin-bottom:1rem;font-weight:500}
+        .about-title{font-family:'Nanum Myeongjo',serif;line-height:1.5;margin:0 0 2rem}
+        .about-gold{display:block;font-size:2rem;color:#c19c72;font-weight:800}
+        .about-burgundy{display:block;font-size:1.8rem;color:white;font-weight:700}
+        .about-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+        .about-btn-primary{padding:14px 28px;background:#5b272f;color:white;border:none;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.3s;font-family:inherit}
+        .about-btn-primary:hover{background:#7a3a44;transform:translateY(-2px)}
+        .about-btn-outline{padding:14px 28px;background:transparent;color:#c19c72;border:2px solid #c19c72;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.3s;font-family:inherit}
+        .about-btn-outline:hover{background:rgba(193,156,114,0.1)}
+
+        /* 비전과사명 */
+        .vision-header{text-align:center;padding:40px 20px;background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:20px;margin-bottom:30px}
+        .vision-title{color:#c19c72;font-size:2.2rem;font-family:'Nanum Myeongjo',serif;margin:0 0 8px}
+        .vision-subtitle{color:rgba(255,255,255,0.7);font-size:1rem;margin:0}
+        .vision-ministry-row{display:flex;gap:30px;margin:30px 0;align-items:flex-start;flex-wrap:wrap}
+        .vision-tree{text-align:center;flex-shrink:0}
+        .vision-cards{display:flex;flex-direction:column;gap:16px;flex:1;min-width:280px}
+        .vision-mcard{background:white;border-radius:16px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,0.06);transition:transform 0.3s}
+        .vision-mcard:hover{transform:translateY(-4px)}
+        .dk .vision-mcard{background:#1E293B}
+        .vision-mcard h4{margin:10px 0 6px;color:#333;font-size:1.05rem}
+        .dk .vision-mcard h4{color:#eee}
+        .vision-mcard p{color:#666;font-size:0.9rem;margin:0;line-height:1.6}
+        .dk .vision-mcard p{color:#aaa}
+        .vision-badge{display:inline-block;color:white;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700}
+        .vision-verse{font-size:0.8rem;color:#c19c72;font-weight:600;margin-top:8px;display:block}
+        .vision-pillars{margin-top:40px;text-align:center}
+        .vision-pillars-title{font-size:1.3rem;color:#5b272f;margin-bottom:20px;font-weight:800}
+        .dk .vision-pillars-title{color:#c19c72}
+        .vision-pillars-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+        .vision-pillar{background:white;border-radius:16px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+        .dk .vision-pillar{background:#1E293B}
+        .vision-pillar h4{color:#5b272f;margin:8px 0 6px}
+        .dk .vision-pillar h4{color:#c19c72}
+        .vision-pillar p{color:#666;font-size:0.85rem;margin:0;line-height:1.6}
+        .dk .vision-pillar p{color:#aaa}
+        .vision-banner{display:flex;align-items:center;gap:30px;background:linear-gradient(135deg,#f8f4ef,#fff);border-radius:20px;padding:30px;margin-top:40px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+        .dk .vision-banner{background:linear-gradient(135deg,#1E293B,#334155)}
+        .vision-banner h3{color:#5b272f;margin:0 0 10px;font-size:1.2rem}
+        .dk .vision-banner h3{color:#c19c72}
+        .vision-banner p{color:#555;line-height:1.8;margin:0 0 10px;font-size:0.95rem}
+        .dk .vision-banner p{color:#aaa}
+        .vision-banner-verse{font-size:0.85rem;color:#c19c72;font-style:italic}
+
+        /* 교회소식 */
+        .news-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:25px}
+        .news-card{background:white;border-radius:16px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,0.06);border-left:4px solid #c19c72;transition:transform 0.3s}
+        .news-card:hover{transform:translateY(-4px)}
+        .dk .news-card{background:#1E293B}
+        .news-card h3{color:#5b272f;font-size:1rem;margin:0 0 10px}
+        .dk .news-card h3{color:#c19c72}
+        .news-card p{color:#555;font-size:0.9rem;line-height:1.7;margin:0}
+        .dk .news-card p{color:#aaa}
+
+        /* 예배안내 */
+        .worship-wrap{margin-top:25px}
+        .worship-table-wrap{max-width:800px;margin:0 auto}
+        .worship-row th{background:rgba(91,39,47,0.06);color:#5b272f;padding:15px 20px;text-align:left;font-weight:600;white-space:nowrap}
+        .worship-row td{padding:15px 20px;border-top:1px solid #eee;color:#444;font-size:0.95rem}
+        .dk .worship-row th{background:rgba(193,156,114,0.1);color:#c19c72}
+        .dk .worship-row td{border-top-color:#334155;color:#ccc}
+        .worship-verse{text-align:center;padding:30px;margin-top:20px}
         .schedule-tbl{width:100%;border-collapse:collapse;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
         .dk .schedule-tbl{background:#1E293B}
-        .schedule-tbl th{background:rgba(91,39,47,0.06);color:#5b272f;padding:15px 20px;text-align:left;font-weight:600}
-        .dk .schedule-tbl th{background:rgba(193,156,114,0.1);color:#c19c72}
-        .schedule-tbl td{padding:15px 20px;border-top:1px solid #eee;color:#444;font-size:0.95rem}
-        .dk .schedule-tbl td{border-top-color:#334155;color:#ccc}
         .sch-time{font-weight:700;color:#c19c72}
+
+        /* 오시는길 */
+        .location-wrap{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:25px}
+        .location-info{background:white;border-radius:16px;padding:30px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+        .dk .location-info{background:#1E293B}
+        .loc-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee;font-size:0.95rem;color:#444}
+        .dk .loc-item{border-bottom-color:#334155;color:#ccc}
+        .loc-label{font-weight:600;white-space:nowrap;min-width:80px}
+        .map-frame{display:flex}
+        .map-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:white;border-radius:16px;padding:40px;text-align:center;text-decoration:none;color:#333;box-shadow:0 4px 12px rgba(0,0,0,0.06);width:100%;transition:transform 0.3s}
+        .map-placeholder:hover{transform:translateY(-4px)}
+        .dk .map-placeholder{background:#1E293B;color:#ccc}
+
 
         .fctrl{position:fixed;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px}
         .cb{width:45px;height:45px;border-radius:50%;border:1px solid #ddd;background:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
