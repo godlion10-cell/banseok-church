@@ -129,6 +129,11 @@ export default function ChatbotWidget() {
       actionLabel = "✝️ 십자가 언덕으로 가기";
       actionLink = "/cross-hill";
     }
+    else if (userText.includes("처음") || userText.includes("등록") || userText.includes("새가족") || userText.includes("가입")) {
+      botReply = "거제반석교회에 처음 오셨군요! 정말 환영합니다. 😍 제가 '좁은 문' 등록을 도와드릴게요. 등록하시면 특별한 디지털 선물도 드립니다!";
+      actionLabel = "🚪 '좁은 문' 등록하기";
+      actionLink = "/newcomer";
+    }
     else if (userText.includes("예배") && userText.includes("순서")) {
       botReply = "이번 주 주일예배 순서입니다.\n1. 묵도\n2. 찬송\n3. 성경봉독\n4. 설교\n5. 축도";
     }
