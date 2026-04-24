@@ -103,7 +103,9 @@ export default function HomeClient() {
     (activeFilter === '전체' || s.category.includes(activeFilter)) && s.title.includes(searchTerm)
   );
 
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    setIsMounted(true); // 디자인 옷 입기 완료!
+  }, []);
   if (!isMounted) return null;
 
   return (
