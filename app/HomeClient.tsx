@@ -2,8 +2,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 
-const VERSE_TEXT = "✨ 오늘의 말씀: 하나님을 사랑하는 자들에게는 모든 것이 합력하여 선을 이루느니라 (롬 8:28) ✨";
-const MARQUEE_CONTENT = `${VERSE_TEXT} \u00A0\u00A0\u00A0 ${VERSE_TEXT} \u00A0\u00A0\u00A0 ${VERSE_TEXT}`;
+
 
 // 유튜브 API 실패 시 사용할 폴백 데이터
 const FALLBACK_SERMONS = [
@@ -18,7 +17,7 @@ export default function HomeClient() {
   const [activeFilter, setActiveFilter] = useState('전체');
   const [searchTerm, setSearchTerm] = useState('');
   const [fontSize, setFontSize] = useState(1.3);
-  const [showTopBar, setShowTopBar] = useState(true);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showBulletin, setShowBulletin] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
@@ -104,23 +103,23 @@ export default function HomeClient() {
 
   return (
     <div className={`pw ${isDarkMode ? 'dk' : 'lt'}`}>
-      {/* 상단 전광판 */}
-      {showTopBar && (
-        <div className="topbar">
-          <div className="tb-left"><div className="live-dot">🔴 LIVE</div></div>
-          <div className="tb-center"><div className="mq"><span>{MARQUEE_CONTENT}</span></div></div>
-          <div className="tb-right">
-            <div className="mob-inst">
-              <span className="inst-txt">거제반석교회 앱</span>
-              <button className="inst-btn" onClick={() => setShowInstallGuide(true)}>설치</button>
-            </div>
-            <button className="tb-close" onClick={() => setShowTopBar(false)}>×</button>
-          </div>
+      {/* 교회 헤더 메뉴 */}
+      <header className="ch-header">
+        <div className="ch-logo">
+          <span style={{fontSize:'1.5rem'}}>⛪</span>
+          <span className="ch-logo-text">거제반석교회</span>
         </div>
-      )}
+        <nav className={`ch-nav ${showMobileMenu ? 'ch-nav-open' : ''}`}>
+          <button className="ch-nav-link ch-nav-active" onClick={() => setShowMobileMenu(false)}>홈</button>
+          <button className="ch-nav-link" onClick={() => { setShowBulletin(true); setShowMobileMenu(false); }}>주보</button>
+          <button className="ch-nav-link" onClick={() => { setShowMapModal(true); setShowMobileMenu(false); }}>오시는 길</button>
+          <button className="ch-nav-link" onClick={() => { setShowInstallGuide(true); setShowMobileMenu(false); }}>앱 설치</button>
+        </nav>
+        <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
+      </header>
 
       {/* 플로팅 컨트롤 */}
-      <div className="fctrl" style={{ top: showTopBar ? '60px' : '20px' }}>
+      <div className="fctrl" style={{ top: '80px' }}>
         <button onClick={() => setFontSize(fontSize + 0.1)} className="cb">가+</button>
         <button onClick={() => setFontSize(fontSize - 0.1)} className="cb">가-</button>
         <button onClick={() => setIsDarkMode(!isDarkMode)} className="cb">{isDarkMode ? '☀️' : '🌙'}</button>
@@ -293,17 +292,20 @@ export default function HomeClient() {
         .lt{background:#FDFBF7;color:#333}.dk{background:#0F172A;color:#eee}
         .ct{max-width:1000px;margin:0 auto;padding:20px}
 
-        .topbar{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;background:#1c1c1c;height:50px;position:sticky;top:0;z-index:2000;padding:0 20px}
-        .live-dot{color:#ff4d4d;font-weight:bold;font-size:0.8rem;animation:blink 1s infinite}
+        .ch-header{position:sticky;top:0;width:100%;z-index:2000;padding:0.8rem 5%;display:flex;justify-content:space-between;align-items:center;background:white;border-bottom:1px solid #eee;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+        .dk .ch-header{background:#1E293B;border-bottom-color:#334155}
+        .ch-logo{display:flex;align-items:center;gap:0.6rem;cursor:pointer}
+        .ch-logo-text{font-size:1.3rem;font-weight:800;color:#1a365d;font-family:'Nanum Myeongjo',serif;white-space:nowrap}
+        .dk .ch-logo-text{color:#e2d5c3}
+        .ch-nav{display:flex;gap:0.5rem}
+        .ch-nav-link{cursor:pointer;padding:0.5rem 1rem;background:none;border:none;font-size:0.95rem;font-weight:500;color:#5b272f;border-radius:8px;transition:all 0.2s;font-family:inherit}
+        .ch-nav-link:hover{background:rgba(193,156,114,0.1);color:#c19c72}
+        .ch-nav-active{color:#c19c72;font-weight:700}
+        .dk .ch-nav-link{color:#ccc}
+        .dk .ch-nav-link:hover{background:rgba(255,255,255,0.1)}
+        .ch-hamburger{display:none;background:none;border:none;font-size:1.6rem;color:#5b272f;cursor:pointer;padding:0.3rem}
+        .dk .ch-hamburger{color:#ccc}
         @keyframes blink{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
-        .mq{width:100%;overflow:hidden;position:relative}
-        .mq span{display:inline-block;white-space:nowrap;color:#ffda00;font-size:0.9rem;animation:slide 30s linear infinite}
-        @keyframes slide{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
-        .tb-right{display:flex;justify-content:flex-end;align-items:center;gap:10px}
-        .inst-txt{color:white;font-size:0.8rem;white-space:nowrap}
-        .inst-btn{background:#ffda00;border:none;padding:4px 10px;border-radius:4px;font-weight:bold;font-size:0.75rem;cursor:pointer}
-        .mob-inst{display:none}
-        .tb-close{color:white;background:none;border:none;font-size:1.5rem;cursor:pointer}
 
         .fctrl{position:fixed;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px}
         .cb{width:45px;height:45px;border-radius:50%;border:1px solid #ddd;background:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
@@ -371,10 +373,11 @@ export default function HomeClient() {
         .ft{text-align:center;padding:20px;padding-bottom:80px;color:#aaa;font-size:0.8rem;cursor:default;user-select:none}
 
         @media(max-width:768px){
-          .topbar{display:flex;flex-direction:column;height:auto;padding:10px;gap:5px}
-          .tb-left,.tb-right{width:100%;display:flex;justify-content:space-between;align-items:center}
-          .tb-center{width:100%;padding:5px 0}
-          .mob-inst{display:flex;align-items:center;gap:10px}
+          .ch-nav{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(253,245,234,0.97);backdrop-filter:blur(16px);flex-direction:column;padding:1rem;gap:0.3rem;border-bottom:1px solid rgba(193,156,114,0.15);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+          .dk .ch-nav{background:rgba(30,41,59,0.97)}
+          .ch-nav-open{display:flex!important}
+          .ch-hamburger{display:block}
+          .ch-nav-link{padding:0.8rem 1rem;text-align:center;border-radius:8px}
           .sr{flex-direction:column;align-items:flex-start;gap:10px}
           .rbt{width:100%;padding:10px}
           .bn{display:flex}
