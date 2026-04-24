@@ -22,29 +22,31 @@ export default function ChatbotWidget() {
   // 📝 대화형 이음돌 보고 모드
   const [isReporting, setIsReporting] = useState(false);
   const [reportContent, setReportContent] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      sender: 'bot', 
-      text: isAdmin 
-        ? "👑 [관리자 전용 비서 모드]\n사장님, 반갑습니다. 무엇을 도와드릴까요?\n- 주보 파일을 주시면 자동으로 정렬합니다.\n- 설교 링크를 주시면 홈페이지에 즉시 반영합니다."
-        : '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!'
-    }
+    { sender: 'bot', text: '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!' }
   ]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // 마운트 후 안전하게 처리
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // 관리자 페이지 전환 시 인사말 초기화
   useEffect(() => {
+    if (!mounted) return;
     setMessages([{
       sender: 'bot',
       text: isAdmin
         ? "👑 [관리자 전용 비서 모드]\n사장님, 반갑습니다. 무엇을 도와드릴까요?\n- 주보 파일을 주시면 자동으로 정렬합니다.\n- 설교 링크를 주시면 홈페이지에 즉시 반영합니다."
         : '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!'
     }]);
-  }, [isAdmin]);
+  }, [isAdmin, mounted]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
