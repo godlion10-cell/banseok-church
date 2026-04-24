@@ -165,12 +165,12 @@ export default function HomeClient() {
             <div className="vision-wrapper">
               <div className="vision-header">
                 <h2>Stand on Grace!!</h2>
-                <p>반석교회 목회 철학</p>
+                <p>거제반석교회 목회 철학</p>
               </div>
               <div className="tree-container">
-                <div className="tree-box fruit"><span className="t-badge">열매</span><h4>사역의 가치 (생명)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
-                <div className="tree-box pillar"><span className="t-badge">기둥</span><h4>신앙의 본질 (은혜)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
-                <div className="tree-box root"><span className="t-badge">뿌리</span><h4>복음의 진리 (반석)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
+                <div className="tree-box fruit"><span className="t-badge">열매</span><div className="t-icon">🍇</div><h4>사역의 가치 (生命)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
+                <div className="tree-box pillar"><span className="t-badge">기둥</span><div className="t-icon">⛪</div><h4>신앙의 본질 (恩惠)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
+                <div className="tree-box root"><span className="t-badge">뿌리</span><div className="t-icon">🌳</div><h4>복음의 진리 (盤石)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
               </div>
               <div className="four-pillars-grid">
                 <div className="p-card"><div className="p-icon">💎</div><h4>단단한 교회</h4><p>하나님의 진리로 순전해지며</p></div>
@@ -425,6 +425,7 @@ export default function HomeClient() {
         .tree-container::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #E5E7EB; transform: translateX(-50%); z-index: -1; }
         .tree-box { background: white; padding: 25px; border-radius: 15px; border: 2px solid #F3F4F6; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .t-badge { display: inline-block; background: #D97706; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; }
+        .t-icon { font-size: 2rem; margin-bottom: 8px; }
         .tree-box h4 { font-size: 1.2rem; color: #1F2937; margin-bottom: 8px; font-weight: bold; }
         .tree-box p { color: #4B5563; font-size: 0.95rem; line-height: 1.5; word-break: keep-all; }
         .dk .tree-box { background: #1E293B; border-color: #334155; }
