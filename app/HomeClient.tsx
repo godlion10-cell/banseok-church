@@ -136,12 +136,22 @@ export default function HomeClient() {
       </div>
 
       <div className="ct">
-        {/* 🔴 실시간 방송 배너 */}
-        {isLive && (
-          <div className="live-banner" onClick={() => setPopupVideo({ videoId: liveVideoId, title: '실시간 예배 방송', category: 'LIVE' })}>
-            <span className="live-blink">● LIVE</span>
-            <strong>생방송 예배 중: 클릭하여 시청</strong>
-            <span className="live-join">참여하기 ➔</span>
+        {/* 🔴 실시간 방송 배너 + 인라인 플레이어 */}
+        {isLive && liveVideoId && (
+          <div className="live-section">
+            <div className="live-banner">
+              <span className="live-blink">● LIVE</span>
+              <strong>생방송 예배가 진행 중입니다</strong>
+            </div>
+            <div className="live-player-wrap">
+              <iframe
+                src={`https://www.youtube.com/embed/${liveVideoId}?autoplay=1&mute=0&rel=0`}
+                title="실시간 예배 방송"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="live-player"
+              />
+            </div>
           </div>
         )}
 
@@ -507,9 +517,11 @@ export default function HomeClient() {
         .fctrl{position:fixed;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px}
         .cb{width:45px;height:45px;border-radius:50%;border:1px solid #ddd;background:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
 
-        .live-banner{display:flex;align-items:center;justify-content:center;background:#D32F2F;color:white;padding:12px 20px;cursor:pointer;font-weight:bold;font-size:1.1rem;gap:10px;border-radius:12px;margin-bottom:20px;flex-wrap:wrap}
+        .live-section{margin-bottom:25px}
+        .live-banner{display:flex;align-items:center;justify-content:center;background:#D32F2F;color:white;padding:12px 20px;font-weight:bold;font-size:1.1rem;gap:10px;border-radius:12px 12px 0 0;flex-wrap:wrap}
         .live-blink{font-size:0.8rem;color:#FFEB3B;animation:blink 1s infinite}
-        .live-join{font-size:0.9rem;border:1px solid rgba(255,255,255,0.5);padding:2px 8px;border-radius:4px}
+        .live-player-wrap{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:0 0 12px 12px;overflow:hidden}
+        .live-player{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
 
         .hero{background:linear-gradient(135deg,#1E293B,#0F172A);border-radius:20px;padding:30px;text-align:center;color:white;margin-bottom:30px}
         .nb{display:inline-block;background:rgba(255,255,255,0.1);padding:8px 20px;border-radius:30px;font-weight:bold;margin:15px 0}
