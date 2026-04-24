@@ -230,9 +230,21 @@ export default function ChatbotWidget() {
     else if (userText.includes("이음돌") || userText.includes("모임")) {
       botReply = "이음돌 모임 보고를 하시려면 '이음돌 보고'라고 말씀해 주세요! 📝";
     }
+    // 7. [다음세대] 주일학교/청소년부
+    else if (userText.includes("다음세대") || userText.includes("주일학교") || userText.includes("청소년") || userText.includes("아이")) {
+      botReply = "다음세대(주일학교/청소년부) 일정과 소식을 확인하시겠어요? 🧒";
+      actionLabel = "🌱 다음세대 게시판";
+      actionLink = "/next-gen";
+    }
     // 🕐 주일 자동 인사
     else if (isSunday && hour >= 8 && hour <= 13) {
       botReply = "오늘은 주일입니다! 은혜로운 예배 되세요. 🙏 주보를 보시려면 '주보'라고 말씀해 주세요.";
+    }
+    // 🚨 방어막: 전혀 모르는 말
+    else {
+      botReply = "앗! 제가 아직 그 단어는 배우지 못했습니다. 📝 하지만 스똑 사장님(관리자)께 바로 보고해서 다음 업데이트 때 꼭 대답할 수 있게 똑똑해져서 돌아오겠습니다! 다른 필요하신 기능이 있다면 메뉴판을 보여드릴까요?";
+      actionLabel = "📋 전체 메뉴판 보기";
+      actionLink = "/sitemap";
     }
 
     // 🔊 대형 자막+음성과 함께 응답 출력
