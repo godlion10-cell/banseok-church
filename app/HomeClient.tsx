@@ -254,16 +254,16 @@ export default function HomeClient() {
       {showInstallGuide && (
         <div className="mbg" onClick={() => setShowInstallGuide(false)}>
           <div className="bm" onClick={e => e.stopPropagation()}>
-            <h2 style={{textAlign:'center',marginBottom:'20px'}}>📲 앱 설치 방법</h2>
-            <div style={{background:'#F8FAFC',borderRadius:'12px',padding:'20px',marginBottom:'15px'}}>
-              <h4 style={{marginBottom:'10px'}}>🍎 아이폰 (Safari)</h4>
-              <p style={{fontSize:'0.95rem',lineHeight:'1.7',margin:0}}>1. Safari로 이 페이지 열기<br/>2. 하단 <strong>공유 버튼 (□↑)</strong> 누르기<br/>3. <strong>"홈 화면에 추가"</strong> 선택</p>
+            <h3 style={{fontSize:'1.4rem',fontWeight:'bold',marginBottom:'20px',color:'#1E293B',textAlign:'center'}}>📲 거제반석교회 앱 설치 방법</h3>
+            <div style={{background:'#F8FAFC',padding:'15px',borderRadius:'10px',marginBottom:'15px',textAlign:'left'}}>
+              <h4 style={{color:'#000',marginBottom:'10px'}}>🍎 아이폰 (Safari)</h4>
+              <p style={{fontSize:'0.95rem',color:'#444',lineHeight:'1.6',margin:0}}>1. 화면 맨 아래 <b>[공유 ⍗]</b> 버튼을 누르세요.<br/>2. <b>[홈 화면에 추가 ⊞]</b>를 선택하세요.</p>
             </div>
-            <div style={{background:'#F8FAFC',borderRadius:'12px',padding:'20px',marginBottom:'20px'}}>
-              <h4 style={{marginBottom:'10px'}}>🤖 안드로이드 (Chrome)</h4>
-              <p style={{fontSize:'0.95rem',lineHeight:'1.7',margin:0}}>1. Chrome으로 이 페이지 열기<br/>2. 우측 상단 <strong>⋮ 메뉴</strong> 누르기<br/>3. <strong>"홈 화면에 추가"</strong> 선택</p>
+            <div style={{background:'#F8FAFC',padding:'15px',borderRadius:'10px',marginBottom:'15px',textAlign:'left'}}>
+              <h4 style={{color:'#000',marginBottom:'10px'}}>🤖 갤럭시 (Chrome/삼성인터넷)</h4>
+              <p style={{fontSize:'0.95rem',color:'#444',lineHeight:'1.6',margin:0}}>1. 화면 우측 상단 <b>[메뉴 ⋮]</b> 버튼을 누르세요.<br/>2. <b>[홈 화면에 추가]</b>를 선택하세요.</p>
             </div>
-            <button className="clb" onClick={() => setShowInstallGuide(false)}>닫기</button>
+            <button style={{marginTop:'10px',width:'100%',padding:'15px',background:'#FFEB3B',border:'none',borderRadius:'10px',fontWeight:'bold',color:'#333',fontSize:'1.1rem',cursor:'pointer'}} onClick={() => setShowInstallGuide(false)}>확인했습니다</button>
           </div>
         </div>
       )}
@@ -294,6 +294,7 @@ export default function HomeClient() {
         .tb-right{display:flex;justify-content:flex-end;align-items:center;gap:10px}
         .inst-txt{color:white;font-size:0.8rem;white-space:nowrap}
         .inst-btn{background:#ffda00;border:none;padding:4px 10px;border-radius:4px;font-weight:bold;font-size:0.75rem;cursor:pointer}
+        .mob-inst{display:none}
         .tb-close{color:white;background:none;border:none;font-size:1.5rem;cursor:pointer}
 
         .fctrl{position:fixed;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px}
@@ -355,7 +356,7 @@ export default function HomeClient() {
         .va{padding:15px;display:flex;justify-content:space-between;background:black}
         .kb{background:#FEE500;border:none;padding:8px 20px;border-radius:20px;font-weight:bold;cursor:pointer}
 
-        .bn{position:fixed;bottom:0;left:0;width:100%;height:60px;background:white;border-top:1px solid #eee;display:flex;z-index:1000}
+        .bn{position:fixed;bottom:0;left:0;width:100%;height:60px;background:white;border-top:1px solid #eee;display:none;z-index:1000}
         .ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.8rem;font-weight:bold;color:#888;cursor:pointer}
         .ni.act{color:#5C3A40}
 
@@ -365,8 +366,10 @@ export default function HomeClient() {
           .topbar{display:flex;flex-direction:column;height:auto;padding:10px;gap:5px}
           .tb-left,.tb-right{width:100%;display:flex;justify-content:space-between;align-items:center}
           .tb-center{width:100%;padding:5px 0}
+          .mob-inst{display:flex;align-items:center;gap:10px}
           .sr{flex-direction:column;align-items:flex-start;gap:10px}
           .rbt{width:100%;padding:10px}
+          .bn{display:flex}
         }
       `}</style>
     </div>
