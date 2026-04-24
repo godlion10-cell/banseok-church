@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || 'UCc_eP0i4YwSQmQ9du5-RHbA';
-const API_KEY = process.env.YOUTUBE_API_KEY;
+const API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyA-r27nf8ikF5-JKDsAbkTpbOI67HG5NZU';
 
 // ===== 예배 시간 판별 (한국시간 기준) =====
 function getKST(): Date {
