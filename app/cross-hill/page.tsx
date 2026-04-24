@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { sendPrayerToTelegram } from '../actions/telegram';
 
 export default function CrossHillPage() {
   const [prayer, setPrayer] = useState('');
@@ -12,18 +13,12 @@ export default function CrossHillPage() {
 
     setIsLoading(true);
 
-    // 📱 목사님 텔레그램으로 기도 제목 전달
-    const BOT_TOKEN = "8538286497:AAG0QaI4dnjsBMmv82gMNpWiLlYYGdyeBFg";
-    const CHAT_ID = "8747696435";
-    
-    // 텔레그램에 예쁘게 보일 메시지 포맷
-    const text = `🙏 [십자가 언덕 누군가의 기도]\n\n"${prayer}"\n\n목사님, 기도가 필요합니다.`;
+    // 📱 서버 액션으로 텔레그램 전송 (토큰 안전!)
+    const result = await sendPrayerToTelegram(prayer);
 
-    try {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`);
+    if (result.success) {
       setIsSubmitted(true);
-    } catch (error) {
-      console.error("텔레그램 발송 오류:", error);
+    } else {
       alert("일시적인 오류가 발생했습니다. 다시 시도해주세요.");
     }
     setIsLoading(false);
@@ -33,7 +28,6 @@ export default function CrossHillPage() {
     <div style={{ minHeight: '100vh', background: '#111827', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       
       {isSubmitted ? (
-        // ✅ 제출 완료 후 은혜로운 화면
         <div style={{ textAlign: 'center', animation: 'fadeIn 2s' }}>
           <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🕊️</div>
           <h2 style={{ color: '#FDE047', fontSize: '2rem', marginBottom: '15px' }}>무거운 짐이 십자가 아래로 내려졌습니다.</h2>
@@ -48,7 +42,6 @@ export default function CrossHillPage() {
           </button>
         </div>
       ) : (
-        // ✍️ 기도 제목 입력 화면
         <div style={{ width: '100%', maxWidth: '500px', textAlign: 'center' }}>
           <h2 style={{ color: '#FCA5A5', fontSize: '2.5rem', marginBottom: '10px', fontWeight: 'bold' }}>✝️ 십자가 언덕</h2>
           <p style={{ color: '#9CA3AF', marginBottom: '30px', fontSize: '1.1rem' }}>

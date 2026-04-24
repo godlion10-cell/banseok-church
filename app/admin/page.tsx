@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { sendAdminLoginAlert } from '../actions/telegram';
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
@@ -8,21 +9,12 @@ export default function AdminLoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 🚨 임시 비밀번호 — 추후 환경변수(.env)로 분리 가능
     if (password === 'banseok1004') {
       setIsLoggedIn(true);
       
-      // 📱 텔레그램으로 알림 보내기
-      const BOT_TOKEN = "8538286497:AAG0QaI4dnjsBMmv82gMNpWiLlYYGdyeBFg";
-      const CHAT_ID = "8747696435";
-      const text = "🔔 [시스템 알림] 거제반석교회 관리자 모드에 접속했습니다.";
-
-      try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`);
-        console.log("텔레그램 발송 성공!");
-      } catch (error) {
-        console.error("텔레그램 발송 오류:", error);
-      }
+      // 📱 서버 액션으로 텔레그램 알림 (토큰이 브라우저에 안 보임!)
+      await sendAdminLoginAlert();
+      console.log("텔레그램 발송 완료!");
     } else {
       alert('비밀번호가 틀렸습니다. 다시 입력해주세요.');
     }
