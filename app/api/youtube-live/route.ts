@@ -6,23 +6,68 @@ export const revalidate = 0;
 const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || 'UCc_eP0i4YwSQmQ9du5-RHbA';
 const API_KEY = process.env.YOUTUBE_API_KEY;
 
-function isWorshipTime(): boolean {
+// ===== 예배 시간 판별 (한국시간 기준) =====
+function getKST(): Date {
   const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
-  const day = kst.getDay();
-  const t = kst.getHours() * 60 + kst.getMinutes();
+  return new Date(now.getTime() + (9 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+}
+
+function isWorshipTime(): boolean {
+  const kst = getKST();
+  const day = kst.getDay(); // 0=일, 1=월, ..., 6=토
+  const t = kst.getHours() * 60 + kst.getMinutes(); // 분 단위
+
   return (
+    // 주일 오전 1부 (08:40 ~ 10:40)
     (day === 0 && t >= 520 && t <= 640) ||
+    // 주일 오전 2부 (10:30 ~ 12:40)
     (day === 0 && t >= 630 && t <= 760) ||
-    (day === 0 && t >= 820 && t <= 940) ||
+    // 주일 오후 (13:30 ~ 15:40)
+    (day === 0 && t >= 810 && t <= 940) ||
+    // 수요 저녁 (19:10 ~ 21:10)
     (day === 3 && t >= 1150 && t <= 1270) ||
+    // 금요 기도회 (19:40 ~ 21:40)
     (day === 5 && t >= 1180 && t <= 1300) ||
-    (day >= 1 && day <= 5 && t >= 325 && t <= 380)
+    // 새벽기도 월~토 (05:10 ~ 06:20)
+    (day >= 1 && day <= 6 && t >= 310 && t <= 380)
   );
 }
 
-// 💡 유튜브 API로 라이브 감지 (정확하고 안정적)
-async function getLiveStreamFromAPI(): Promise<{ videoId: string; title: string; thumbnail: string } | null> {
+// ===== 1순위: HTML 스크래핑 (무료! API 할당량 0) =====
+async function detectLiveByScraping(): Promise<{ videoId: string; title: string } | null> {
+  try {
+    const res = await fetch(`https://www.youtube.com/@petros-church/live`, {
+      cache: 'no-store',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept-Language': 'ko-KR,ko;q=0.9',
+        'Cookie': 'CONSENT=PENDING+987; SOCS=CAESEwgDEgk2MTcyNTcyNTIaAmVuIAEaBgiA_LyaBg',
+      },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    // 라이브 뱃지가 없으면 방송 중이 아님
+    if (!html.includes('BADGE_STYLE_TYPE_LIVE_NOW')) return null;
+
+    // 영상 ID 추출
+    const match = html.match(/<link\s+rel="canonical"\s+href="https:\/\/www\.youtube\.com\/watch\?v=([^"&]+)"/) ||
+                  html.match(/<meta\s+property="og:url"\s+content="https:\/\/www\.youtube\.com\/watch\?v=([^"&]+)"/);
+    if (!match) return null;
+
+    // 제목 추출
+    const titleMatch = html.match(/<meta\s+name="title"\s+content="([^"]+)"/) ||
+                       html.match(/<title>([^<]+)<\/title>/);
+    const title = titleMatch ? titleMatch[1].replace(' - YouTube', '') : '실시간 예배';
+
+    return { videoId: match[1], title };
+  } catch {
+    return null;
+  }
+}
+
+// ===== 2순위: YouTube API (예배 시간에만 사용, 할당량 100) =====
+async function detectLiveByAPI(): Promise<{ videoId: string; title: string; thumbnail: string } | null> {
   if (!API_KEY) return null;
   try {
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&type=video&eventType=live&key=${API_KEY}`;
@@ -38,65 +83,62 @@ async function getLiveStreamFromAPI(): Promise<{ videoId: string; title: string;
       };
     }
   } catch (error) {
-    console.error('유튜브 API 라이브 감지 오류:', error);
+    console.error('YouTube API 라이브 감지 오류:', error);
   }
   return null;
 }
 
-// 🔄 HTML 스크래핑 폴백 (API 키가 없거나 할당량 초과 시)
-async function getLiveStreamFromScrape(): Promise<{ videoId: string; title: string } | null> {
-  try {
-    const res = await fetch(`https://www.youtube.com/@petros-church/live`, {
-      cache: 'no-store',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept-Language': 'ko-KR,ko;q=0.9',
-        'Cookie': 'CONSENT=PENDING+987; SOCS=CAESEwgDEgk2MTcyNTcyNTIaAmVuIAEaBgiA_LyaBg',
-      },
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-    if (!html.includes('BADGE_STYLE_TYPE_LIVE_NOW')) return null;
-    const match = html.match(/<link\s+rel="canonical"\s+href="https:\/\/www\.youtube\.com\/watch\?v=([^"&]+)"/) ||
-                  html.match(/<meta\s+property="og:url"\s+content="https:\/\/www\.youtube\.com\/watch\?v=([^"&]+)"/);
-    if (!match) return null;
-    return { videoId: match[1], title: '' };
-  } catch { return null; }
-}
-
+// ===== GET 핸들러 =====
 export async function GET() {
   try {
-    // 1차: 유튜브 API로 정확한 라이브 감지
-    const apiResult = await getLiveStreamFromAPI();
-    if (apiResult) {
-      return NextResponse.json({
-        live: true, videoId: apiResult.videoId, title: apiResult.title,
-        thumbnail: apiResult.thumbnail, method: 'youtube-api'
-      });
-    }
+    const worship = isWorshipTime();
 
-    // 2차: API 실패 시 HTML 스크래핑 폴백
-    const scrapeResult = await getLiveStreamFromScrape();
+    // 1순위: HTML 스크래핑 (무료, 항상 시도)
+    const scrapeResult = await detectLiveByScraping();
     if (scrapeResult) {
       return NextResponse.json({
-        live: true, videoId: scrapeResult.videoId, title: scrapeResult.title, method: 'scrape-fallback'
+        live: true,
+        videoId: scrapeResult.videoId,
+        title: scrapeResult.title,
+        method: 'scrape',
+        isWorshipTime: worship,
       });
     }
 
-    // 3차: 예배 시간 기반 폴백
-    if (isWorshipTime()) {
+    // 2순위: YouTube API (예배 시간에만 사용하여 할당량 절약)
+    if (worship) {
+      const apiResult = await detectLiveByAPI();
+      if (apiResult) {
+        return NextResponse.json({
+          live: true,
+          videoId: apiResult.videoId,
+          title: apiResult.title,
+          thumbnail: apiResult.thumbnail,
+          method: 'api',
+          isWorshipTime: worship,
+        });
+      }
+    }
+
+    // 3순위: 예배 시간이면 채널 임베드로 폴백
+    if (worship) {
       return NextResponse.json({
-        live: true, videoId: null, title: '실시간 예배', method: 'time-fallback', channelId: CHANNEL_ID
+        live: false,
+        videoId: null,
+        title: '',
+        method: 'time-standby',
+        isWorshipTime: true,
       });
     }
 
-    return NextResponse.json({ live: false, videoId: null, title: '' });
+    // 예배 시간이 아님 → 라이브 없음
+    return NextResponse.json({
+      live: false,
+      videoId: null,
+      title: '',
+      isWorshipTime: false,
+    });
   } catch {
-    if (isWorshipTime()) {
-      return NextResponse.json({
-        live: true, videoId: null, title: '실시간 예배', method: 'error-fallback', channelId: CHANNEL_ID
-      });
-    }
-    return NextResponse.json({ live: false, videoId: null });
+    return NextResponse.json({ live: false, videoId: null, isWorshipTime: isWorshipTime() });
   }
 }

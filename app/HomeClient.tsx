@@ -77,17 +77,25 @@ export default function HomeClient() {
     });
   }, []);
 
-  // 🔴 실시간 방송 감지
+  // 🔴 실시간 방송 감지 (예배시간: 60초 / 평소: 5분)
   useEffect(() => {
+    let timer: any;
     const sync = async () => {
       try {
         const res = await fetch(`/api/youtube-live?t=${Date.now()}`, { cache: 'no-store' });
         const data = await res.json();
         setIsLive(data.live); setLiveVideoId(data.videoId || null);
-      } catch { setIsLive(false); }
+        // 서버가 알려주는 예배 시간 여부에 따라 폴링 주기 조절
+        const nextInterval = data.isWorshipTime ? 60000 : 300000; // 60초 vs 5분
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(sync, nextInterval);
+      } catch {
+        setIsLive(false);
+        timer = setTimeout(sync, 300000); // 에러 시 5분 후 재시도
+      }
     };
-    sync(); const timer = setInterval(sync, 15000);
-    return () => clearInterval(timer);
+    sync();
+    return () => { if (timer) clearTimeout(timer); };
   }, []);
 
   const filteredSermons = sermons.filter(s =>
