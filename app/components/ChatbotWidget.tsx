@@ -230,11 +230,22 @@ export default function ChatbotWidget() {
     else if (userText.includes("이음돌") || userText.includes("모임")) {
       botReply = "이음돌 모임 보고를 하시려면 '이음돌 보고'라고 말씀해 주세요! 📝";
     }
-    // 7. [다음세대] 주일학교/청소년부
-    else if (userText.includes("다음세대") || userText.includes("주일학교") || userText.includes("청소년") || userText.includes("아이")) {
-      botReply = "다음세대(주일학교/청소년부) 일정과 소식을 확인하시겠어요? 🧒";
-      actionLabel = "🌱 다음세대 게시판";
-      actionLink = "/next-gen";
+    // 7. [다음세대] 부모님/교사 분기
+    else if (userText.includes("다음세대") || userText.includes("주일학교") || userText.includes("청소년") || userText.includes("애들") || userText.includes("아이")) {
+      if (isAdmin) {
+        botReply = "선생님, 오늘 반 아이들 출석 체크를 시작할까요? 말씀만 하시면 제가 부모님들께 알림을 쏩니다!";
+        actionLabel = "📊 반 관리 대시보드";
+        actionLink = "/next-gen";
+      } else {
+        botReply = "부모님, 우리 아이 신앙 기록을 확인하시겠어요? 오늘 출석 상태와 달란트 점수를 바로 알려드릴게요.";
+        actionLabel = "👦 우리 아이 보러가기";
+        actionLink = "/next-gen";
+      }
+    }
+    // 8. [출석 완료] 교사가 출석 마감 시 부모님 알림
+    else if (isAdmin && (userText.includes("출석 완료") || userText.includes("출석 마감"))) {
+      botReply = "✅ 완료되었습니다!\n1. 부모님들께 안심 알림 전송 완료\n2. 아이들 달란트 +5점 적립 완료\n3. 결석자(2명) 심방 메시지를 보낼까요?";
+      actionLabel = "📲 결석자 심방 메시지 보내기";
     }
     // 🕐 주일 자동 인사
     else if (isSunday && hour >= 8 && hour <= 13) {
