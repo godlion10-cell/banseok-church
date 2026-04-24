@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import AccessibilityWidget from './components/AccessibilityWidget';
+import ChatbotWidget from './components/ChatbotWidget';
 
 export const metadata: Metadata = {
   title: '거제반석교회 | 반석 위에 굳게 서는 교회',
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <AccessibilityWidget />
+        <ChatbotWidget />
       </body>
     </html>
   );
