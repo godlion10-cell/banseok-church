@@ -108,60 +108,42 @@ export default function ChatbotWidget() {
     let actionLabel: string | undefined = undefined;
     let actionLink: string | undefined = undefined;
 
-    // 관리자 모드 특수 명령 (최우선)
-    if (isAdmin && (userText.includes("통계") || userText.includes("관리") || userText.includes("현황"))) {
-      botReply = "관리자님, 전 성도의 성경 일독 현황과 대시보드를 열람하시겠습니까?";
-      actionLabel = "👑 관리자 마스터 뷰";
-      actionLink = "/admin/bible-status";
-    }
-    // 관리자 기존 명령
-    else if (isAdmin) {
-      analyzeAdminCommand(userText);
-      return;
-    }
-    // 1. 설교 라디오
-    else if (userText.includes("설교") || userText.includes("라디오") || userText.includes("말씀 듣기") || userText.includes("말씀")) {
+    // 1. [제4엔진] 설교 라디오
+    if (userText.includes("설교") || userText.includes("라디오") || userText.includes("말씀 듣기")) {
       botReply = "데이터를 아껴주는 '설교 라디오' 방으로 모실까요? 화면을 꺼도 목사님 말씀이 계속 나옵니다.";
       actionLabel = "📻 라디오 모드 가기";
       actionLink = "/sermon-radio";
     }
-    // 2. 심방/상담 예약
+    // 2. [제2엔진] 심방/상담 예약
     else if (userText.includes("상담") || userText.includes("심방") || userText.includes("예약")) {
       botReply = "목사님과의 따뜻한 만남을 예약해 드릴게요. 원하시는 시간을 말씀해 주세요.";
       actionLabel = "📅 심방/상담 예약하기";
       actionLink = "/visitation";
     }
-    // 3. 십자가 기도실
-    else if (userText.includes("기도") || userText.includes("회개") || userText.includes("십자가") || userText.includes("힘들어")) {
-      botReply = "무거운 마음의 짐을 십자가 앞에 내려놓으실 수 있도록 기도실로 안내해 드리겠습니다.";
-      actionLabel = "✝️ 십자가 언덕으로 가기";
-      actionLink = "/cross-hill";
-    }
-    // 4. 새가족 등록
-    else if (userText.includes("처음") || userText.includes("등록") || userText.includes("새가족") || userText.includes("가입")) {
+    // 3. [제8엔진] 새가족 등록 (좁은 문)
+    else if (userText.includes("처음") || userText.includes("등록") || userText.includes("새가족")) {
       botReply = "거제반석교회에 처음 오셨군요! 환영 선물이 기다리는 '좁은 문' 등록 페이지로 안내할게요.";
       actionLabel = "🚪 새가족 등록(선물받기)";
-      actionLink = "/newcomer";
+      actionLink = "/welcome";
     }
-    // 5. 성경 일독 & 퀴즈
+    // 4. [제10엔진] 성경 일독 & 퀴즈
     else if (userText.includes("성경") || userText.includes("퀴즈") || userText.includes("진도")) {
       botReply = "오늘의 성경 읽기 진도를 확인하고 재미있는 퀴즈도 풀어보세요! 레벨업이 기다립니다.";
       actionLabel = "📖 성경 일독 매니저";
-      actionLink = "/bible-quiz";
+      actionLink = "/bible-manager";
     }
-    // 6. 돋보기/음성 안내
+    // 5. [제1엔진] 돋보기/음성 (우측 하단 위젯 안내)
     else if (userText.includes("크게") || userText.includes("돋보기") || userText.includes("읽어줘")) {
       botReply = "화면 오른쪽 아래의 🔍 돋보기 버튼을 누르시면 글자를 크게 보거나 목소리로 들으실 수 있어요!";
     }
-    // 7. 예배 순서
-    else if (userText.includes("예배") && userText.includes("순서")) {
-      botReply = "이번 주 주일예배 순서입니다.\n1. 묵도\n2. 찬송\n3. 성경봉독\n4. 설교\n5. 축도";
-    }
-    // 기본 응답
-    else {
-      botReply = "제가 아직 배우는 중이라 정확히 이해하지 못했어요. 교역자님께 연결해 드릴까요?";
+    // 6. [관리자 모드 특수 명령]
+    else if (isAdmin && (userText.includes("통계") || userText.includes("관리"))) {
+      botReply = "관리자님, 전 성도의 성경 일독 현황과 헌금 대시보드를 열람하시겠습니까?";
+      actionLabel = "👑 관리자 마스터 뷰";
+      actionLink = "/admin/bible-status";
     }
 
+    // 🔊 대형 자막+음성과 함께 응답 출력
     setTimeout(() => {
       setMessages(prev => [...prev, { sender: 'bot', text: botReply, actionLabel, actionLink }]);
       speakAndView(botReply);
