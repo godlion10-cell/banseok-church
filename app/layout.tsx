@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import AccessibilityWidget from './components/AccessibilityWidget';
 
 export const metadata: Metadata = {
   title: '거제반석교회 | 반석 위에 굳게 서는 교회',
@@ -34,7 +35,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="반석교회" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AccessibilityWidget />
+      </body>
     </html>
   );
 }
