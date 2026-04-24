@@ -166,15 +166,15 @@ export default function ChatbotWidget() {
       botReply = "화면 오른쪽 아래의 🔍 돋보기 버튼을 누르시면 글자를 크게 보거나 목소리로 들으실 수 있어요!";
     }
     // 6. [이음돌 보고] 관리자/성도 분기
-    else if (userText.includes("이음돌") || userText.includes("구역") || userText.includes("모임") || userText.includes("보고")) {
+    else if (userText.includes("이음돌") || userText.includes("모임 보고")) {
       if (isAdmin) {
-        botReply = "관리자님, 현재 이음돌 보고 현황을 확인하시겠습니까? 미제출 이음돌에 알림을 보낼 수도 있습니다.";
-        actionLabel = "👑 전체 이음돌 현황판";
-        actionLink = "/admin/eumdol-status";
+        botReply = "관리자님, 현재 접수된 이음돌 모임 보고서들을 정리해 드릴까요?";
+        actionLabel = "👑 이음돌 전체 현황";
+        actionLink = "/admin/ieumdol-status";
       } else {
-        botReply = "오늘 이음돌 예배 드리셨나요? 보고서를 제가 대신 정리해서 목사님께 전달할게요!";
-        actionLabel = "📝 이음돌 보고서 작성하기";
-        actionLink = "/eumdol-report";
+        botReply = "이음돌 리더님, 오늘 모임 은혜로우셨나요? 😊\n\n모인 분들의 [성함]과 [기도 제목]을 말씀해 주시면 제가 사장님(목사님)께 텔레그램으로 즉시 보고하겠습니다!";
+        actionLabel = "📝 이음돌 보고서 작성";
+        actionLink = "/ieumdol/report";
       }
     }
     // 🕐 주일 자동 인사 (예배 시간에 아무 말이나 하면)
