@@ -170,26 +170,26 @@ export default function HomeClient() {
               <div className="core-tree-layout">
                 <div className="tree-line"></div>
                 <div className="tree-item">
-                  <div className="tree-circle">🍇<br/>열매</div>
-                  <div className="tree-content"><h4>사역의 가치 (生命)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
+                  <div className="tree-image-box"><img src="/vision/tree-fruit.png" alt="열매" className="custom-icon" /></div>
+                  <div className="tree-content"><h4>열매: 사역의 가치 (生命)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
                 </div>
                 <div className="tree-item">
-                  <div className="tree-circle">⛪<br/>기둥</div>
-                  <div className="tree-content"><h4>신앙의 본질 (恩惠)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
+                  <div className="tree-image-box"><img src="/vision/tree-pillar.png" alt="기둥" className="custom-icon" /></div>
+                  <div className="tree-content"><h4>기둥: 신앙의 본질 (恩惠)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
                 </div>
                 <div className="tree-item">
-                  <div className="tree-circle">🌳<br/>뿌리</div>
-                  <div className="tree-content"><h4>복음의 진리 (盤石)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
+                  <div className="tree-image-box"><img src="/vision/tree-root.png" alt="뿌리" className="custom-icon" /></div>
+                  <div className="tree-content"><h4>뿌리: 복음의 진리 (盤石)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
                 </div>
               </div>
               <div className="vision-four-grid">
-                <div className="v-card"><div className="v-icon">💎</div><h4>단단한 교회</h4><p>하나님의 진리로 순전해지며</p></div>
-                <div className="v-card"><div className="v-icon">🛡️</div><h4>강건한 교회</h4><p>예수의 생명력으로 세상을 이김</p></div>
-                <div className="v-card"><div className="v-icon">🌱</div><h4>세우는 교회</h4><p>다음 세대를 리더로 키우고</p></div>
-                <div className="v-card"><div className="v-icon">⚓</div><h4>굳건한 교회</h4><p>모든 영역에 하나님 나라를 확장함</p></div>
+                <div className="v-card"><img src="/vision/icon-crystal.png" alt="단단한 교회" className="v-img-icon" /><h4>단단한 교회</h4><p>하나님의 진리로 순전해지며</p></div>
+                <div className="v-card"><img src="/vision/icon-shield.png" alt="강건한 교회" className="v-img-icon" /><h4>강건한 교회</h4><p>예수의 생명력으로 세상을 이김</p></div>
+                <div className="v-card"><img src="/vision/icon-column.png" alt="세우는 교회" className="v-img-icon" /><h4>세우는 교회</h4><p>다음 세대를 리더로 키우고</p></div>
+                <div className="v-card"><img src="/vision/icon-anchor.png" alt="굳건한 교회" className="v-img-icon" /><h4>굳건한 교회</h4><p>모든 영역에 하나님 나라를 확장함</p></div>
               </div>
               <div className="bottom-stone-banner">
-                <div className="stone-icon">🪨</div>
+                <div className="stone-image-wrap"><img src="/vision/stone-hand.png" alt="물맷돌" className="stone-img" /></div>
                 <div className="stone-text"><h3>하나님의 손에 붙잡힌 매끄러운 돌</h3><p>다윗의 물맷돌처럼 성도 각 사람이 하나님의 도구가 되어 세상을 이기는 비전입니다.</p></div>
               </div>
             </div>
@@ -435,11 +435,12 @@ export default function HomeClient() {
         .core-tree-layout { position: relative; display: flex; flex-direction: column; gap: 30px; padding-left: 20px; }
         .tree-line { position: absolute; left: 60px; top: 20px; bottom: 20px; width: 4px; background: #CBD5E1; z-index: 1; }
         .tree-item { display: flex; align-items: center; gap: 20px; z-index: 2; }
-        .tree-circle { width: 80px; height: 80px; background: #1E3A8A; color: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); flex-shrink: 0; text-align: center; line-height: 1.3; border: 3px solid white; }
+        .tree-image-box { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); flex-shrink: 0; border: 3px solid #1E3A8A; overflow: hidden; }
+        .custom-icon { width: 60%; height: 60%; object-fit: contain; }
         .tree-content { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex: 1; border-left: 5px solid #1E3A8A; }
-        .tree-content h4 { color: #1E293B; font-weight: 800; font-size: 1.2rem; margin-bottom: 8px; }
-        .tree-content p { color: #475569; font-size: 1rem; word-break: keep-all; line-height: 1.5; }
-        .dk .tree-circle { background: #334155; border-color: #475569; }
+        .tree-content h4 { color: #1E293B; font-weight: 800; font-size: 1.1rem; margin-bottom: 8px; }
+        .tree-content p { color: #475569; font-size: 0.95rem; word-break: keep-all; line-height: 1.5; }
+        .dk .tree-image-box { background: #334155; border-color: #475569; }
         .dk .tree-content { background: #1E293B; border-left-color: #475569; }
         .dk .tree-content h4 { color: #eee; }
         .dk .tree-content p { color: #aaa; }
@@ -447,20 +448,21 @@ export default function HomeClient() {
         .v-card { background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #E2E8F0; transition: transform 0.2s; }
         .v-card:hover { transform: translateY(-5px); }
         .dk .v-card { background: #1E293B; border-color: #334155; }
-        .v-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .v-img-icon { width: 60px; height: 60px; object-fit: contain; margin-bottom: 15px; }
         .v-card h4 { font-weight: bold; color: #0F172A; font-size: 1.1rem; margin-bottom: 10px; }
         .dk .v-card h4 { color: #c19c72; }
         .v-card p { font-size: 0.9rem; color: #64748B; word-break: keep-all; }
         .dk .v-card p { color: #aaa; }
-        .bottom-stone-banner { background: linear-gradient(135deg, #1E3A8A, #111827); color: white; padding: 30px; border-radius: 15px; display: flex; align-items: center; gap: 20px; }
-        .stone-icon { font-size: 3.5rem; }
+        .bottom-stone-banner { background: linear-gradient(135deg, #1E3A8A, #111827); color: white; padding: 30px; border-radius: 15px; display: flex; align-items: center; gap: 30px; }
+        .stone-image-wrap { width: 100px; flex-shrink: 0; }
+        .stone-img { width: 100%; height: auto; object-fit: contain; }
         .stone-text h3 { color: #FDE047; font-size: 1.4rem; font-weight: bold; margin-bottom: 8px; }
         .stone-text p { font-size: 1rem; opacity: 0.9; line-height: 1.5; word-break: keep-all; }
         @media (max-width: 600px) {
           .vision-four-grid { grid-template-columns: 1fr; }
-          .bottom-stone-banner { flex-direction: column; text-align: center; }
+          .bottom-stone-banner { flex-direction: column; text-align: center; gap: 15px; }
           .tree-line { left: 40px; }
-          .tree-circle { width: 60px; height: 60px; font-size: 0.75rem; }
+          .tree-image-box { width: 60px; height: 60px; }
         }
 
         /* 교회소식 */
