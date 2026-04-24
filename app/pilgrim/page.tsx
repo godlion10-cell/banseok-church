@@ -26,14 +26,18 @@ export default function PilgrimMapPage() {
           </div>
         </Link>
 
-        {/* 🔒 앞으로 오픈될 여정들 (준비 중) */}
-        <div style={{ background: '#F3F4F6', padding: '30px', borderRadius: '15px', color: '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '2px dashed #D1D5DB' }}>
-          <div>
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '10px' }}>🚪 좁은 문 (준비 중)</h3>
-            <p style={{ fontSize: '0.95rem' }}>새가족을 위한 따뜻한 환영과 복음의 기초 안내소</p>
+        {/* ✅ 활성화된 두 번째 여정 : 좁은 문 */}
+        <Link href="/narrow-gate" style={{ textDecoration: 'none' }}>
+          <div style={{ background: 'linear-gradient(135deg, #78350F, #D97706)', padding: '30px', borderRadius: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', transition: 'transform 0.2s', cursor: 'pointer' }}
+               onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+               onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div>
+              <h3 style={{ fontSize: '1.5rem', color: '#FEF3C7', marginBottom: '10px' }}>🚪 좁은 문 (입장 가능)</h3>
+              <p style={{ color: '#FDE68A', fontSize: '0.95rem' }}>새가족을 위한 따뜻한 환영과 복음의 기초 안내소</p>
+            </div>
+            <div style={{ fontSize: '2rem' }}>👉</div>
           </div>
-          <div style={{ fontSize: '1.5rem' }}>🔒</div>
-        </div>
+        </Link>
 
         <div style={{ background: '#F3F4F6', padding: '30px', borderRadius: '15px', color: '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '2px dashed #D1D5DB' }}>
           <div>
