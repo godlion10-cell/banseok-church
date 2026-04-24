@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const API_KEY = process.env.YOUTUBE_API_KEY;
+const API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyA-r27nf8ikF5-JKDsAbkTpbOI67HG5NZU';
 // 💡 채널 ID(UC...)의 'C'를 'U'로 바꾸면 업로드 재생목록 ID가 됩니다!
 // playlistItems API는 할당량 1 (search API는 100) → 비용 1/100 절감!
 const UPLOADS_PLAYLIST_ID = 'UUc_eP0i4YwSQmQ9du5-RHbA';
@@ -38,6 +38,8 @@ export async function GET() {
       if (title.includes('주일')) { category = '주일오전'; gradient = 'linear-gradient(135deg, #701a75, #9f1239)'; }
       else if (title.includes('수요')) { category = '수요예배'; gradient = 'linear-gradient(135deg, #064e3b, #0f766e)'; }
       else if (title.includes('새벽')) { category = '새벽기도'; gradient = 'linear-gradient(135deg, #451a03, #78350f)'; }
+      else if (title.includes('금요')) { category = '금요기도'; gradient = 'linear-gradient(135deg, #1E3A8A, #3B82F6)'; }
+      else if (title.includes('QT') || title.includes('qt')) { category = 'QT'; gradient = 'linear-gradient(135deg, #065F46, #10B981)'; }
 
       const dateObj = new Date(item.snippet.publishedAt);
       const dateStr = `${dateObj.getFullYear()}. ${dateObj.getMonth() + 1}. ${dateObj.getDate()}`;
