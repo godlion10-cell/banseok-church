@@ -18,6 +18,7 @@ export default function HomeClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [fontSize, setFontSize] = useState(1.3);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState('설교말씀');
   const [showBulletin, setShowBulletin] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
@@ -109,12 +110,9 @@ export default function HomeClient() {
           <img src="/church-logo.png" alt="반석교회" className="ch-logo-img" />
         </div>
         <nav className={`ch-nav ${showMobileMenu ? 'ch-nav-open' : ''}`}>
-          <button className="ch-nav-link" onClick={() => setShowMobileMenu(false)}>교회소개</button>
-          <button className="ch-nav-link" onClick={() => setShowMobileMenu(false)}>비전과사명</button>
-          <button className="ch-nav-link ch-nav-active" onClick={() => setShowMobileMenu(false)}>설교말씀</button>
-          <button className="ch-nav-link" onClick={() => setShowMobileMenu(false)}>교회소식</button>
-          <button className="ch-nav-link" onClick={() => { setShowBulletin(true); setShowMobileMenu(false); }}>예배안내</button>
-          <button className="ch-nav-link" onClick={() => { setShowMapModal(true); setShowMobileMenu(false); }}>오시는길</button>
+          {['교회소개','비전과사명','설교말씀','교회소식','예배안내','오시는길'].map(tab => (
+            <button key={tab} className={`ch-nav-link ${activeTab === tab ? 'ch-nav-active' : ''}`} onClick={() => { setActiveTab(tab); setShowMobileMenu(false); }}>{tab}</button>
+          ))}
         </nav>
         <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
       </header>
@@ -136,79 +134,133 @@ export default function HomeClient() {
           </div>
         )}
 
-        {/* 히어로 */}
-        <div className="hero">
-          <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>✝️</div>
-          <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>거제반석교회 온라인 성전</h3>
-          <div className="nb">주일 대예배: 오전 9시 / 11시</div>
-          <button className="bb" onClick={() => setShowBulletin(true)}>📄 이번 주 스마트 주보 보기</button>
-        </div>
-
-        {/* 필터 */}
-        <div className="fa">
-          <div className="fb">
-            {['전체', '주일오전', '수요예배', '새벽기도'].map(tag => (
-              <button key={tag} onClick={() => setActiveFilter(tag)} className={`ftb ${activeFilter === tag ? 'act' : ''}`}>{tag}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* 설교 카드 */}
-        <div className="cd">
-          {isLoading ? (
-            <div style={{ textAlign: 'center', padding: '50px', fontWeight: 'bold' }}>📡 유튜브에서 최신 은혜의 말씀을 불러오는 중입니다...</div>
-          ) : activeFilter === '전체' && searchTerm === '' ? (
-            <div className="sg">
-              {filteredSermons.map(s => (
-                <div key={s.id} onClick={() => setPopupVideo(s)} className="sc">
-                  <div className="sch" style={{ background: s.gradient }}>
-                    <div className="st">"{s.title}"</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="ll">
-              {filteredSermons.map(s => (
-                <div key={s.id} onClick={() => setPopupVideo(s)} className="lc" style={{ background: s.gradient }}>
-                  <div className="lh">
-                    <h3 style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>"{s.title}"</h3>
-                  </div>
-                  <div className="l-summary-overlay">
-                     <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 말씀 요약 안내</h4>
-                     <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}>
-                        <p>아래 재생 버튼을 눌러 생생한 은혜의 말씀을 들어보세요.</p>
-                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 아카이브 */}
-        {!isLoading && sermons.length > 0 && (
-          <div className="arc">
-            <h2 className="arc-t">💧 다시 채우는 생수</h2>
-            <p className="arc-s">최근 한 달간의 은혜로운 말씀 모음</p>
-            <div className="smb">
-              <div className="mhb">최신 설교 영상 <span>▲</span></div>
-              {sermons.slice(0, 5).map(s => (
-                <div key={s.id} className="sr" onClick={() => setPopupVideo(s)}>
-                  <span className="rb" style={{ background: s.category === '주일오전' ? '#9f1239' : s.category === '수요예배' ? '#0f766e' : '#475569' }}>{s.category}</span>
-                  <span className="rt">{s.title}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#888', marginRight: '10px' }}>{s.date}</span>
-                  <button className="rbt">재생</button>
-                </div>
-              ))}
+        {/* ===== 교회소개 탭 ===== */}
+        {activeTab === '교회소개' && (
+          <div className="tab-content">
+            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>⛪ 거제반석교회를 소개합니다</h3></div>
+            <div className="info-section">
+              <div className="info-card"><h4>🏛️ 교회 연혁</h4><p>대한예수교장로회 거제반석교회는 하나님의 말씀 위에 굳게 서서, 거제 지역사회에 복음의 빛을 전하고 있습니다.</p></div>
+              <div className="info-card"><h4>📍 위치</h4><p>경남 거제시 연초면 소오비길 40-6</p></div>
+              <div className="info-card"><h4>📞 연락처</h4><p>전화 문의는 교회 사무실로 연락 바랍니다.</p></div>
+              <div className="info-card"><h4>👨‍💼 담임목사</h4><p>이주민 목사</p></div>
             </div>
           </div>
         )}
 
-        {/* 유튜브 채널 바로가기 */}
-        <div style={{ textAlign: 'center', marginTop: '30px' }}>
-          <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" className="yt-link">▶ 유튜브에서 더 보기</a>
-        </div>
+        {/* ===== 비전과사명 탭 ===== */}
+        {activeTab === '비전과사명' && (
+          <div className="tab-content">
+            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>🌟 비전과 사명</h3><p style={{marginTop:'10px',opacity:0.8}}>반석 위에 굳게 서는 교회</p></div>
+            <div className="info-section">
+              <div className="info-card"><h4>📖 교회 표어</h4><p style={{fontSize:`${fontSize}rem`,lineHeight:'1.8'}}>"여호와는 나의 반석이시요 나의 요새시요 나를 건지시는 이시요" (시편 18:2)</p></div>
+              <div className="info-card"><h4>🙏 예배 사명</h4><p>하나님께 합당한 예배를 드리며, 말씀 중심의 삶을 실천합니다.</p></div>
+              <div className="info-card"><h4>❤️ 섬김 사명</h4><p>이웃을 사랑하고 지역사회를 섬기며, 선교의 사명을 감당합니다.</p></div>
+              <div className="info-card"><h4>🌱 양육 사명</h4><p>성도의 영적 성장을 위해 제자훈련과 소그룹 양육에 힘씁니다.</p></div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== 설교말씀 탭 ===== */}
+        {activeTab === '설교말씀' && (<>
+          <div className="hero">
+            <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>✝️</div>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>거제반석교회 온라인 성전</h3>
+            <div className="nb">주일 대예배: 오전 9시 / 11시</div>
+            <button className="bb" onClick={() => setShowBulletin(true)}>📄 이번 주 스마트 주보 보기</button>
+          </div>
+          <div className="fa"><div className="fb">
+            {['전체', '주일오전', '수요예배', '새벽기도'].map(tag => (
+              <button key={tag} onClick={() => setActiveFilter(tag)} className={`ftb ${activeFilter === tag ? 'act' : ''}`}>{tag}</button>
+            ))}
+          </div></div>
+          <div className="cd">
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '50px', fontWeight: 'bold' }}>📡 유튜브에서 최신 은혜의 말씀을 불러오는 중입니다...</div>
+            ) : activeFilter === '전체' && searchTerm === '' ? (
+              <div className="sg">
+                {filteredSermons.map(s => (
+                  <div key={s.id} onClick={() => setPopupVideo(s)} className="sc">
+                    <div className="sch" style={{ background: s.gradient }}><div className="st">"{s.title}"</div></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="ll">
+                {filteredSermons.map(s => (
+                  <div key={s.id} onClick={() => setPopupVideo(s)} className="lc" style={{ background: s.gradient }}>
+                    <div className="lh"><h3 style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>"{s.title}"</h3></div>
+                    <div className="l-summary-overlay">
+                       <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 말씀 요약 안내</h4>
+                       <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>아래 재생 버튼을 눌러 생생한 은혜의 말씀을 들어보세요.</p></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {!isLoading && sermons.length > 0 && (
+            <div className="arc">
+              <h2 className="arc-t">💧 다시 채우는 생수</h2>
+              <p className="arc-s">최근 한 달간의 은혜로운 말씀 모음</p>
+              <div className="smb">
+                <div className="mhb">최신 설교 영상 <span>▲</span></div>
+                {sermons.slice(0, 5).map(s => (
+                  <div key={s.id} className="sr" onClick={() => setPopupVideo(s)}>
+                    <span className="rb" style={{ background: s.category === '주일오전' ? '#9f1239' : s.category === '수요예배' ? '#0f766e' : '#475569' }}>{s.category}</span>
+                    <span className="rt">{s.title}</span>
+                    <span style={{ fontSize: '0.8rem', color: '#888', marginRight: '10px' }}>{s.date}</span>
+                    <button className="rbt">재생</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <div style={{ textAlign: 'center', marginTop: '30px' }}>
+            <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" className="yt-link">▶ 유튜브에서 더 보기</a>
+          </div>
+        </>)}
+
+        {/* ===== 교회소식 탭 ===== */}
+        {activeTab === '교회소식' && (
+          <div className="tab-content">
+            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>📢 교회소식</h3></div>
+            <div className="info-section">
+              <div className="info-card"><h4>📌 이번 주 알림</h4><p>교회 소식은 주보를 통해 확인하실 수 있습니다.</p><button className="bb" style={{marginTop:'15px'}} onClick={() => setShowBulletin(true)}>📄 주보 보기</button></div>
+              <div className="info-card"><h4>🎉 교회 행사</h4><p>각종 교회 행사 및 절기 일정은 예배 시간에 안내됩니다.</p></div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== 예배안내 탭 ===== */}
+        {activeTab === '예배안내' && (
+          <div className="tab-content">
+            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>🙏 예배안내</h3></div>
+            <div className="schedule-wrap">
+              <table className="schedule-tbl"><thead><tr><th>예배</th><th>시간</th><th>장소</th></tr></thead><tbody>
+                <tr><td>🌅 새벽기도</td><td className="sch-time">월~토 05:30</td><td>본당</td></tr>
+                <tr><td>⛪ 주일 1부</td><td className="sch-time">08:55</td><td>본당</td></tr>
+                <tr><td>⛪ 주일 2부</td><td className="sch-time">10:40</td><td>본당</td></tr>
+                <tr><td>⛪ 주일 오후</td><td className="sch-time">13:45</td><td>본당</td></tr>
+                <tr><td>📖 수요예배</td><td className="sch-time">수 19:25</td><td>본당</td></tr>
+                <tr><td>🙏 금요기도회</td><td className="sch-time">금 19:50</td><td>본당</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+        )}
+
+        {/* ===== 오시는길 탭 ===== */}
+        {activeTab === '오시는길' && (
+          <div className="tab-content">
+            <div className="hero"><h3 style={{fontSize:'1.6rem',fontWeight:'bold'}}>📍 오시는 길</h3></div>
+            <div className="info-section">
+              <div className="info-card"><h4>🏠 주소</h4><p>경남 거제시 연초면 소오비길 40-6</p></div>
+              <div className="info-card" style={{textAlign:'center'}}>
+                <a href="https://map.kakao.com/link/to/거제반석교회,34.868,128.694" target="_blank" rel="noopener noreferrer" style={{display:'block',padding:'15px',background:'#FEE500',color:'black',borderRadius:'10px',textDecoration:'none',fontWeight:'bold',marginBottom:'10px'}}>🚗 카카오내비로 길찾기</a>
+                <a href="https://map.naver.com/v5/search/거제반석교회" target="_blank" rel="noopener noreferrer" style={{display:'block',padding:'15px',background:'#03C75A',color:'white',borderRadius:'10px',textDecoration:'none',fontWeight:'bold'}}>🗺️ 네이버지도로 보기</a>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 스마트 주보 모달 */}
@@ -309,6 +361,25 @@ export default function HomeClient() {
         .ch-hamburger{display:none;background:none;border:none;font-size:1.6rem;color:#5b272f;cursor:pointer;padding:0.3rem}
         .dk .ch-hamburger{color:#ccc}
         @keyframes blink{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
+
+        .tab-content{animation:fadeIn 0.3s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .info-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:25px}
+        .info-card{background:white;border-radius:16px;padding:25px;box-shadow:0 4px 12px rgba(0,0,0,0.06);border-left:4px solid #c19c72;transition:transform 0.3s}
+        .info-card:hover{transform:translateY(-4px)}
+        .dk .info-card{background:#1E293B;border-left-color:#c19c72}
+        .info-card h4{color:#5b272f;margin:0 0 12px;font-size:1.1rem}
+        .dk .info-card h4{color:#c19c72}
+        .info-card p{color:#555;line-height:1.8;margin:0;font-size:0.95rem}
+        .dk .info-card p{color:#aaa}
+        .schedule-wrap{margin-top:25px}
+        .schedule-tbl{width:100%;border-collapse:collapse;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+        .dk .schedule-tbl{background:#1E293B}
+        .schedule-tbl th{background:rgba(91,39,47,0.06);color:#5b272f;padding:15px 20px;text-align:left;font-weight:600}
+        .dk .schedule-tbl th{background:rgba(193,156,114,0.1);color:#c19c72}
+        .schedule-tbl td{padding:15px 20px;border-top:1px solid #eee;color:#444;font-size:0.95rem}
+        .dk .schedule-tbl td{border-top-color:#334155;color:#ccc}
+        .sch-time{font-weight:700;color:#c19c72}
 
         .fctrl{position:fixed;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px}
         .cb{width:45px;height:45px;border-radius:50%;border:1px solid #ddd;background:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
