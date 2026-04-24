@@ -119,7 +119,7 @@ export default function ChatbotWidget() {
       } else {
         setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 전송 중 오류가 발생했습니다. 다시 시도해주세요.' }]);
       }
-    } catch {
+    } catch (error) {
       setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 네트워크 오류가 발생했습니다.' }]);
     }
     setReportContent('');

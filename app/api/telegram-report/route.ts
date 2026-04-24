@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const result = await sendTelegramAlert(text);
     
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }
