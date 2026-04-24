@@ -6,7 +6,8 @@ export default function PilgrimMapPage() {
   const routes = [
     { path: '/narrow-gate', icon: '🚪', name: '좁은 문', desc: '생명의 길로 들어서는 첫걸음', color: '#D97706' },
     { path: '/cross-hill', icon: '✝️', name: '십자가 언덕', desc: '죄의 짐을 내려놓는 곳', color: '#B91C1C' },
-    { path: '/armory', icon: '🛡️', name: '무기고', desc: '영적 전쟁을 위한 전신갑주 무장', color: '#1E3A8A' }
+    { path: '/armory', icon: '🛡️', name: '무기고', desc: '영적 전쟁을 위한 전신갑주 무장', color: '#1E3A8A' },
+    { path: '/valley', icon: '🌑', name: '사망의 골짜기', desc: '어둠 속에서 주님의 동행을 경험하는 곳', color: '#6366F1' }
   ];
 
   return (
