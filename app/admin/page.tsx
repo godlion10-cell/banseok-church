@@ -1,39 +1,61 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { sendAdminLoginAlert } from './actions';
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 🎛️ 천로역정 7개 방의 스위치 상태 (ON/OFF)
-  const [switches, setSwitches] = useState({
-    narrowGate: true,
-    crossHill: true,
-    armory: true,
-    valley: true,
-    vanityFair: true,
-    joyMountain: true,
-    passport: true
+  // 🎛️ 순례길 스위치 상태 (DB에서 로드)
+  const [switches, setSwitches] = useState<Record<string, boolean>>({
+    narrowGate: true, crossHill: true, armory: true,
+    valley: true, vanityFair: true, joyMountain: true, passport: true
   });
+  const [loading, setLoading] = useState(false);
+
+  // DB에서 스위치 상태 로드
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetch('/api/admin/switches').then(r => r.json()).then(data => {
+        if (data.success) setSwitches(data.switches);
+      });
+    }
+  }, [isLoggedIn]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === 'banseok1004') {
       setIsLoggedIn(true);
       await sendAdminLoginAlert();
-      console.log("텔레그램 발송 완료!");
     } else {
       alert('비밀번호가 틀렸습니다.');
     }
   };
 
-  const toggleSwitch = (key: keyof typeof switches) => {
-    setSwitches({ ...switches, [key]: !switches[key] });
-    alert(`${key} 기능이 ${!switches[key] ? '활성화' : '비활성화'} 되었습니다! (현재는 UI 테스트 모드입니다)`);
+  const toggleSwitch = async (key: string) => {
+    const newValue = !switches[key];
+    setSwitches({ ...switches, [key]: newValue });
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/admin/switches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value: newValue })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert('저장 실패! 다시 시도해주세요.');
+        setSwitches({ ...switches, [key]: !newValue }); // 롤백
+      }
+    } catch {
+      alert('서버 오류! 다시 시도해주세요.');
+      setSwitches({ ...switches, [key]: !newValue }); // 롤백
+    }
+    setLoading(false);
   };
 
-  // ✅ 로그인 성공 시 보여줄 [마스터 제어판]
+  // ✅ 로그인 성공 시 [마스터 제어판]
   if (isLoggedIn) {
     const rooms = [
       { id: 'narrowGate', name: '🚪 좁은 문' },
@@ -58,19 +80,20 @@ export default function AdminLoginPage() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {rooms.map((room) => (
-                <div key={room.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px', background: switches[room.id as keyof typeof switches] ? '#F0FDF4' : '#FFF1F2', borderRadius: '12px', border: '1px solid', borderColor: switches[room.id as keyof typeof switches] ? '#BBF7D0' : '#FECDD3', transition: '0.3s' }}>
+                <div key={room.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px', background: switches[room.id] ? '#F0FDF4' : '#FFF1F2', borderRadius: '12px', border: '1px solid', borderColor: switches[room.id] ? '#BBF7D0' : '#FECDD3', transition: '0.3s' }}>
                   <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1E293B' }}>{room.name}</span>
                   
                   <button 
-                    onClick={() => toggleSwitch(room.id as keyof typeof switches)}
-                    style={{ width: '60px', height: '30px', borderRadius: '30px', border: 'none', position: 'relative', cursor: 'pointer', transition: '0.3s', background: switches[room.id as keyof typeof switches] ? '#22C55E' : '#E2E8F0' }}
+                    onClick={() => toggleSwitch(room.id)}
+                    disabled={loading}
+                    style={{ width: '60px', height: '30px', borderRadius: '30px', border: 'none', position: 'relative', cursor: loading ? 'wait' : 'pointer', transition: '0.3s', background: switches[room.id] ? '#22C55E' : '#E2E8F0' }}
                   >
-                    <div style={{ width: '24px', height: '24px', background: 'white', borderRadius: '50%', position: 'absolute', top: '3px', left: switches[room.id as keyof typeof switches] ? '33px' : '3px', transition: '0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
+                    <div style={{ width: '24px', height: '24px', background: 'white', borderRadius: '50%', position: 'absolute', top: '3px', left: switches[room.id] ? '33px' : '3px', transition: '0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
                   </button>
                 </div>
               ))}
             </div>
-            <p style={{ color: '#EF4444', fontSize: '0.85rem', marginTop: '20px', textAlign: 'center' }}>* 현재는 디자인 확인용 스위치입니다. 실제 홈페이지 적용은 DB 연결 후 작동합니다.</p>
+            <p style={{ color: '#22C55E', fontSize: '0.85rem', marginTop: '20px', textAlign: 'center' }}>✅ DB 연동 완료! 스위치 변경 시 실시간 저장됩니다.</p>
           </div>
         </div>
       </div>

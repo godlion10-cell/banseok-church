@@ -39,3 +39,9 @@ model Schedule {
   officer   String
   order     Int      @default(0)
 }
+
+model SiteConfig {
+  id    String  @id @default(cuid())
+  key   String  @unique
+  value String
+}

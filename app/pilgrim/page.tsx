@@ -1,17 +1,27 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function PilgrimMapPage() {
-  const routes = [
-    { path: '/narrow-gate', icon: '🚪', name: '좁은 문', desc: '생명의 길로 들어서는 첫걸음', color: '#D97706' },
-    { path: '/cross-hill', icon: '✝️', name: '십자가 언덕', desc: '죄의 짐을 내려놓는 곳', color: '#B91C1C' },
-    { path: '/armory', icon: '🛡️', name: '무기고', desc: '영적 전쟁을 위한 전신갑주 무장', color: '#1E3A8A' },
-    { path: '/valley', icon: '🌑', name: '사망의 음침한 골짜기', desc: '어두운 밤, 주님의 위로를 만나는 곳', color: '#4F46E5' },
-    { path: '/vanity-fair', icon: '🎪', name: '허영의 시장', desc: '세상의 유혹을 이기는 15분 말씀 집중', color: '#0F172A' },
-    { path: '/joy-mountain', icon: '⛰️', name: '기쁨의 산', desc: '반석교회의 비전과 천성의 소망을 보는 곳', color: '#166534' },
-    { path: '/celestial-passport', icon: '🎫', name: '천성 여권', desc: '영적 순례 완주를 기념하는 증서 발급', color: '#B45309' }
+  const allRoutes = [
+    { path: '/narrow-gate', icon: '🚪', name: '좁은 문', desc: '생명의 길로 들어서는 첫걸음', color: '#D97706', switchKey: 'narrowGate' },
+    { path: '/cross-hill', icon: '✝️', name: '십자가 언덕', desc: '죄의 짐을 내려놓는 곳', color: '#B91C1C', switchKey: 'crossHill' },
+    { path: '/armory', icon: '🛡️', name: '무기고', desc: '영적 전쟁을 위한 전신갑주 무장', color: '#1E3A8A', switchKey: 'armory' },
+    { path: '/valley', icon: '🌑', name: '사망의 음침한 골짜기', desc: '어두운 밤, 주님의 위로를 만나는 곳', color: '#4F46E5', switchKey: 'valley' },
+    { path: '/vanity-fair', icon: '🎪', name: '허영의 시장', desc: '세상의 유혹을 이기는 15분 말씀 집중', color: '#0F172A', switchKey: 'vanityFair' },
+    { path: '/joy-mountain', icon: '⛰️', name: '기쁨의 산', desc: '반석교회의 비전과 천성의 소망을 보는 곳', color: '#166534', switchKey: 'joyMountain' },
+    { path: '/celestial-passport', icon: '🎫', name: '천성 여권', desc: '영적 순례 완주를 기념하는 증서 발급', color: '#B45309', switchKey: 'passport' }
   ];
+
+  const [switches, setSwitches] = useState<Record<string, boolean>>({});
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/admin/switches').then(r => r.json()).then(data => {
+      if (data.success) setSwitches(data.switches);
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FDFBF7', padding: '40px 20px' }}>
@@ -21,17 +31,35 @@ export default function PilgrimMapPage() {
       </div>
 
       <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {routes.map((route, i) => (
-          <Link href={route.path} key={i} style={{ textDecoration: 'none' }}>
-            <div style={{ background: 'white', padding: '25px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderLeft: `6px solid ${route.color}` }}>
-              <div>
-                <h3 style={{ color: route.color, fontSize: '1.3rem', marginBottom: '5px' }}>{route.icon} {route.name}</h3>
-                <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>{route.desc}</p>
+        {allRoutes.map((route, i) => {
+          const isEnabled = !loaded || switches[route.switchKey] !== false;
+          
+          if (!isEnabled) {
+            // 🔒 비활성화된 방
+            return (
+              <div key={i} style={{ background: '#F3F4F6', padding: '25px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '6px solid #D1D5DB', opacity: 0.6 }}>
+                <div>
+                  <h3 style={{ color: '#9CA3AF', fontSize: '1.3rem', marginBottom: '5px' }}>{route.icon} {route.name}</h3>
+                  <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>현재 준비 중입니다</p>
+                </div>
+                <div style={{ fontSize: '1.5rem' }}>🔒</div>
               </div>
-              <div style={{ fontSize: '1.5rem' }}>👉</div>
-            </div>
-          </Link>
-        ))}
+            );
+          }
+          
+          // ✅ 활성화된 방
+          return (
+            <Link href={route.path} key={i} style={{ textDecoration: 'none' }}>
+              <div style={{ background: 'white', padding: '25px', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderLeft: `6px solid ${route.color}` }}>
+                <div>
+                  <h3 style={{ color: route.color, fontSize: '1.3rem', marginBottom: '5px' }}>{route.icon} {route.name}</h3>
+                  <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>{route.desc}</p>
+                </div>
+                <div style={{ fontSize: '1.5rem' }}>👉</div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
