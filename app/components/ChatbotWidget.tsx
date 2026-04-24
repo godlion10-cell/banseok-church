@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 type Message = {
   sender: 'bot' | 'user';
@@ -11,6 +11,9 @@ type Message = {
 
 export default function ChatbotWidget() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith('/admin');
+
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isVoiceAndViewOn, setIsVoiceAndViewOn] = useState(false); 
@@ -18,11 +21,27 @@ export default function ChatbotWidget() {
   const [isListening, setIsListening] = useState(false); 
 
   const [messages, setMessages] = useState<Message[]>([
-    { sender: 'bot', text: '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!' }
+    { 
+      sender: 'bot', 
+      text: isAdmin 
+        ? "👑 [관리자 전용 비서 모드]\n사장님, 반갑습니다. 무엇을 도와드릴까요?\n- 주보 파일을 주시면 자동으로 정렬합니다.\n- 설교 링크를 주시면 홈페이지에 즉시 반영합니다."
+        : '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!'
+    }
   ]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 관리자 페이지 전환 시 인사말 초기화
+  useEffect(() => {
+    setMessages([{
+      sender: 'bot',
+      text: isAdmin
+        ? "👑 [관리자 전용 비서 모드]\n사장님, 반갑습니다. 무엇을 도와드릴까요?\n- 주보 파일을 주시면 자동으로 정렬합니다.\n- 설교 링크를 주시면 홈페이지에 즉시 반영합니다."
+        : '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!'
+    }]);
+  }, [isAdmin]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -55,7 +74,42 @@ export default function ChatbotWidget() {
     setLargeSubtitle('');
   };
 
+  // 👑 관리자 전용 명령 분석 엔진
+  const analyzeAdminCommand = (text: string) => {
+    let botReply = "알겠습니다, 사장님. ";
+    let actionLabel: string | undefined = undefined;
+    let actionLink: string | undefined = undefined;
+
+    if (text.includes("주보") || text.includes("업로드")) {
+      botReply += "주보 업로드 대기 중입니다. 📎 버튼으로 파일을 주시면 제가 날짜별로 정렬하여 '주보 아카이브' DB로 전송할 준비를 하겠습니다.";
+      actionLabel = "📂 주보 관리함 확인";
+    } else if (text.includes("설교") || text.includes("유튜브")) {
+      botReply += "설교 영상 링크를 인식했습니다. 이 링크를 '지난주 설교'로 교체하고 라디오 모드에 등록할까요?";
+      actionLabel = "🎬 설교 게시판 업데이트";
+    } else if (text.includes("정리") || text.includes("정렬")) {
+      botReply += "현재 홈페이지의 모든 데이터를 최신순으로 정렬하고 최적화 작업을 대기합니다.";
+    } else if (text.includes("스위치") || text.includes("순례길")) {
+      botReply += "순례길 스위치 제어판으로 이동합니다.";
+      actionLabel = "🎛️ 스위치 제어판";
+      actionLink = "/admin";
+    } else {
+      botReply += "해당 명령을 분석 중입니다. DB 연결 후 자동 처리가 가능해집니다.";
+    }
+
+    setTimeout(() => {
+      setMessages(prev => [...prev, { sender: 'bot', text: botReply, actionLabel, actionLink }]);
+      speakAndView(botReply);
+    }, 600);
+  };
+
+  // 🌐 일반 성도 키워드 분석
   const analyzeAndRespond = (userText: string) => {
+    // 관리자 모드면 관리자 엔진으로 분기
+    if (isAdmin) {
+      analyzeAdminCommand(userText);
+      return;
+    }
+
     let botReply = "제가 아직 배우는 중이라 정확히 이해하지 못했어요. 교역자님께 연결해 드릴까요?";
     let actionLabel: string | undefined = undefined;
     let actionLink: string | undefined = undefined;
@@ -65,19 +119,19 @@ export default function ChatbotWidget() {
       actionLabel = "📻 라디오 모드 켜기";
       actionLink = "/sermon-radio";
     } 
-    else if (userText.includes("예약") || userText.includes("심방") || userText.includes("상담") || userText.includes("목사님")) {
+    else if (userText.includes("예약") || userText.includes("심방") || userText.includes("상담")) {
       botReply = "목사님과의 심방 및 신앙 상담 예약을 도와드릴게요. 아래 버튼을 눌러 원하시는 시간을 선택해 주세요.";
       actionLabel = "📅 심방/상담 예약하기";
       actionLink = "/visitation";
     }
     else if (userText.includes("기도") || userText.includes("회개") || userText.includes("십자가") || userText.includes("힘들어")) {
-      botReply = "무거운 마음의 짐을 십자가 앞에 내려놓으실 수 있도록 기도실로 안내해 드리겠습니다. 주님이 위로해주실 거예요.";
+      botReply = "무거운 마음의 짐을 십자가 앞에 내려놓으실 수 있도록 기도실로 안내해 드리겠습니다.";
       actionLabel = "✝️ 십자가 언덕으로 가기";
       actionLink = "/cross-hill";
     }
     else if (userText.includes("예배") && userText.includes("순서")) {
       botReply = "이번 주 주일예배 순서입니다.\n1. 묵도\n2. 찬송\n3. 성경봉독\n4. 설교\n5. 축도";
-    } 
+    }
 
     setTimeout(() => {
       setMessages(prev => [...prev, { sender: 'bot', text: botReply, actionLabel, actionLink }]);
@@ -89,6 +143,25 @@ export default function ChatbotWidget() {
     if (!text.trim()) return;
     setMessages(prev => [...prev, { sender: 'user', text }]);
     analyzeAndRespond(text);
+  };
+
+  // 📎 파일 첨부 (관리자/일반 분기)
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (isAdmin) {
+      setMessages(prev => [...prev, { sender: 'user', text: `📎 관리자 파일 제출: ${file.name}` }]);
+      setTimeout(() => {
+        const reply = `파일(${file.name}) 분석 완료.\n[파일 정보: ${file.type}, ${Math.round(file.size/1024)}KB]\n사장님, 이 파일을 주보함에 등록하고 성도님들께 공지할까요?`;
+        setMessages(prev => [...prev, { sender: 'bot', text: reply, actionLabel: "✅ 즉시 등록 실행" }]);
+      }, 1000);
+    } else {
+      setMessages(prev => [...prev, { sender: 'user', text: `📎 파일: ${file.name}` }]);
+      setTimeout(() => {
+        setMessages(prev => [...prev, { sender: 'bot', text: "파일이 접수되었습니다!" }]);
+      }, 800);
+    }
   };
 
   const startListening = () => {
@@ -112,10 +185,15 @@ export default function ChatbotWidget() {
     }
   };
 
+  // 🎨 관리자/일반 테마 색상
+  const theme = isAdmin 
+    ? { primary: '#7C3AED', header: '#4C1D95', bubble: '#7C3AED', btnBg: '#4C1D95', label: '👑 관리자 반석이' }
+    : { primary: '#1E3A8A', header: '#1E3A8A', bubble: '#1E3A8A', btnBg: '#1E3A8A', label: '🤖 AI 반석이 허브' };
+
   return (
     <>
       {largeSubtitle && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.95)', zIndex: 99999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', animation: 'fadeIn 0.4s ease-out' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.95)', zIndex: 9999999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ maxWidth: '800px', width: '100%', textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '30px', animation: 'pulse 1.5s infinite' }}>🔊</div>
             <div style={{ color: 'white', fontSize: isMobile ? '1.8rem' : '3rem', fontWeight: '900', lineHeight: '1.5', wordBreak: 'keep-all' }}>{largeSubtitle}</div>
@@ -124,16 +202,16 @@ export default function ChatbotWidget() {
         </div>
       )}
 
-      <div style={{ position: 'fixed', bottom: isMobile ? '20px' : '30px', left: isMobile ? '20px' : '30px', zIndex: 9998 }}>
+      <div style={{ position: 'fixed', bottom: isMobile ? '20px' : '30px', left: isMobile ? '20px' : '30px', zIndex: 999999 }}>
         
         {isOpen && (
-          <div style={{ width: isMobile ? 'calc(100vw - 40px)' : '360px', height: '520px', background: 'white', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', overflow: 'hidden', marginBottom: '15px', border: '1px solid #F1F5F9', animation: 'fadeInUp 0.3s' }}>
+          <div style={{ width: isMobile ? 'calc(100vw - 40px)' : '360px', height: '520px', background: 'white', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', overflow: 'hidden', marginBottom: '15px', border: isAdmin ? '2px solid #7C3AED' : '1px solid #F1F5F9', animation: 'fadeInUp 0.3s' }}>
             
-            <div style={{ background: '#1E3A8A', color: 'white', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontWeight: 'bold' }}>🤖 AI 반석이 허브</div>
+            <div style={{ background: theme.header, color: 'white', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontWeight: 'bold' }}>{theme.label}</div>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <button onClick={() => { setIsVoiceAndViewOn(!isVoiceAndViewOn); if(isVoiceAndViewOn) stopSpeakAndView(); }} style={{ background: isVoiceAndViewOn ? '#10B981' : '#475569', border: 'none', color: 'white', padding: '6px 10px', borderRadius: '20px', fontSize: '0.8rem', cursor: 'pointer' }}>
-                  {isVoiceAndViewOn ? '🔊 자막 ON' : '🔇 일반 모드'}
+                  {isVoiceAndViewOn ? '🔊 자막 ON' : '🔇 일반'}
                 </button>
                 <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
               </div>
@@ -143,15 +221,15 @@ export default function ChatbotWidget() {
               {messages.map((msg, i) => (
                 <div key={i} style={{ alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
                   <div style={{ padding: '12px 16px', borderRadius: '18px', fontSize: '0.95rem', whiteSpace: 'pre-line',
-                    background: msg.sender === 'user' ? '#1E3A8A' : 'white', color: msg.sender === 'user' ? 'white' : '#334155', border: msg.sender === 'bot' ? '1px solid #E2E8F0' : 'none', boxShadow: msg.sender === 'bot' ? '0 2px 5px rgba(0,0,0,0.05)' : 'none' }}>
+                    background: msg.sender === 'user' ? theme.bubble : 'white', color: msg.sender === 'user' ? 'white' : '#334155', border: msg.sender === 'bot' ? '1px solid #E2E8F0' : 'none', boxShadow: msg.sender === 'bot' ? '0 2px 5px rgba(0,0,0,0.05)' : 'none' }}>
                     {msg.text}
                   </div>
                   
-                  {msg.actionLink && msg.actionLabel && (
+                  {msg.actionLabel && (
                     <div style={{ marginTop: '8px', textAlign: 'left' }}>
                       <button 
-                        onClick={() => router.push(msg.actionLink!)}
-                        style={{ padding: '10px 15px', background: '#2563EB', color: 'white', border: 'none', borderRadius: '15px', fontSize: '0.95rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.3)', transition: 'transform 0.2s' }}
+                        onClick={() => msg.actionLink ? router.push(msg.actionLink) : null}
+                        style={{ padding: '10px 15px', background: theme.primary, color: 'white', border: 'none', borderRadius: '15px', fontSize: '0.95rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', transition: 'transform 0.2s' }}
                         onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
                         onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                         {msg.actionLabel}
@@ -171,16 +249,22 @@ export default function ChatbotWidget() {
 
             <div style={{ padding: '10px 15px', background: 'white', borderTop: '1px solid #F1F5F9' }}>
               <form onSubmit={onSubmitForm} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {isAdmin && (
+                  <>
+                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+                    <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '1.2rem', flexShrink: 0 }}>📎</button>
+                  </>
+                )}
                 <button type="button" onClick={startListening} style={{ background: isListening ? '#EF4444' : '#3B82F6', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '1.2rem', transition: '0.3s', flexShrink: 0, boxShadow: isListening ? '0 0 10px rgba(239, 68, 68, 0.5)' : 'none' }}>🎤</button>
-                <input type="text" ref={inputRef} placeholder="입력하거나 마이크를 누르세요" style={{ flex: 1, border: '1px solid #E2E8F0', padding: '12px', borderRadius: '20px', outline: 'none', fontSize: '0.95rem' }} />
-                <button type="submit" style={{ background: '#1E3A8A', border: 'none', color: 'white', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>➤</button>
+                <input type="text" ref={inputRef} placeholder={isAdmin ? "관리자 명령 입력..." : "입력하거나 마이크를 누르세요"} style={{ flex: 1, border: '1px solid #E2E8F0', padding: '12px', borderRadius: '20px', outline: 'none', fontSize: '0.95rem' }} />
+                <button type="submit" style={{ background: theme.btnBg, border: 'none', color: 'white', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>➤</button>
               </form>
             </div>
           </div>
         )}
 
-        <button onClick={() => setIsOpen(!isOpen)} style={{ width: '65px', height: '65px', borderRadius: '50%', background: '#1E3A8A', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 8px 25px rgba(30, 58, 138, 0.4)', fontSize: '1.8rem' }}>
-          {isOpen ? '✕' : '💬'}
+        <button onClick={() => setIsOpen(!isOpen)} style={{ width: '65px', height: '65px', borderRadius: '50%', background: theme.btnBg, color: 'white', border: isAdmin ? '3px solid #A78BFA' : 'none', cursor: 'pointer', boxShadow: `0 8px 25px rgba(0,0,0,0.3)`, fontSize: '1.8rem' }}>
+          {isOpen ? '✕' : (isAdmin ? '👑' : '💬')}
         </button>
       </div>
 
