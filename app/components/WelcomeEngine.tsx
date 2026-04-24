@@ -5,10 +5,10 @@ export default function WelcomeEngine() {
   const [showPopup, setShowPopup] = useState(false);
   const [hasWelcomed, setHasWelcomed] = useState(false);
 
-  // 📍 거제반석교회 좌표 (실제 좌표로 수정 필요)
+  // 📍 거제반석교회 (연초면 소오비길 40-6) 실제 좌표
   const CHURCH_COORDS = {
-    lat: 34.8800,
-    lng: 128.6200
+    lat: 34.9103,
+    lng: 128.6364
   };
 
   useEffect(() => {
