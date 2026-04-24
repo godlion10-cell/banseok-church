@@ -144,9 +144,8 @@ export default function HomeClient() {
           <button className="bb" onClick={() => setShowBulletin(true)}>📄 이번 주 스마트 주보 보기</button>
         </div>
 
-        {/* 검색 & 필터 */}
+        {/* 필터 */}
         <div className="fa">
-          <div className="sb"><input type="text" placeholder="말씀 제목을 검색하세요..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
           <div className="fb">
             {['전체', '주일오전', '수요예배', '새벽기도'].map(tag => (
               <button key={tag} onClick={() => setActiveFilter(tag)} className={`ftb ${activeFilter === tag ? 'act' : ''}`}>{tag}</button>
