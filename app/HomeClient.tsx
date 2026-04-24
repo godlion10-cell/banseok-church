@@ -106,14 +106,15 @@ export default function HomeClient() {
       {/* 교회 헤더 메뉴 */}
       <header className="ch-header">
         <div className="ch-logo">
-          <span style={{fontSize:'1.5rem'}}>⛪</span>
-          <span className="ch-logo-text">거제반석교회</span>
+          <img src="/church-logo.png" alt="반석교회" className="ch-logo-img" />
         </div>
         <nav className={`ch-nav ${showMobileMenu ? 'ch-nav-open' : ''}`}>
-          <button className="ch-nav-link ch-nav-active" onClick={() => setShowMobileMenu(false)}>홈</button>
-          <button className="ch-nav-link" onClick={() => { setShowBulletin(true); setShowMobileMenu(false); }}>주보</button>
-          <button className="ch-nav-link" onClick={() => { setShowMapModal(true); setShowMobileMenu(false); }}>오시는 길</button>
-          <button className="ch-nav-link" onClick={() => { setShowInstallGuide(true); setShowMobileMenu(false); }}>앱 설치</button>
+          <button className="ch-nav-link" onClick={() => setShowMobileMenu(false)}>교회소개</button>
+          <button className="ch-nav-link" onClick={() => setShowMobileMenu(false)}>비전과사명</button>
+          <button className="ch-nav-link ch-nav-active" onClick={() => setShowMobileMenu(false)}>설교말씀</button>
+          <button className="ch-nav-link" onClick={() => setShowMobileMenu(false)}>교회소식</button>
+          <button className="ch-nav-link" onClick={() => { setShowBulletin(true); setShowMobileMenu(false); }}>예배안내</button>
+          <button className="ch-nav-link" onClick={() => { setShowMapModal(true); setShowMobileMenu(false); }}>오시는길</button>
         </nav>
         <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
       </header>
@@ -294,10 +295,9 @@ export default function HomeClient() {
 
         .ch-header{position:sticky;top:0;width:100%;z-index:2000;padding:0.8rem 5%;display:flex;justify-content:space-between;align-items:center;background:white;border-bottom:1px solid #eee;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
         .dk .ch-header{background:#1E293B;border-bottom-color:#334155}
-        .ch-logo{display:flex;align-items:center;gap:0.6rem;cursor:pointer}
-        .ch-logo-text{font-size:1.3rem;font-weight:800;color:#1a365d;font-family:'Nanum Myeongjo',serif;white-space:nowrap}
-        .dk .ch-logo-text{color:#e2d5c3}
-        .ch-nav{display:flex;gap:0.5rem}
+        .ch-logo{display:flex;align-items:center;cursor:pointer}
+        .ch-logo-img{height:40px;width:auto;object-fit:contain}
+        .ch-nav{display:flex;gap:0.3rem}
         .ch-nav-link{cursor:pointer;padding:0.5rem 1rem;background:none;border:none;font-size:0.95rem;font-weight:500;color:#5b272f;border-radius:8px;transition:all 0.2s;font-family:inherit}
         .ch-nav-link:hover{background:rgba(193,156,114,0.1);color:#c19c72}
         .ch-nav-active{color:#c19c72;font-weight:700}
