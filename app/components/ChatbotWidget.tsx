@@ -266,7 +266,7 @@ export default function ChatbotWidget() {
   };
 
   const startListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return alert("마이크를 지원하지 않는 브라우저입니다.");
     
     const recognition = new SpeechRecognition();
