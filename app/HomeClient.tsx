@@ -232,9 +232,18 @@ export default function HomeClient() {
       {popupVideo && (
         <div className="mbg" onClick={() => setPopupVideo(null)}>
           <div className="vc" onClick={e => e.stopPropagation()}>
-            <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1&modestbranding=1&rel=0`} allowFullScreen style={{ border: 'none' }} />
+            {popupVideo.videoId ? (
+              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1&modestbranding=1&rel=0`} allowFullScreen style={{ border: 'none' }} />
+            ) : (
+              <div style={{width:'100%',height:'100%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#1a1a2e,#16213e)',color:'white',textAlign:'center',padding:'20px'}}>
+                <div style={{fontSize:'3rem',marginBottom:'15px'}}>⛪</div>
+                <h3 style={{margin:'0 0 10px 0'}}>유튜브에서 직접 시청해주세요</h3>
+                <p style={{opacity:0.7,marginBottom:'20px',fontSize:'0.95rem'}}>{popupVideo.title}</p>
+                <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{background:'#FF0000',color:'white',padding:'12px 30px',borderRadius:'30px',textDecoration:'none',fontWeight:'bold',fontSize:'1rem'}}>▶ 유튜브 채널 바로가기</a>
+              </div>
+            )}
             <div className="va">
-              <button onClick={() => { if (navigator.share) { navigator.share({ title: popupVideo.title, url: `https://www.youtube.com/watch?v=${popupVideo.videoId}` }); } else { alert('링크가 복사되었습니다!'); } }} className="kb">📤 말씀 공유</button>
+              <button onClick={() => { if (navigator.share) { navigator.share({ title: popupVideo.title, url: popupVideo.videoId ? `https://www.youtube.com/watch?v=${popupVideo.videoId}` : 'https://www.youtube.com/@petros-church' }); } else { alert('링크가 복사되었습니다!'); } }} className="kb">📤 말씀 공유</button>
               <button onClick={() => setPopupVideo(null)} style={{ color: '#888', background: 'none', border: 'none', cursor: 'pointer' }}>닫기</button>
             </div>
           </div>
