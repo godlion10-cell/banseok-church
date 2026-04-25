@@ -260,9 +260,30 @@ export default function ChatbotWidget() {
       actionLabel = "📖 성경 일독 매니저";
       actionLink = "/bible-manager";
     }
-    // 5. [제1엔진] 돋보기/음성 안내
-    else if (userText.includes("크게") || userText.includes("돋보기") || userText.includes("읽어줘")) {
-      botReply = "화면 오른쪽 아래의 🔍 돋보기 버튼을 누르시면 글자를 크게 보거나 목소리로 들으실 수 있어요!";
+    // 5. [🧠 반석이 신경망] 글자 크기 / 다크모드 / 음성 읽기 — 진짜 UI 제어!
+    else if (userText.includes("크게") || userText.includes("키워") || userText.includes("글자 크") || userText.includes("확대")) {
+      window.dispatchEvent(new Event('banseok:font-up'));
+      botReply = "네! 글자를 키워드렸습니다! 👀 더 키우시려면 '더 크게'라고 말씀해주세요. 원래대로 돌리려면 '글자 원래대로'라고 하세요.";
+    }
+    else if (userText.includes("작게") || userText.includes("줄여") || userText.includes("글자 작") || userText.includes("축소")) {
+      window.dispatchEvent(new Event('banseok:font-down'));
+      botReply = "네! 글자를 줄여드렸습니다. 📝";
+    }
+    else if (userText.includes("원래대로") || userText.includes("기본 크기") || userText.includes("글자 리셋")) {
+      window.dispatchEvent(new Event('banseok:font-reset'));
+      botReply = "글자 크기를 기본으로 돌려놨습니다! ✅";
+    }
+    else if (userText.includes("어둡게") || userText.includes("다크") || userText.includes("야간") || userText.includes("눈 아파")) {
+      window.dispatchEvent(new Event('banseok:dark-toggle'));
+      botReply = "야간 모드로 전환했습니다! 🌙 눈이 편하시길 바랍니다.";
+    }
+    else if (userText.includes("밝게") || userText.includes("라이트") || userText.includes("원래 화면")) {
+      window.dispatchEvent(new Event('banseok:dark-toggle'));
+      botReply = "밝은 화면으로 돌려놨습니다! ☀️";
+    }
+    else if (userText.includes("읽어줘") || userText.includes("소리로") || userText.includes("음성으로") || userText.includes("돋보기")) {
+      window.dispatchEvent(new CustomEvent('banseok:tts', { detail: {} }));
+      botReply = "화면을 음성으로 읽어드리겠습니다! 🔊 특정 부분만 읽고 싶으시면 텍스트를 드래그한 후 '읽어줘'라고 말씀해주세요.";
     }
     // 6. [이음돌 보고] 🏁 대화형 보고 모드 시작!
     else if (userText.includes("이음돌") && userText.includes("보고")) {
