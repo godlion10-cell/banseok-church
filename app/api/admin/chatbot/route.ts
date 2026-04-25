@@ -24,6 +24,7 @@ const ADMIN_SYSTEM_PROMPT = `너는 거제반석교회 시스템을 총괄하는
 - [ACTION: ADD_NEWS] — 교회 소식 추가 요청
 - [ACTION: UPDATE_SCHEDULE] — 예배 일정 수정 요청
 - [ACTION: UPDATE_WORSHIP_ORDER] — 예배 순서 수정 요청
+- [ACTION: BULLETIN_UPDATE] — 주보 이미지 분석 및 온라인 주보 업데이트 요청
 - [ACTION: DB_MODIFY] — 기타 DB 수정 요청
 - [ACTION: DEPLOY] — 배포/코드 수정 요청
 - [ACTION: PASTORAL_CHECK] — 심방 레이더 확인 요청

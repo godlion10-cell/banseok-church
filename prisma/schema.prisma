@@ -59,3 +59,21 @@ model PastoralCare {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
+
+// 📋 스마트 주보 — AI 이미지 분석 → 자동 등록
+model Bulletin {
+  id           String   @id @default(cuid())
+  date         String            // 주보 날짜 (예: "2026년 4월 27일")
+  worshipType  String   @default("주일예배") // 예배 종류
+  worshipOrder String            // 예배 순서 (JSON 문자열)
+  announcements String?          // 교회 소식/광고 (JSON 문자열)
+  prayerPerson String?           // 대표기도자
+  hymns        String?           // 찬송가 목록 (JSON 문자열)
+  scripture    String?           // 성경 본문
+  sermonTitle  String?           // 설교 제목
+  offering     String?           // 헌금 안내
+  rawText      String?           // AI가 추출한 원문 텍스트
+  isActive     Boolean  @default(true) // 현재 활성 주보 여부
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+}

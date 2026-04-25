@@ -164,15 +164,54 @@ export default function ChatbotWidget() {
     e.target.value = '';
   };
 
+  // 📋 주보 이미지 자동 분석 → DB 등록
+  const analyzeBulletinImage = async (fileData: { name: string; type: string; base64: string }, userMessage: string) => {
+    setIsThinking(true);
+    setMessages(prev => [...prev, { sender: 'bot', text: '📋 주보 이미지를 분석 중입니다... AI가 예배 순서, 찬송가, 설교 제목을 읽고 있어요.' }]);
+    
+    try {
+      const res = await fetch('/api/admin/bulletin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: fileData, message: userMessage })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setMessages(prev => [...prev, { 
+          sender: 'bot', 
+          text: `✅ ${data.reply}\n\n🏷️ [BULLETIN_UPDATE]`,
+          actionLabel: '📋 온라인 주보 확인하기',
+          actionLink: '/bulletin'
+        }]);
+      } else {
+        setMessages(prev => [...prev, { sender: 'bot', text: `❌ 주보 분석 실패: ${data.error || '알 수 없는 오류'}\n다시 시도해주세요, 사장님.` }]);
+      }
+    } catch (err: any) {
+      setMessages(prev => [...prev, { sender: 'bot', text: `네트워크 오류: ${err.message?.slice(0, 80)}\n파일 크기를 줄이거나 다시 시도해주세요.` }]);
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
   // 👑 관리자 전용 명령 분석 엔진
   const analyzeAdminCommand = (text: string) => {
     let botReply = "알겠습니다, 사장님. ";
     let actionLabel: string | undefined = undefined;
     let actionLink: string | undefined = undefined;
 
+    // 주보 + 파일 첨부 → 자동 분석 실행!
+    if ((text.includes("주보") || text.includes("분석") || text.includes("업로드") || text.includes("등록")) && attachedFile) {
+      const fileData = attachedFile;
+      setAttachedFile(null);
+      analyzeBulletinImage(fileData, text);
+      return;
+    }
+
     if (text.includes("주보") || text.includes("업로드")) {
-      botReply += "주보 업로드 대기 중입니다. 📎 버튼으로 파일을 주시면 제가 날짜별로 정렬하여 '주보 아카이브' DB로 전송할 준비를 하겠습니다.";
-      actionLabel = "📂 주보 관리함 확인";
+      botReply += "주보 이미지를 📎 버튼으로 첨부한 후, '주보 분석해줘'라고 말씀하시면 AI가 자동으로 읽어서 온라인 주보에 등록합니다!";
+      actionLabel = "📋 온라인 주보 보기";
+      actionLink = "/bulletin";
     } else if (text.includes("설교") || text.includes("유튜브")) {
       botReply += "설교 영상 링크를 인식했습니다. 이 링크를 '지난주 설교'로 교체하고 라디오 모드에 등록할까요?";
       actionLabel = "🎬 설교 게시판 업데이트";
