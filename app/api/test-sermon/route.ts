@@ -36,7 +36,7 @@ export async function GET() {
       원본 데이터: ${JSON.stringify(rawVideos)}
     `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
     const result = await model.generateContent(prompt);
 
     // 불필요한 문자열 제거하고 깔끔한 JSON으로 변환

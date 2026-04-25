@@ -79,12 +79,17 @@ export async function POST(req: Request) {
 
     let result;
     try {
-      const flashModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const flashModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
       result = await flashModel.generateContent(fullPrompt);
     } catch {
-      // Fallback
-      const proModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-      result = await proModel.generateContent(fullPrompt);
+      // Fallback — 더 안정적인 모델
+      try {
+        const fallback1 = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        result = await fallback1.generateContent(fullPrompt);
+      } catch {
+        const fallback2 = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+        result = await fallback2.generateContent(fullPrompt);
+      }
     }
 
     const rawText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();

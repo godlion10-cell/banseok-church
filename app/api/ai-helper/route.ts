@@ -36,13 +36,13 @@ export async function POST(req: Request) {
     let result;
     try {
       // 1차 시도: 빠르고 가성비 좋은 Flash 모델
-      const flashModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+      const flashModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
       result = await flashModel.generateContent(finalPrompt);
       console.log('Flash 모델로 성공적으로 처리했습니다.');
     } catch (flashError) {
       console.warn('Flash 모델 처리 중 에러 발생. Pro 모델로 자동 전환합니다...', flashError);
       // 2차 시도: Flash가 실패하면 Pro 모델로 전환
-      const proModel = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
+      const proModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       result = await proModel.generateContent(finalPrompt);
       console.log('Pro 모델로 복구 처리 완료했습니다.');
     }
