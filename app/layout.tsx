@@ -3,6 +3,8 @@ import './globals.css';
 
 // ✅ 스마트 엔진 통합 래퍼 (클라이언트 전용, SSR 비활성화 포함)
 import ClientWidgets from '@/app/components/ClientWidgets';
+// ⬅️ 글로벌 네비게이션 바 (뒤로가기 + 홈)
+import TopNavBar from '@/app/components/TopNavBar';
 
 
 export const metadata: Metadata = {
@@ -43,6 +45,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="반석교회" />
       </head>
       <body style={{ margin: 0, padding: 0 }}>
+        {/* ⬅️ 글로벌 네비게이션 바 — 하위 페이지에서 탈출구 제공 */}
+        <TopNavBar />
         {/* 실제 홈페이지 콘텐츠 */}
         <main>
           {children}
