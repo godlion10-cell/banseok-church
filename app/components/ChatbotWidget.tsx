@@ -143,11 +143,15 @@ export default function ChatbotWidget() {
     setReportContent('');
   };
 
-  // 🤖 Gemini AI 호출 (키워드 미매칭 시 사용)
+  // 🤖 Gemini AI 호출 — 관리자/일반 뇌 분리 라우팅
   const callGeminiAI = async (userText: string) => {
     setIsThinking(true);
     try {
-      const res = await fetch('/api/chatbot', {
+      // 🧠 관리자 = 울트라 반석이 뇌 (/api/admin/chatbot)
+      // 👤 일반 성도 = 기본 반석이 뇌 (/api/chatbot)
+      const apiEndpoint = isAdmin ? '/api/admin/chatbot' : '/api/chatbot';
+
+      const res = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -159,9 +163,18 @@ export default function ChatbotWidget() {
       });
       const data = await res.json();
       if (data.success && data.reply) {
+        // 관리자 응답에 액션 코드 배지 추가
+        let replyText = data.reply;
+        if (isAdmin && data.actionCode && data.actionCode !== 'NONE') {
+          replyText += `\n\n🏷️ [${data.actionCode}]`;
+        }
+        if (isAdmin && data.dbCommand) {
+          replyText += `\n📋 DB 명령: ${data.dbCommand}`;
+        }
+
         const botMsg: Message = {
           sender: 'bot',
-          text: data.reply,
+          text: replyText,
           actionLabel: data.actionLabel || undefined,
           actionLink: data.actionLink || undefined
         };
