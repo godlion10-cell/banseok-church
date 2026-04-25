@@ -23,6 +23,7 @@ export default function ChatbotWidget() {
   const [isReporting, setIsReporting] = useState(false);
   const [reportContent, setReportContent] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
     { sender: 'bot', text: '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!' }
@@ -98,7 +99,9 @@ export default function ChatbotWidget() {
       actionLabel = "🎛️ 스위치 제어판";
       actionLink = "/admin";
     } else {
-      botReply += "해당 명령을 분석 중입니다. DB 연결 후 자동 처리가 가능해집니다.";
+      // 관리자 키워드 미매칭 → AI에게 위임
+      callGeminiAI(text);
+      return;
     }
 
     setTimeout(() => {
@@ -127,7 +130,40 @@ export default function ChatbotWidget() {
     setReportContent('');
   };
 
-  /* 🧠 반석이의 중앙 통제 뇌 (Training Mode) */
+  // 🤖 Gemini AI 호출 (키워드 미매칭 시 사용)
+  const callGeminiAI = async (userText: string) => {
+    setIsThinking(true);
+    try {
+      const res = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userText,
+          isAdmin: !!isAdmin,
+          conversationHistory: messages.slice(-6)
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.reply) {
+        const botMsg: Message = {
+          sender: 'bot',
+          text: data.reply,
+          actionLabel: data.actionLabel || undefined,
+          actionLink: data.actionLink || undefined
+        };
+        setMessages(prev => [...prev, botMsg]);
+        speakAndView(data.reply);
+      } else {
+        setMessages(prev => [...prev, { sender: 'bot', text: '죄송합니다, 잠시 연결이 불안정합니다. 다시 시도해 주세요. 🙏' }]);
+      }
+    } catch {
+      setMessages(prev => [...prev, { sender: 'bot', text: '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. 📶' }]);
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
+  /* 🧠 반석이의 중앙 통제 뇌 (하이브리드 AI) */
   const analyzeAndRespond = (userText: string) => {
     // 1. 유저 권한 확인 (성도인가 사장님인가)
     const userRole = isAdmin ? "OWNER" : "SAINT";
@@ -251,11 +287,10 @@ export default function ChatbotWidget() {
     else if (isSunday && hour >= 8 && hour <= 13) {
       botReply = "오늘은 주일입니다! 은혜로운 예배 되세요. 🙏 주보를 보시려면 '주보'라고 말씀해 주세요.";
     }
-    // 🚨 방어막: 전혀 모르는 말
+    // 🤖 키워드 미매칭 → Gemini AI에게 위임
     else {
-      botReply = "앗! 제가 아직 그 단어는 배우지 못했습니다. 📝 하지만 스똑 사장님(관리자)께 바로 보고해서 다음 업데이트 때 꼭 대답할 수 있게 똑똑해져서 돌아오겠습니다! 다른 필요하신 기능이 있다면 메뉴판을 보여드릴까요?";
-      actionLabel = "📋 전체 메뉴판 보기";
-      actionLink = "/sitemap";
+      callGeminiAI(userText);
+      return; // AI가 비동기로 응답하므로 여기서 리턴
     }
 
     // 🔊 대형 자막+음성과 함께 응답 출력
@@ -377,6 +412,14 @@ export default function ChatbotWidget() {
               {isListening && (
                 <div style={{ alignSelf: 'flex-start', padding: '10px 15px', background: '#DBEAFE', color: '#1D4ED8', borderRadius: '18px', fontSize: '0.9rem', animation: 'pulse 1s infinite' }}>
                   듣고 있습니다... 🎤
+                </div>
+              )}
+              {isThinking && (
+                <div style={{ alignSelf: 'flex-start', padding: '12px 18px', background: 'white', border: '1px solid #E2E8F0', borderRadius: '18px', fontSize: '0.9rem', color: '#64748B', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+                  <span style={{ display: 'inline-flex', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ animation: 'pulse 1s infinite' }}>🤔</span>
+                    반석이가 생각하고 있습니다...
+                  </span>
                 </div>
               )}
               <div ref={messagesEndRef} />
