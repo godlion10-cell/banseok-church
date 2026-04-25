@@ -15,7 +15,7 @@ const FALLBACK_SERMONS = [
 export default function HomeClient() {
   const [popupVideo, setPopupVideo] = useState<any>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('전체');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [fontSize, setFontSize] = useState(1.3);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -100,9 +100,27 @@ export default function HomeClient() {
     return () => { if (timer) clearTimeout(timer); };
   }, []);
 
-  const filteredSermons = sermons.filter(s =>
-    (activeFilter === '전체' || s.category.includes(activeFilter)) && s.title.includes(searchTerm)
-  );
+  const filteredSermons = activeFilter
+    ? sermons.filter(s => s.category.includes(activeFilter) && s.title.includes(searchTerm))
+    : [];
+
+  // 설교 제목 파싱 ("20260419 주일오전(1) - 제목" → 날짜/예배명/제목 분리)
+  const parseTitle = (title: string) => {
+    // 패턴: 날짜 예배종류 - 제목
+    const match = title.match(/^(\d{4,8})\s*(.+?)\s*[-–]\s*(.+)$/);
+    if (match) {
+      const rawDate = match[1];
+      const worship = match[2].trim();
+      const sermonTitle = match[3].trim();
+      // 날짜 포맷 (20260419 → 2026.04.19)
+      let formatted = rawDate;
+      if (rawDate.length === 8) {
+        formatted = `${rawDate.slice(0,4)}.${rawDate.slice(4,6)}.${rawDate.slice(6,8)}`;
+      }
+      return { date: formatted, worship, sermonTitle };
+    }
+    return { date: '', worship: '', sermonTitle: title };
+  };
 
   useEffect(() => {
     setIsMounted(true); // 디자인 옷 입기 완료!
@@ -218,33 +236,43 @@ export default function HomeClient() {
             <div className="nb">주일 대예배: 오전 9시 / 11시</div>
             <button className="bb" onClick={() => setShowBulletin(true)}>📄 이번 주 스마트 주보 보기</button>
           </div>
+          {/* 카테고리 필터 — '전체' 제거, 버튼명 변경 */}
           <div className="fa"><div className="fb">
-            {['전체', '주일오전', '수요예배', '새벽기도'].map(tag => (
-              <button key={tag} onClick={() => setActiveFilter(tag)} className={`ftb ${activeFilter === tag ? 'act' : ''}`}>{tag}</button>
+            {[{ key: '주일오전', label: '주일예배 보기' }, { key: '수요예배', label: '수요예배 보기' }, { key: '새벽기도', label: '새벽기도 보기' }].map(tag => (
+              <button key={tag.key} onClick={() => setActiveFilter(activeFilter === tag.key ? null : tag.key)} className={`ftb ${activeFilter === tag.key ? 'act' : ''}`}>{tag.label}</button>
             ))}
           </div></div>
           <div className="cd">
             {isLoading ? (
               <div style={{ textAlign: 'center', padding: '50px', fontWeight: 'bold' }}>📡 유튜브에서 최신 은혜의 말씀을 불러오는 중입니다...</div>
-            ) : activeFilter === '전체' && searchTerm === '' ? (
-              <div className="sg">
-                {filteredSermons.map(s => (
-                  <div key={s.id} onClick={() => setPopupVideo(s)} className="sc">
-                    <div className="sch" style={{ background: s.gradient }}><div className="st">"{s.title}"</div></div>
-                  </div>
-                ))}
+            ) : !activeFilter ? (
+              /* 미선택 시 안내 화면 */
+              <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                <div style={{ fontSize: '4rem', marginBottom: '20px', opacity: 0.3 }}>⛪</div>
+                <p style={{ fontSize: '1.2rem', color: '#94A3B8', fontWeight: '600', lineHeight: '1.8' }}>원하시는 예배의 버튼을 눌러주세요</p>
+                <p style={{ fontSize: '0.9rem', color: '#CBD5E1', marginTop: '10px' }}>주일예배 · 수요예배 · 새벽기도</p>
               </div>
+            ) : filteredSermons.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '50px', color: '#94A3B8' }}>해당 카테고리 설교 영상이 아직 없습니다.</div>
             ) : (
+              /* 카드 그리드 — 텍스트 줄바꿈 + 중앙 정렬 */
               <div className="ll">
-                {filteredSermons.map(s => (
-                  <div key={s.id} onClick={() => setPopupVideo(s)} className="lc" style={{ background: s.gradient }}>
-                    <div className="lh"><h3 style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>"{s.title}"</h3></div>
-                    <div className="l-summary-overlay">
-                      <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 말씀 요약 안내</h4>
-                      <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>아래 재생 버튼을 눌러 생생한 은혜의 말씀을 들어보세요.</p></div>
+                {filteredSermons.map(s => {
+                  const parsed = parseTitle(s.title);
+                  return (
+                    <div key={s.id} onClick={() => setPopupVideo(s)} className="lc" style={{ background: s.gradient }}>
+                      <div className="lh" style={{ flexDirection: 'column', gap: '8px', padding: '35px 25px' }}>
+                        {parsed.date && <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: '500', letterSpacing: '0.05em' }}>{parsed.date}</div>}
+                        {parsed.worship && <div style={{ color: '#FBBF24', fontSize: '0.9rem', fontWeight: '700', padding: '4px 14px', background: 'rgba(0,0,0,0.25)', borderRadius: '20px', display: 'inline-block' }}>{parsed.worship}</div>}
+                        <h3 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1.4', wordBreak: 'keep-all', margin: '5px 0' }}>"{parsed.sermonTitle}"</h3>
+                      </div>
+                      <div className="l-summary-overlay">
+                        <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 터치하여 재생</h4>
+                        <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>은혜의 말씀을 영상으로 들어보세요.</p></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -254,14 +282,17 @@ export default function HomeClient() {
               <p className="arc-s">최근 한 달간의 은혜로운 말씀 모음</p>
               <div className="smb">
                 <div className="mhb">최신 설교 영상 <span>▲</span></div>
-                {sermons.slice(0, 5).map(s => (
-                  <div key={s.id} className="sr" onClick={() => setPopupVideo(s)}>
-                    <span className="rb" style={{ background: s.category === '주일오전' ? '#9f1239' : s.category === '수요예배' ? '#0f766e' : '#475569' }}>{s.category}</span>
-                    <span className="rt">{s.title}</span>
-                    <span style={{ fontSize: '0.8rem', color: '#888', marginRight: '10px' }}>{s.date}</span>
-                    <button className="rbt">재생</button>
-                  </div>
-                ))}
+                {sermons.slice(0, 5).map(s => {
+                  const p = parseTitle(s.title);
+                  return (
+                    <div key={s.id} className="sr" onClick={() => setPopupVideo(s)}>
+                      <span className="rb" style={{ background: s.category === '주일오전' ? '#9f1239' : s.category === '수요예배' ? '#0f766e' : '#475569' }}>{s.category}</span>
+                      <span className="rt">{p.sermonTitle || s.title}</span>
+                      <span style={{ fontSize: '0.8rem', color: '#888', marginRight: '10px' }}>{s.date}</span>
+                      <button className="rbt">재생</button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
