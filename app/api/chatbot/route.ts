@@ -2,8 +2,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 // 🛡️ 스텔스 심방 레이더 — 감정/돌봄 키워드 감지기
 const PASTORAL_KEYWORDS: { keywords: string[]; reason: string; priority: 'URGENT' | 'HIGH' | 'NORMAL' }[] = [
   // 🔴 긴급 (URGENT) — 즉시 심방 필요
@@ -23,18 +21,12 @@ const PASTORAL_KEYWORDS: { keywords: string[]; reason: string; priority: 'URGENT
 ];
 
 // 🔍 메시지에서 감정 키워드 감지
-function detectPastoralNeed(message: string): { detected: boolean; reason: string; keywords: string[]; priority: 'URGENT' | 'HIGH' | 'NORMAL' } | null {
+function detectPastoralNeed(message: string) {
   const normalizedMsg = message.toLowerCase().replace(/\s+/g, '');
-  
   for (const group of PASTORAL_KEYWORDS) {
     const matchedKeywords = group.keywords.filter(kw => normalizedMsg.includes(kw.replace(/\s+/g, '')));
     if (matchedKeywords.length > 0) {
-      return {
-        detected: true,
-        reason: group.reason,
-        keywords: matchedKeywords,
-        priority: group.priority
-      };
+      return { detected: true, reason: group.reason, keywords: matchedKeywords, priority: group.priority };
     }
   }
   return null;
@@ -43,7 +35,6 @@ function detectPastoralNeed(message: string): { detected: boolean; reason: strin
 // 🛡️ 스텔스 DB 등록 (비동기, 응답에 영향 없음)
 async function stealthRegister(userName: string, detection: { reason: string; keywords: string[]; priority: string }, context: string) {
   try {
-    // 24시간 이내 동일 사용자+사유 중복 방지
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const existing = await prisma.pastoralCare.findFirst({
       where: { userName, reason: detection.reason, createdAt: { gte: oneDayAgo } }
@@ -52,21 +43,19 @@ async function stealthRegister(userName: string, detection: { reason: string; ke
 
     await prisma.pastoralCare.create({
       data: {
-        userName,
-        reason: detection.reason,
+        userName, reason: detection.reason,
         keywords: detection.keywords.join(', '),
-        context: context.slice(0, 500), // 최대 500자
-        priority: detection.priority,
-        status: 'NEEDS_CARE'
+        context: context.slice(0, 500),
+        priority: detection.priority, status: 'NEEDS_CARE'
       }
     });
     console.log(`🛡️ [심방 레이더] 감지: ${userName} — ${detection.reason} (${detection.priority})`);
   } catch (err) {
-    console.error('심방 레이더 DB 등록 실패:', err);
+    console.error('🛡️ [심방 레이더] DB 등록 실패:', err);
   }
 }
 
-// 🧠 반석이 AI 시스템 프롬프트 — 교회 맞춤형 페르소나
+// 🧠 반석이 AI 시스템 프롬프트
 const SYSTEM_PROMPT = `당신은 "반석이"입니다. 거제반석교회(대한예수교장로교)의 AI 비서입니다.
 
 ## 📌 반석이의 성격
@@ -88,9 +77,9 @@ const SYSTEM_PROMPT = `당신은 "반석이"입니다. 거제반석교회(대한
 - 금요기도회: 금요일 저녁 8시
 - 새벽기도회: 매일 오전 5시 30분
 
-## 🌐 홈페이지 주요 메뉴 안내 (사용자가 페이지 위치를 물으면 안내)
+## 🌐 홈페이지 주요 메뉴 안내
 - 설교 듣기/라디오: /sermon-radio
-- 영적 순례길: /pilgrim (교회 내 순례 코스)
+- 영적 순례길: /pilgrim
 - 새가족 등록: /newcomer
 - 이음돌(소그룹) 보고: /ieumdol/report
 - 성경 퀴즈: /bible-quiz
@@ -120,24 +109,45 @@ const SYSTEM_PROMPT = `당신은 "반석이"입니다. 거제반석교회(대한
 
 export async function POST(req: Request) {
   try {
-    const { message, isAdmin, conversationHistory, userName } = await req.json();
-
-    if (!message || typeof message !== 'string') {
-      return NextResponse.json({ success: false, error: '메시지가 비어있습니다.' }, { status: 400 });
+    // ━━━ 1️⃣ 요청 본문 파싱 ━━━
+    let body;
+    try {
+      body = await req.json();
+    } catch (parseError: any) {
+      console.error("🚨 [요청 파싱 에러] req.json() 실패:", parseError.message || parseError);
+      return NextResponse.json({ success: false, reply: "요청 형식이 올바르지 않습니다." }, { status: 400 });
     }
 
-    // 🛡️ 스텔스 심방 레이더: 관리자가 아닌 성도의 메시지만 감지
+    const { message, isAdmin, conversationHistory, userName } = body;
+
+    if (!message || typeof message !== 'string') {
+      console.error("🚨 [입력 검증 에러] 메시지가 비어있거나 문자열이 아님:", message);
+      return NextResponse.json({ success: false, reply: "메시지가 비어있습니다." }, { status: 400 });
+    }
+
+    // ━━━ 2️⃣ API 키 누락 체크 (Vercel 환경변수 최종 점검) ━━━
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error("🚨🚨🚨 [스똑 시스템 경고] GEMINI_API_KEY가 존재하지 않습니다! Vercel 환경변수를 확인하세요!");
+      return NextResponse.json({ 
+        success: false,
+        reply: "죄송합니다. 시스템 키가 누락되었습니다. 관리자에게 문의해주세요. 🙏" 
+      }, { status: 500 });
+    }
+    console.log("✅ [API 키 확인] 키 앞 10자:", apiKey.substring(0, 10) + "...");
+
+    // ━━━ 3️⃣ 스텔스 심방 레이더 (성도만, 비동기) ━━━
     if (!isAdmin) {
       const detection = detectPastoralNeed(message);
       if (detection) {
         const contextStr = (conversationHistory || []).slice(-3)
           .map((m: { sender: string; text: string }) => `${m.sender}: ${m.text}`).join(' | ');
-        // 비동기로 DB 등록 (응답 지연 없음, 성도는 눈치 못챔)
+        // 비동기로 DB 등록 (응답 지연 없음)
         stealthRegister(userName || '익명 성도', detection, `${message} || ${contextStr}`);
       }
     }
 
-    // 대화 히스토리 구성 (최근 6개까지)
+    // ━━━ 4️⃣ 프롬프트 조립 ━━━
     const recentHistory = (conversationHistory || []).slice(-6).map((msg: { sender: string; text: string }) => 
       `${msg.sender === 'user' ? '성도님' : '반석이'}: ${msg.text}`
     ).join('\n');
@@ -151,23 +161,58 @@ export async function POST(req: Request) {
 
     const fullPrompt = `${SYSTEM_PROMPT}${roleContext}${timeContext}\n\n[이전 대화]\n${recentHistory || '(첫 대화)'}\n\n[성도님의 질문]\n${message}`;
 
+    // ━━━ 5️⃣ Gemini AI 호출 (3단계 모델 Fallback) ━━━
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const MODELS = ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    
     let result;
-    try {
-      const flashModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
-      result = await flashModel.generateContent(fullPrompt);
-    } catch {
-      // Fallback — 더 안정적인 모델
+    let usedModel = '';
+
+    for (const modelName of MODELS) {
       try {
-        const fallback1 = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-        result = await fallback1.generateContent(fullPrompt);
-      } catch {
-        const fallback2 = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
-        result = await fallback2.generateContent(fullPrompt);
+        console.log(`🤖 [모델 시도] ${modelName}...`);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        result = await model.generateContent(fullPrompt);
+        usedModel = modelName;
+        console.log(`✅ [모델 성공] ${modelName} 응답 완료!`);
+        break; // 성공하면 루프 탈출
+      } catch (modelError: any) {
+        console.error(`❌ [모델 실패] ${modelName}:`, modelError.message || modelError);
+        if (modelError.status) {
+          console.error(`   👉 HTTP 상태: ${modelError.status}`);
+        }
+        if (modelError.errorDetails) {
+          console.error(`   👉 상세 정보:`, JSON.stringify(modelError.errorDetails));
+        }
+        // 다음 모델로 계속 시도
       }
     }
 
-    const rawText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    
+    // 모든 모델 실패
+    if (!result) {
+      console.error("🔥🔥🔥 [전체 모델 실패] 3개 모델 모두 응답 불가! API 키 또는 할당량 확인 필요!");
+      return NextResponse.json({ 
+        success: false,
+        reply: "죄송합니다. 잠시 AI 서비스가 불안정합니다. 잠시 후 다시 시도해 주세요. 🙏",
+        actionLabel: null, actionLink: null
+      }, { status: 500 });
+    }
+
+    // ━━━ 6️⃣ AI 응답 파싱 ━━━
+    let rawText = '';
+    try {
+      rawText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+      console.log(`📝 [AI 원문 응답] (${usedModel}):`, rawText.substring(0, 200) + '...');
+    } catch (textError: any) {
+      console.error("❌ [응답 텍스트 추출 에러]:", textError.message || textError);
+      return NextResponse.json({
+        success: false,
+        reply: "죄송합니다. AI 응답을 처리하는 중 오류가 발생했습니다. 🙏",
+        actionLabel: null, actionLink: null
+      }, { status: 500 });
+    }
+
+    // ━━━ 7️⃣ JSON 파싱 시도 → 실패 시 원문 사용 ━━━
     try {
       const parsed = JSON.parse(rawText);
       return NextResponse.json({ 
@@ -177,7 +222,8 @@ export async function POST(req: Request) {
         actionLink: parsed.actionLink || null
       });
     } catch {
-      // JSON 파싱 실패 시 원문 텍스트 그대로 사용
+      // JSON 파싱 실패 → 원문 텍스트 그대로 사용 (정상 동작)
+      console.log("ℹ️ [JSON 파싱 스킵] 원문 텍스트로 응답합니다.");
       return NextResponse.json({ 
         success: true, 
         reply: rawText,
@@ -186,13 +232,23 @@ export async function POST(req: Request) {
       });
     }
 
-  } catch (error) {
-    console.error('반석이 AI 오류:', error);
+  } catch (error: any) {
+    // 💥 [최종 안전망] 예상치 못한 에러 전부 포착
+    console.error("🔥🔥🔥 [치명적 에러 발생] 🔥🔥🔥");
+    console.error("   에러 타입:", error.constructor?.name || 'Unknown');
+    console.error("   에러 메시지:", error.message || error);
+    console.error("   스택 트레이스:", error.stack || '없음');
+    if (error.status) {
+      console.error("   HTTP 에러 코드:", error.status);
+    }
+    if (error.cause) {
+      console.error("   원인(cause):", error.cause);
+    }
+
     return NextResponse.json({ 
-      success: false, 
-      reply: '잠시 네트워크가 불안정합니다. 조금 후 다시 말씀해 주세요. 🙏',
-      actionLabel: null,
-      actionLink: null
+      success: false,
+      reply: "죄송합니다. 잠시 연결이 불안정합니다. 다시 시도해 주세요. 🙏",
+      actionLabel: null, actionLink: null
     }, { status: 500 });
   }
 }
