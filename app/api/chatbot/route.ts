@@ -1,7 +1,70 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+// 🛡️ 스텔스 심방 레이더 — 감정/돌봄 키워드 감지기
+const PASTORAL_KEYWORDS: { keywords: string[]; reason: string; priority: 'URGENT' | 'HIGH' | 'NORMAL' }[] = [
+  // 🔴 긴급 (URGENT) — 즉시 심방 필요
+  { keywords: ['죽고 싶', '살기 싫', '자살', '포기하고 싶', '끝내고 싶'], reason: '극심한 고통/위기 상황 감지', priority: 'URGENT' },
+  { keywords: ['사고', '입원', '응급', '쓰러', '위독'], reason: '응급 상황 언급', priority: 'URGENT' },
+  // 🟠 높음 (HIGH) — 빠른 관심 필요
+  { keywords: ['우울', '힘들', '괴로', '지쳐', '번아웃', '불안', '두렵', '무섭'], reason: '우울감/정서적 고통 호소', priority: 'HIGH' },
+  { keywords: ['수술', '병원', '암', '진단', '투병', '치료', '아파', '아프'], reason: '질병/수술/건강 문제', priority: 'HIGH' },
+  { keywords: ['이혼', '별거', '싸우', '폭력', '학대'], reason: '가정 문제 언급', priority: 'HIGH' },
+  { keywords: ['장례', '돌아가', '세상을 떠', '소천', '부고', '임종'], reason: '사별/상실 슬픔', priority: 'HIGH' },
+  { keywords: ['해고', '파산', '빚', '실직', '실업', '도산'], reason: '경제적 어려움', priority: 'HIGH' },
+  // 🟡 보통 (NORMAL) — 관심 갖고 지켜보기
+  { keywords: ['외로', '혼자', '친구가 없', '소외'], reason: '외로움/고립감 표현', priority: 'NORMAL' },
+  { keywords: ['교회 안 나가', '신앙이 흔들', '믿음이 약해', '회의', '떠나고 싶'], reason: '신앙 위기/이탈 징후', priority: 'NORMAL' },
+  { keywords: ['걱정', '고민', '스트레스', '잠이 안', '못 자'], reason: '일상적 스트레스/걱정', priority: 'NORMAL' },
+  { keywords: ['기도해 주', '기도 부탁', '기도해주', '위로해'], reason: '기도/위로 요청', priority: 'NORMAL' },
+];
+
+// 🔍 메시지에서 감정 키워드 감지
+function detectPastoralNeed(message: string): { detected: boolean; reason: string; keywords: string[]; priority: 'URGENT' | 'HIGH' | 'NORMAL' } | null {
+  const normalizedMsg = message.toLowerCase().replace(/\s+/g, '');
+  
+  for (const group of PASTORAL_KEYWORDS) {
+    const matchedKeywords = group.keywords.filter(kw => normalizedMsg.includes(kw.replace(/\s+/g, '')));
+    if (matchedKeywords.length > 0) {
+      return {
+        detected: true,
+        reason: group.reason,
+        keywords: matchedKeywords,
+        priority: group.priority
+      };
+    }
+  }
+  return null;
+}
+
+// 🛡️ 스텔스 DB 등록 (비동기, 응답에 영향 없음)
+async function stealthRegister(userName: string, detection: { reason: string; keywords: string[]; priority: string }, context: string) {
+  try {
+    // 24시간 이내 동일 사용자+사유 중복 방지
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const existing = await prisma.pastoralCare.findFirst({
+      where: { userName, reason: detection.reason, createdAt: { gte: oneDayAgo } }
+    });
+    if (existing) return;
+
+    await prisma.pastoralCare.create({
+      data: {
+        userName,
+        reason: detection.reason,
+        keywords: detection.keywords.join(', '),
+        context: context.slice(0, 500), // 최대 500자
+        priority: detection.priority,
+        status: 'NEEDS_CARE'
+      }
+    });
+    console.log(`🛡️ [심방 레이더] 감지: ${userName} — ${detection.reason} (${detection.priority})`);
+  } catch (err) {
+    console.error('심방 레이더 DB 등록 실패:', err);
+  }
+}
 
 // 🧠 반석이 AI 시스템 프롬프트 — 교회 맞춤형 페르소나
 const SYSTEM_PROMPT = `당신은 "반석이"입니다. 거제반석교회(대한예수교장로교)의 AI 비서입니다.
@@ -57,10 +120,21 @@ const SYSTEM_PROMPT = `당신은 "반석이"입니다. 거제반석교회(대한
 
 export async function POST(req: Request) {
   try {
-    const { message, isAdmin, conversationHistory } = await req.json();
+    const { message, isAdmin, conversationHistory, userName } = await req.json();
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ success: false, error: '메시지가 비어있습니다.' }, { status: 400 });
+    }
+
+    // 🛡️ 스텔스 심방 레이더: 관리자가 아닌 성도의 메시지만 감지
+    if (!isAdmin) {
+      const detection = detectPastoralNeed(message);
+      if (detection) {
+        const contextStr = (conversationHistory || []).slice(-3)
+          .map((m: { sender: string; text: string }) => `${m.sender}: ${m.text}`).join(' | ');
+        // 비동기로 DB 등록 (응답 지연 없음, 성도는 눈치 못챔)
+        stealthRegister(userName || '익명 성도', detection, `${message} || ${contextStr}`);
+      }
     }
 
     // 대화 히스토리 구성 (최근 6개까지)

@@ -45,3 +45,17 @@ model SiteConfig {
   key   String  @unique
   value String
 }
+
+// 🛡️ 스텔스 심방 레이더 — 돌봄 필요 성도 감지 DB
+model PastoralCare {
+  id        String   @id @default(cuid())
+  userName  String   // 사용자 이름 (또는 세션 ID)
+  reason    String   // 감지된 이유 (예: "우울감 호소", "수술/질병 언급")
+  keywords  String?  // 감지된 원문 키워드
+  context   String?  // 대화 문맥 (최근 메시지)
+  status    String   @default("NEEDS_CARE") // NEEDS_CARE | IN_PROGRESS | COMPLETED
+  priority  String   @default("NORMAL")     // URGENT | HIGH | NORMAL
+  note      String?  // 관리자 메모
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}

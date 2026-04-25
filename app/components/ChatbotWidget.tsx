@@ -24,6 +24,15 @@ export default function ChatbotWidget() {
   const [reportContent, setReportContent] = useState('');
   const [mounted, setMounted] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  // 🛡️ 스텔스 심방 레이더 — 익명 세션 ID (성도 구분용)
+  const [sessionId] = useState(() => {
+    if (typeof window === 'undefined') return '익명 성도';
+    const stored = sessionStorage.getItem('banseok-session-id');
+    if (stored) return stored;
+    const newId = `성도_${Date.now().toString(36).slice(-4)}`;
+    sessionStorage.setItem('banseok-session-id', newId);
+    return newId;
+  });
 
   const [messages, setMessages] = useState<Message[]>([
     { sender: 'bot', text: '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!' }
@@ -98,6 +107,10 @@ export default function ChatbotWidget() {
       botReply += "순례길 스위치 제어판으로 이동합니다.";
       actionLabel = "🎛️ 스위치 제어판";
       actionLink = "/admin";
+    } else if (text.includes("심방") || text.includes("레이더") || text.includes("돌봄") || text.includes("케어")) {
+      botReply += "스텔스 심방 레이더 대시보드로 이동합니다. AI가 감지한 돌봄 필요 성도 현황을 확인하실 수 있습니다.";
+      actionLabel = "🛡️ 심방 레이더 보기";
+      actionLink = "/admin/pastoral-care";
     } else {
       // 관리자 키워드 미매칭 → AI에게 위임
       callGeminiAI(text);
@@ -140,7 +153,8 @@ export default function ChatbotWidget() {
         body: JSON.stringify({
           message: userText,
           isAdmin: !!isAdmin,
-          conversationHistory: messages.slice(-6)
+          conversationHistory: messages.slice(-6),
+          userName: isAdmin ? '관리자' : sessionId
         })
       });
       const data = await res.json();

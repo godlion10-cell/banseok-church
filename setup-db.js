@@ -21,6 +21,10 @@ const tables = [
   `CREATE TABLE IF NOT EXISTS "WorshipOrder" ("id" TEXT NOT NULL PRIMARY KEY, "category" TEXT NOT NULL, "title" TEXT NOT NULL, "content" TEXT NOT NULL)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "WorshipOrder_category_key" ON "WorshipOrder"("category")`,
   `CREATE TABLE IF NOT EXISTS "Schedule" ("id" TEXT NOT NULL PRIMARY KEY, "title" TEXT NOT NULL, "time" TEXT NOT NULL, "place" TEXT NOT NULL, "officer" TEXT NOT NULL, "order" INTEGER NOT NULL DEFAULT 0)`,
+  `CREATE TABLE IF NOT EXISTS "SiteConfig" ("id" TEXT NOT NULL PRIMARY KEY, "key" TEXT NOT NULL, "value" TEXT NOT NULL)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "SiteConfig_key_key" ON "SiteConfig"("key")`,
+  // 🛡️ 스텔스 심방 레이더 테이블
+  `CREATE TABLE IF NOT EXISTS "PastoralCare" ("id" TEXT NOT NULL PRIMARY KEY, "userName" TEXT NOT NULL, "reason" TEXT NOT NULL, "keywords" TEXT, "context" TEXT, "status" TEXT NOT NULL DEFAULT 'NEEDS_CARE', "priority" TEXT NOT NULL DEFAULT 'NORMAL', "note" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
 ];
 
 async function main() {
