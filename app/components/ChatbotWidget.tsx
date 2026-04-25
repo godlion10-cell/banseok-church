@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 type Message = {
   sender: 'bot' | 'user';
@@ -89,6 +90,71 @@ export default function ChatbotWidget() {
     setLargeSubtitle('');
   };
 
+  // 🎤 Web Speech API — 음성 인식 (청각 이식)
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setMessages(prev => [...prev, { sender: 'bot', text: '이 브라우저에서는 음성 인식을 지원하지 않습니다. Chrome 브라우저를 사용해 주세요. 🎤' }]);
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      if (event.error === 'not-allowed') {
+        setMessages(prev => [...prev, { sender: 'bot', text: '마이크 권한이 필요합니다. 브라우저 설정에서 마이크를 허용해주세요. 🔒' }]);
+      }
+    };
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      if (inputRef.current) {
+        inputRef.current.value = transcript;
+        // 자동 제출
+        const form = inputRef.current.closest('form');
+        if (form) form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      }
+    };
+    recognition.start();
+  };
+
+  // 📎 파일 첨부 (시각 이식 — 관리자 전용 멀티모달)
+  const [attachedFile, setAttachedFile] = useState<{ name: string; type: string; base64: string } | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 10MB 제한
+    if (file.size > 10 * 1024 * 1024) {
+      setMessages(prev => [...prev, { sender: 'bot', text: '파일 크기는 10MB 이하여야 합니다, 사장님. 📁' }]);
+      return;
+    }
+
+    // Base64 변환
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      setAttachedFile({ name: file.name, type: file.type, base64 });
+      setMessages(prev => [...prev, { sender: 'user', text: `📎 파일 첨부: ${file.name}` }]);
+      setMessages(prev => [...prev, { sender: 'bot', text: `파일을 받았습니다! "${file.name}" 분석할까요? 명령을 입력해주세요, 사장님.` }]);
+    };
+    reader.readAsDataURL(file);
+    // input 초기화
+    e.target.value = '';
+  };
+
   // 👑 관리자 전용 명령 분석 엔진
   const analyzeAdminCommand = (text: string) => {
     let botReply = "알겠습니다, 사장님. ";
@@ -147,23 +213,28 @@ export default function ChatbotWidget() {
   const callGeminiAI = async (userText: string) => {
     setIsThinking(true);
     try {
-      // 🧠 관리자 = 울트라 반석이 뇌 (/api/admin/chatbot)
-      // 👤 일반 성도 = 기본 반석이 뇌 (/api/chatbot)
       const apiEndpoint = isAdmin ? '/api/admin/chatbot' : '/api/chatbot';
+
+      // 관리자 + 파일 첨부 시 멀티모달 데이터 포함
+      const requestBody: any = {
+        message: userText,
+        isAdmin: !!isAdmin,
+        conversationHistory: messages.slice(-6),
+        userName: isAdmin ? '관리자' : sessionId
+      };
+
+      if (isAdmin && attachedFile) {
+        requestBody.file = attachedFile;
+        setAttachedFile(null); // 전송 후 초기화
+      }
 
       const res = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userText,
-          isAdmin: !!isAdmin,
-          conversationHistory: messages.slice(-6),
-          userName: isAdmin ? '관리자' : sessionId
-        })
+        body: JSON.stringify(requestBody)
       });
       const data = await res.json();
       if (data.success && data.reply) {
-        // 관리자 응답에 액션 코드 배지 추가
         let replyText = data.reply;
         if (isAdmin && data.actionCode && data.actionCode !== 'NONE') {
           replyText += `\n\n🏷️ [${data.actionCode}]`;
@@ -354,38 +425,6 @@ export default function ChatbotWidget() {
     analyzeAndRespond(text);
   };
 
-  // 📎 파일 첨부 (관리자/일반 분기)
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (isAdmin) {
-      setMessages(prev => [...prev, { sender: 'user', text: `📎 관리자 파일 제출: ${file.name}` }]);
-      setTimeout(() => {
-        const reply = `파일(${file.name}) 분석 완료.\n[파일 정보: ${file.type}, ${Math.round(file.size/1024)}KB]\n사장님, 이 파일을 주보함에 등록하고 성도님들께 공지할까요?`;
-        setMessages(prev => [...prev, { sender: 'bot', text: reply, actionLabel: "✅ 즉시 등록 실행" }]);
-      }, 1000);
-    } else {
-      setMessages(prev => [...prev, { sender: 'user', text: `📎 파일: ${file.name}` }]);
-      setTimeout(() => {
-        setMessages(prev => [...prev, { sender: 'bot', text: "파일이 접수되었습니다!" }]);
-      }, 800);
-    }
-  };
-
-  const startListening = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return alert("마이크를 지원하지 않는 브라우저입니다.");
-    
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ko-KR';
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event: any) => handleUserMessage(event.results[0][0].transcript);
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-    recognition.start();
-  };
-
   const onSubmitForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputRef.current) {
@@ -474,16 +513,36 @@ export default function ChatbotWidget() {
             </div>
 
             <div style={{ padding: '10px 15px', background: 'white', borderTop: '1px solid #F1F5F9' }}>
-              <form onSubmit={onSubmitForm} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* 첨부 파일 미리보기 */}
+              {attachedFile && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', marginBottom: '8px', background: '#F0F9FF', borderRadius: '12px', fontSize: '0.8rem', color: '#0369A1' }}>
+                  <span>📎</span>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attachedFile.name}</span>
+                  <button onClick={() => setAttachedFile(null)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '1rem' }}>✕</button>
+                </div>
+              )}
+              <form onSubmit={onSubmitForm} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {/* 📎 파일 첨부 (관리자 전용) */}
                 {isAdmin && (
                   <>
-                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
-                    <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '1.2rem', flexShrink: 0 }}>📎</button>
+                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*,.pdf,.xlsx,.xls,.csv,.doc,.docx,.txt" style={{ display: 'none' }} />
+                    <button type="button" onClick={() => fileInputRef.current?.click()} title="파일 첨부"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: '0.2s' }}>
+                      <Image src="/icons/realistic-paperclip.png" alt="파일첨부" width={26} height={26} style={{ objectFit: 'contain' }} />
+                    </button>
                   </>
                 )}
-                <button type="button" onClick={startListening} style={{ background: isListening ? '#EF4444' : '#3B82F6', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '1.2rem', transition: '0.3s', flexShrink: 0, boxShadow: isListening ? '0 0 10px rgba(239, 68, 68, 0.5)' : 'none' }}>🎤</button>
-                <input type="text" ref={inputRef} placeholder={isAdmin ? "관리자 명령 입력..." : "입력하거나 마이크를 누르세요"} style={{ flex: 1, border: '1px solid #E2E8F0', padding: '12px', borderRadius: '20px', outline: 'none', fontSize: '0.95rem' }} />
-                <button type="submit" style={{ background: theme.btnBg, border: 'none', color: 'white', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>➤</button>
+                {/* 🎤 음성 입력 */}
+                <button type="button" onClick={startListening} title={isListening ? '음성 중지' : '음성 입력'}
+                  style={{ background: isListening ? '#FEE2E2' : 'none', border: isListening ? '2px solid #EF4444' : 'none', cursor: 'pointer', flexShrink: 0, width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: '0.2s', animation: isListening ? 'pulse 1s infinite' : 'none' }}>
+                  <Image src="/icons/realistic-mic.png" alt="음성입력" width={26} height={26} style={{ objectFit: 'contain', filter: isListening ? 'drop-shadow(0 0 6px #EF4444)' : 'none' }} />
+                </button>
+                {/* 텍스트 입력 */}
+                <input type="text" ref={inputRef} placeholder={isAdmin ? '사장님, 명령하세요...' : '입력하거나 🎤을 누르세요'}
+                  style={{ flex: 1, border: '1px solid #E2E8F0', padding: '11px 14px', borderRadius: '20px', outline: 'none', fontSize: '0.9rem', background: '#FAFAFA' }} />
+                {/* 전송 */}
+                <button type="submit" title="전송"
+                  style={{ background: theme.btnBg, border: 'none', color: 'white', borderRadius: '50%', width: '38px', height: '38px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.1rem', transition: '0.2s' }}>➤</button>
               </form>
             </div>
           </div>

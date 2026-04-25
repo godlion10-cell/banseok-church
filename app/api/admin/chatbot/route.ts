@@ -50,10 +50,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, reply: "요청 형식 오류입니다, 사장님." }, { status: 400 });
     }
 
-    const { message, conversationHistory } = body;
+    const { message, conversationHistory, file } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ success: false, reply: "명령을 입력해주세요, 사장님." }, { status: 400 });
+    }
+
+    // 파일 첨부 정보 로깅
+    if (file) {
+      console.log(`📎 [관리자 API] 파일 첨부: ${file.name} (${file.type}, ${Math.round(file.base64.length * 0.75 / 1024)}KB)`);
     }
 
     // ━━━ 2️⃣ API 키 체크 ━━━
@@ -85,20 +90,53 @@ export async function POST(req: Request) {
       dbStatus = '\n[DB 현황: 조회 실패 — 연결 확인 필요]';
     }
 
-    const fullPrompt = `${ADMIN_SYSTEM_PROMPT}${timeContext}${dbStatus}\n\n[이전 대화]\n${recentHistory || '(첫 대화)'}\n\n[사장님의 명령]\n${message}`;
+    // 이미지 파일 첨부 시 멀티모달 프롬프트 구성
+    let fileContext = '';
+    const isImageFile = file && file.type?.startsWith('image/');
 
-    // ━━━ 5️⃣ Gemini AI 호출 (3단계 Fallback) ━━━
+    if (file && !isImageFile) {
+      // 텍스트/문서 파일은 프롬프트에 내용 주입
+      try {
+        const decoded = Buffer.from(file.base64, 'base64').toString('utf-8');
+        fileContext = `\n\n[첨부 파일: ${file.name}]\n${decoded.slice(0, 3000)}`;
+      } catch {
+        fileContext = `\n\n[첨부 파일: ${file.name}] (디코딩 불가 — 바이너리 파일)`;
+      }
+    }
+
+    const fullPrompt = `${ADMIN_SYSTEM_PROMPT}${timeContext}${dbStatus}${fileContext}\n\n[이전 대화]\n${recentHistory || '(첫 대화)'}\n\n[사장님의 명령]\n${message}`;
+
+    // ━━━ 5️⃣ Gemini AI 호출 (3단계 Fallback + 멀티모달) ━━━
     const genAI = new GoogleGenerativeAI(apiKey);
-    const MODELS = ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    // 멀티모달은 flash 모델로 (플래시 라이트는 이미지 미지원 수 있음)
+    const MODELS = isImageFile 
+      ? ['gemini-2.0-flash', 'gemini-1.5-flash'] 
+      : ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
     let result;
     let usedModel = '';
 
     for (const modelName of MODELS) {
       try {
-        console.log(`👑 [관리자 AI] ${modelName} 시도...`);
+        console.log(`👑 [관리자 AI] ${modelName} 시도...${isImageFile ? ' (멀티모달)' : ''}`);
         const model = genAI.getGenerativeModel({ model: modelName });
-        result = await model.generateContent(fullPrompt);
+
+        if (isImageFile && file) {
+          // 🖼️ 이미지 멀티모달: 텍스트 + 이미지 동시 전송
+          result = await model.generateContent([
+            fullPrompt,
+            {
+              inlineData: {
+                mimeType: file.type,
+                data: file.base64
+              }
+            }
+          ]);
+        } else {
+          // 텍스트만
+          result = await model.generateContent(fullPrompt);
+        }
+
         usedModel = modelName;
         console.log(`✅ [관리자 AI] ${modelName} 성공!`);
         break;
