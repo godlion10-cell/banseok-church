@@ -63,8 +63,14 @@ export default function ChatbotWidget() {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
+
+    // 퀵바 반석이 버튼에서 챗봇 열기 이벤트 수신
+    const handleOpenChatbot = () => setIsOpen(true);
+    window.addEventListener('banseok:open-chatbot', handleOpenChatbot);
+
     return () => {
         window.removeEventListener('resize', handleResize);
+        window.removeEventListener('banseok:open-chatbot', handleOpenChatbot);
         window.speechSynthesis.cancel();
     };
   }, []);
@@ -548,7 +554,7 @@ export default function ChatbotWidget() {
           </div>
         )}
 
-        <button onClick={() => setIsOpen(!isOpen)} style={{ width: '65px', height: '65px', borderRadius: '50%', background: theme.btnBg, color: 'white', border: isAdmin ? '3px solid #A78BFA' : 'none', cursor: 'pointer', boxShadow: `0 8px 25px rgba(0,0,0,0.3)`, fontSize: '1.8rem' }}>
+        <button data-chatbot-toggle onClick={() => setIsOpen(!isOpen)} style={{ width: '65px', height: '65px', borderRadius: '50%', background: theme.btnBg, color: 'white', border: isAdmin ? '3px solid #A78BFA' : 'none', cursor: 'pointer', boxShadow: `0 8px 25px rgba(0,0,0,0.3)`, fontSize: '1.8rem' }}>
           {isOpen ? '✕' : (isAdmin ? '👑' : '💬')}
         </button>
       </div>
