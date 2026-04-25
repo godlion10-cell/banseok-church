@@ -1,34 +1,36 @@
 "use client";
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function TopNavBar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // 메인 홈페이지('/')에서는 뒤로가기 바를 숨김
+  // 메인 홈페이지('/')에서는 숨김
   if (pathname === '/') return null;
 
   return (
-    <div style={{ 
-      position: 'sticky', top: 0, zIndex: 50, 
-      background: 'rgba(255, 255, 255, 0.9)', 
-      backdropFilter: 'blur(10px)',
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '15px 20px', borderBottom: '1px solid #E2E8F0'
-    }}>
-      {/* ⬅️ 뒤로 가기 버튼 */}
+    <nav className="premium-nav">
+      {/* 🔙 고품격 뒤로 가기 버튼 */}
       <button 
         onClick={() => router.back()} 
-        style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', color: '#475569' }}
+        className="premium-nav-btn"
+        aria-label="이전 페이지로 이동"
       >
-        <span>⬅️</span> 이전
+        <div className="premium-nav-icon-wrap">
+          <Image src="/icons/realistic-back.png" alt="뒤로" width={32} height={32} style={{ objectFit: 'contain' }} />
+        </div>
+        <span className="premium-nav-label">이전</span>
       </button>
 
-      {/* 🏠 홈으로 버튼 */}
-      <Link href="/" style={{ textDecoration: 'none', fontSize: '1.2rem', color: '#1E3A8A', fontWeight: 'bold' }}>
-        🏠 반석교회 홈
+      {/* ⛪ 고품격 홈(성전) 버튼 */}
+      <Link href="/" className="premium-nav-btn" aria-label="반석교회 홈으로 이동">
+        <div className="premium-nav-icon-wrap church">
+          <Image src="/icons/realistic-church.png" alt="홈으로" width={38} height={38} style={{ objectFit: 'contain' }} />
+        </div>
+        <span className="premium-nav-label church-label">성전 로비</span>
       </Link>
-    </div>
+    </nav>
   );
 }

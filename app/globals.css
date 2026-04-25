@@ -82,3 +82,132 @@ h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 700; color: var(--color-primary
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+/* ═══════════════════════════════════════════════════
+   🛡️ 프리미엄 글로벌 네비게이션 바 (TopNavBar)
+   PC: 상단 고정 | 모바일: 하단 고정 (어르신 엄지 범위)
+   ═══════════════════════════════════════════════════ */
+
+.premium-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9990;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 30px;
+  background: rgba(253, 245, 234, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(193, 156, 114, 0.2);
+  box-shadow: 0 4px 30px rgba(91, 39, 47, 0.08);
+  transition: all 0.3s ease;
+}
+
+.premium-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 14px;
+  transition: all 0.25s ease;
+}
+
+.premium-nav-btn:hover {
+  background: rgba(193, 156, 114, 0.15);
+  transform: translateY(-2px);
+}
+
+.premium-nav-btn:active {
+  transform: scale(0.92);
+}
+
+.premium-nav-icon-wrap {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,228,212,0.6));
+  box-shadow: 0 3px 12px rgba(91, 39, 47, 0.1), inset 0 1px 2px rgba(255,255,255,0.8);
+  transition: all 0.25s ease;
+}
+
+.premium-nav-btn:hover .premium-nav-icon-wrap {
+  box-shadow: 0 6px 20px rgba(91, 39, 47, 0.15), inset 0 1px 2px rgba(255,255,255,0.9);
+  transform: scale(1.08);
+}
+
+.premium-nav-icon-wrap.church {
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, rgba(91, 39, 47, 0.08), rgba(193, 156, 114, 0.15));
+  border: 1.5px solid rgba(193, 156, 114, 0.3);
+}
+
+.premium-nav-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: -0.02em;
+  transition: color 0.2s;
+}
+
+.premium-nav-btn:hover .premium-nav-label {
+  color: var(--color-primary);
+}
+
+.church-label {
+  color: var(--color-primary) !important;
+  font-weight: 800;
+}
+
+/* ── body 패딩 (네비바 공간 확보) ── */
+body {
+  padding-top: 80px !important; /* PC: 상단 네비바 높이만큼 */
+}
+
+/* ═══════════════════════════════════════
+   📱 모바일 반응형 (768px 이하)
+   상단 → 하단 전환 (어르신 엄지 닿는 위치)
+   ═══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .premium-nav {
+    top: auto;
+    bottom: 0;
+    border-bottom: none;
+    border-top: 1px solid rgba(193, 156, 114, 0.25);
+    box-shadow: 0 -4px 30px rgba(91, 39, 47, 0.1);
+    padding: 8px 20px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    background: rgba(253, 245, 234, 0.95);
+  }
+
+  body {
+    padding-top: 0 !important;
+    padding-bottom: 90px !important; /* 모바일: 하단 네비바 높이만큼 */
+  }
+
+  .premium-nav-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .premium-nav-icon-wrap.church {
+    width: 50px;
+    height: 50px;
+  }
+
+  .premium-nav-label {
+    font-size: 0.7rem;
+  }
+}
