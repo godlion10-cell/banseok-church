@@ -90,17 +90,37 @@ export async function POST(req: Request) {
       dbStatus = '\n[DB 현황: 조회 실패 — 연결 확인 필요]';
     }
 
-    // 이미지 파일 첨부 시 멀티모달 프롬프트 구성
-    let fileContext = '';
-    const isImageFile = file && file.type?.startsWith('image/');
+    // ━━━ 멀티모달 파일 처리 유틸리티 ━━━
+    // base64 데이터에서 "data:image/png;base64," 접두사 자동 제거
+    const fileToGenerativePart = (base64Data: string, mimeType: string) => {
+      const cleanBase64 = base64Data.includes(',') 
+        ? base64Data.split(',')[1]  // "data:xxx;base64,실제데이터" → 실제데이터만
+        : base64Data;               // 이미 순수 base64면 그대로
+      return {
+        inlineData: {
+          data: cleanBase64,
+          mimeType: mimeType
+        }
+      };
+    };
 
-    if (file && !isImageFile) {
-      // 텍스트/문서 파일은 프롬프트에 내용 주입
+    // 멀티모달 지원 파일 타입 (Gemini가 직접 분석 가능)
+    const MULTIMODAL_TYPES = [
+      'image/png', 'image/jpeg', 'image/webp', 'image/gif',  // 이미지
+      'application/pdf',                                       // PDF
+    ];
+    const isMultimodalFile = file && MULTIMODAL_TYPES.some(t => file.type?.startsWith(t.split('/')[0]) || file.type === t);
+
+    // 텍스트 기반 파일 (프롬프트에 내용 주입)
+    let fileContext = '';
+    if (file && !isMultimodalFile) {
       try {
-        const decoded = Buffer.from(file.base64, 'base64').toString('utf-8');
-        fileContext = `\n\n[첨부 파일: ${file.name}]\n${decoded.slice(0, 3000)}`;
+        const cleanBase64 = file.base64.includes(',') ? file.base64.split(',')[1] : file.base64;
+        const decoded = Buffer.from(cleanBase64, 'base64').toString('utf-8');
+        fileContext = `\n\n[📎 첨부 파일: ${file.name} (${file.type})]\n--- 파일 내용 시작 ---\n${decoded.slice(0, 5000)}\n--- 파일 내용 끝 ---`;
+        console.log(`📄 [관리자 API] 텍스트 파일 디코딩 성공: ${decoded.length}자`);
       } catch {
-        fileContext = `\n\n[첨부 파일: ${file.name}] (디코딩 불가 — 바이너리 파일)`;
+        fileContext = `\n\n[📎 첨부 파일: ${file.name}] (바이너리 파일 — 텍스트 디코딩 불가)`;
       }
     }
 
@@ -108,8 +128,8 @@ export async function POST(req: Request) {
 
     // ━━━ 5️⃣ Gemini AI 호출 (3단계 Fallback + 멀티모달) ━━━
     const genAI = new GoogleGenerativeAI(apiKey);
-    // 멀티모달은 flash 모델로 (플래시 라이트는 이미지 미지원 수 있음)
-    const MODELS = isImageFile 
+    // 멀티모달은 flash 모델만 (flash-lite는 이미지/PDF 미지원)
+    const MODELS = isMultimodalFile 
       ? ['gemini-2.0-flash', 'gemini-1.5-flash'] 
       : ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
@@ -118,22 +138,20 @@ export async function POST(req: Request) {
 
     for (const modelName of MODELS) {
       try {
-        console.log(`👑 [관리자 AI] ${modelName} 시도...${isImageFile ? ' (멀티모달)' : ''}`);
+        console.log(`👑 [관리자 AI] ${modelName} 시도...${isMultimodalFile ? ` (멀티모달: ${file.type})` : ''}`);
         const model = genAI.getGenerativeModel({ model: modelName });
 
-        if (isImageFile && file) {
-          // 🖼️ 이미지 멀티모달: 텍스트 + 이미지 동시 전송
+        if (isMultimodalFile && file) {
+          // 🖼️📄 멀티모달: 시스템 프롬프트 + 첨부 파일 + 사장님 명령 → 동시 전송
+          const filePart = fileToGenerativePart(file.base64, file.type);
+          console.log(`📦 [멀티모달] 파일 파트 생성 완료: ${file.type}, ${Math.round(filePart.inlineData.data.length * 0.75 / 1024)}KB`);
+          
           result = await model.generateContent([
-            fullPrompt,
-            {
-              inlineData: {
-                mimeType: file.type,
-                data: file.base64
-              }
-            }
+            fullPrompt,       // 시스템 프롬프트 + DB현황 + 이전대화 + 사장님 명령
+            filePart           // 첨부 파일 (이미지/PDF)
           ]);
         } else {
-          // 텍스트만
+          // 텍스트만 (파일 내용은 이미 fullPrompt에 주입됨)
           result = await model.generateContent(fullPrompt);
         }
 
@@ -142,6 +160,9 @@ export async function POST(req: Request) {
         break;
       } catch (modelError: any) {
         console.error(`❌ [관리자 AI] ${modelName} 실패:`, modelError.message);
+        if (modelError.message?.includes('Could not process')) {
+          console.error(`⚠️ [멀티모달] 파일 처리 거부 — mimeType: ${file?.type}, base64 길이: ${file?.base64?.length}`);
+        }
       }
     }
 
