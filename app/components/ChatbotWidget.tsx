@@ -142,19 +142,22 @@ export default function ChatbotWidget() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 10MB 제한
-    if (file.size > 10 * 1024 * 1024) {
-      setMessages(prev => [...prev, { sender: 'bot', text: '파일 크기는 10MB 이하여야 합니다, 사장님. 📁' }]);
+    // 4MB 제한 (Vercel 서버리스 payload 제한 대응)
+    if (file.size > 4 * 1024 * 1024) {
+      setMessages(prev => [...prev, { sender: 'bot', text: '파일 크기는 4MB 이하여야 합니다, 사장님. 이미지를 압축해서 다시 올려주세요. 📁' }]);
       return;
     }
 
-    // Base64 변환
+    // Base64 변환 (접두사 포함 전체 저장 — 백엔드에서 정제)
     const reader = new FileReader();
     reader.onload = () => {
-      const base64 = (reader.result as string).split(',')[1];
-      setAttachedFile({ name: file.name, type: file.type, base64 });
-      setMessages(prev => [...prev, { sender: 'user', text: `📎 파일 첨부: ${file.name}` }]);
+      const fullBase64 = reader.result as string; // "data:image/png;base64,iVBOR..."
+      setAttachedFile({ name: file.name, type: file.type, base64: fullBase64 });
+      setMessages(prev => [...prev, { sender: 'user', text: `📎 파일 첨부: ${file.name} (${Math.round(file.size / 1024)}KB)` }]);
       setMessages(prev => [...prev, { sender: 'bot', text: `파일을 받았습니다! "${file.name}" 분석할까요? 명령을 입력해주세요, 사장님.` }]);
+    };
+    reader.onerror = () => {
+      setMessages(prev => [...prev, { sender: 'bot', text: '파일 읽기에 실패했습니다. 다른 파일로 시도해주세요. ⚠️' }]);
     };
     reader.readAsDataURL(file);
     // input 초기화
@@ -260,8 +263,16 @@ export default function ChatbotWidget() {
       } else {
         setMessages(prev => [...prev, { sender: 'bot', text: '죄송합니다, 잠시 연결이 불안정합니다. 다시 시도해 주세요. 🙏' }]);
       }
-    } catch {
-      setMessages(prev => [...prev, { sender: 'bot', text: '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. 📶' }]);
+    } catch (err: any) {
+      const errorMsg = err?.message || '알 수 없는 오류';
+      console.error('🔥 [반석이 API 통신 오류]', errorMsg);
+      if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+        setMessages(prev => [...prev, { sender: 'bot', text: `네트워크 연결 실패! 파일이 너무 크거나 서버 응답이 없습니다.\n파일 크기를 4MB 이하로 줄이거나 잠시 후 다시 시도해주세요. 📶` }]);
+      } else if (errorMsg.includes('JSON')) {
+        setMessages(prev => [...prev, { sender: 'bot', text: '서버 응답 파싱 오류입니다. 파일 없이 다시 시도해주세요. ⚠️' }]);
+      } else {
+        setMessages(prev => [...prev, { sender: 'bot', text: `오류 발생: ${errorMsg.slice(0, 100)}\n잠시 후 다시 시도해 주세요. 📶` }]);
+      }
     } finally {
       setIsThinking(false);
     }

@@ -56,9 +56,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, reply: "명령을 입력해주세요, 사장님." }, { status: 400 });
     }
 
-    // 파일 첨부 정보 로깅
+    // 파일 첨부 정보 로깅 + 유효성 검증
     if (file) {
-      console.log(`📎 [관리자 API] 파일 첨부: ${file.name} (${file.type}, ${Math.round(file.base64.length * 0.75 / 1024)}KB)`);
+      const b64Start = typeof file.base64 === 'string' ? file.base64.substring(0, 50) : 'NOT_STRING';
+      console.log(`📎 [관리자 API] 파일 첨부: ${file.name}`);
+      console.log(`   └─ type: ${file.type}, base64 시작: ${b64Start}...`);
+      console.log(`   └─ base64 길이: ${file.base64?.length || 0} 문자 (≈${Math.round((file.base64?.length || 0) * 0.75 / 1024)}KB)`);
+      
+      if (!file.base64 || file.base64.length < 100) {
+        console.error('🚨 [관리자 API] base64 데이터가 너무 작거나 없습니다!');
+        return NextResponse.json({ success: false, reply: '파일 데이터가 손상되었습니다. 다시 첨부해주세요, 사장님.' }, { status: 400 });
+      }
     }
 
     // ━━━ 2️⃣ API 키 체크 ━━━
@@ -91,11 +99,11 @@ export async function POST(req: Request) {
     }
 
     // ━━━ 멀티모달 파일 처리 유틸리티 ━━━
-    // base64 데이터에서 "data:image/png;base64," 접두사 자동 제거
+    // base64 데이터에서 접두사 제거 — 정규식 기반으로 모든 포맷 대응
     const fileToGenerativePart = (base64Data: string, mimeType: string) => {
-      const cleanBase64 = base64Data.includes(',') 
-        ? base64Data.split(',')[1]  // "data:xxx;base64,실제데이터" → 실제데이터만
-        : base64Data;               // 이미 순수 base64면 그대로
+      // "data:image/png;base64,iVBOR..." → "iVBOR..." (순수 base64만)
+      const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+      console.log(`🧪 [fileToGenerativePart] mimeType=${mimeType}, 원본=${base64Data.length}자, 정제후=${cleanBase64.length}자`);
       return {
         inlineData: {
           data: cleanBase64,
@@ -167,10 +175,13 @@ export async function POST(req: Request) {
     }
 
     if (!result) {
-      console.error("🔥🔥🔥 [관리자 AI] 모든 모델 실패!");
+      console.error('🔥🔥🔥 [관리자 AI] 모든 모델 실패!');
+      const isFileRelated = !!file;
       return NextResponse.json({
         success: false,
-        reply: "사장님, 죄송합니다. AI 서비스가 일시적으로 불안정합니다. 잠시 후 다시 명령해주세요.",
+        reply: isFileRelated 
+          ? `사장님, 파일(${file.name}) 처리 중 AI 서비스가 실패했습니다.\n파일 크기를 줄이거나, 파일 없이 다시 시도해주세요.`
+          : '사장님, AI 서비스가 일시적으로 불안정합니다. 잠시 후 다시 명령해주세요.',
         actionCode: 'NONE'
       }, { status: 500 });
     }
