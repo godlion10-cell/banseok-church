@@ -67,7 +67,7 @@ export default function WelcomeEngine() {
           </button>
         </div>
       </div>
-      <style jsx>{`@keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }` }} />
     </div>
   );
 }

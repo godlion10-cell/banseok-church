@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-// ✅ 스마트 엔진들
-import ChatbotWidget from '@/app/components/ChatbotWidget';
-import AccessibilityWidget from '@/app/components/AccessibilityWidget';
-import WelcomeEngine from '@/app/components/WelcomeEngine';
+
+// ✅ 스마트 엔진 통합 래퍼 (클라이언트 전용, SSR 비활성화 포함)
+import ClientWidgets from '@/app/components/ClientWidgets';
+
 
 export const metadata: Metadata = {
   title: '거제반석교회 - 스마트 성전',
@@ -48,13 +48,8 @@ export default function RootLayout({
           {children}
         </main>
 
-        {/* 🚨 스마트 엔진 배치 — 스크롤 내려도 화면에 항상 고정 */}
-        {/* 좌측 하단: AI 비서 반석이 */}
-        <ChatbotWidget />
-        {/* 우측 하단: 어르신 전용 돋보기/TTS 위젯 */}
-        <AccessibilityWidget />
-        {/* 📍 위치 기반 환영 엔진 */}
-        <WelcomeEngine />
+        {/* 🚨 스마트 엔진 배치 — 스크롤 내려도 화면에 항상 고정 (클라이언트 전용) */}
+        <ClientWidgets />
       </body>
     </html>
   );

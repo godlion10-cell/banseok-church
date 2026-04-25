@@ -316,6 +316,9 @@ export default function ChatbotWidget() {
     ? { primary: '#7C3AED', header: '#4C1D95', bubble: '#7C3AED', btnBg: '#4C1D95', label: '👑 관리자 반석이' }
     : { primary: '#1E3A8A', header: '#1E3A8A', bubble: '#1E3A8A', btnBg: '#1E3A8A', label: '🤖 AI 반석이 허브' };
 
+  // 🛡️ SSR 보호: 마운트 전에는 렌더링하지 않음
+  if (!mounted) return null;
+
   return (
     <>
       {largeSubtitle && (
@@ -400,11 +403,11 @@ export default function ChatbotWidget() {
         </button>
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pulse { 0% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.7; transform: scale(0.95); } }
-      `}</style>
+      `}} />
     </>
   );
 }

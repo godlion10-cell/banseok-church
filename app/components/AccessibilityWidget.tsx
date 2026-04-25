@@ -92,7 +92,7 @@ export default function AccessibilityWidget() {
         )}
       </button>
 
-      <style jsx>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }` }} />
     </div>
   );
 }
