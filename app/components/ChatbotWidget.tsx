@@ -456,11 +456,21 @@ export default function ChatbotWidget() {
       analyzeAdminCommand(userText);
       return;
     }
-    // 1. [제4엔진] 설교 라디오
-    else if (userText.includes("설교") || userText.includes("라디오") || userText.includes("말씀 듣기")) {
+    // 1. [제4엔진] 설교 — 영상 vs 라디오 분기
+    else if (userText.includes("영상") || userText.includes("동영상") || userText.includes("보여줘") || userText.includes("설교 봐") || userText.includes("설교 보")) {
+      botReply = "네! 설교 영상 페이지로 모시겠습니다. 🎬 은혜로운 말씀을 영상으로 만나보세요!";
+      actionLabel = "🎬 설교 영상 보기";
+      actionLink = "/sermon-video";
+    }
+    else if (userText.includes("라디오") || userText.includes("음성") || userText.includes("듣기") || userText.includes("말씀 듣")) {
       botReply = "데이터를 아껴주는 '설교 라디오' 방으로 모실까요? 화면을 꺼도 목사님 말씀이 계속 나옵니다.";
       actionLabel = "📻 라디오 모드 가기";
       actionLink = "/sermon-radio";
+    }
+    else if (userText.includes("설교")) {
+      botReply = "설교 영상 페이지로 안내합니다! 🎬\n라디오 모드(음성만)를 원하시면 '라디오'라고 말씀해주세요.";
+      actionLabel = "🎬 설교 영상 보기";
+      actionLink = "/sermon-video";
     }
     // 2. [제2엔진] 심방/상담 예약
     else if (userText.includes("상담") || userText.includes("심방") || userText.includes("예약")) {
