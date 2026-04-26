@@ -95,44 +95,75 @@ export async function POST(req: Request) {
       }, { status: 500 });
     }
 
-    // 기존 활성 주보 비활성화
-    await prisma.bulletin.updateMany({
-      where: { isActive: true },
-      data: { isActive: false }
-    });
+    // ━━━ DB 저장 (테이블 자동 생성 포함) ━━━
+    try {
+      // Bulletin 테이블이 없으면 자동 생성
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "Bulletin" (
+          "id" TEXT PRIMARY KEY NOT NULL,
+          "date" TEXT NOT NULL,
+          "worshipType" TEXT NOT NULL DEFAULT '주일예배',
+          "worshipOrder" TEXT NOT NULL,
+          "announcements" TEXT,
+          "prayerPerson" TEXT,
+          "hymns" TEXT,
+          "scripture" TEXT,
+          "sermonTitle" TEXT,
+          "offering" TEXT,
+          "rawText" TEXT,
+          "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
 
-    // 새 주보 DB 저장
-    const bulletin = await prisma.bulletin.create({
-      data: {
-        date: analysisResult.date || '날짜 미상',
-        worshipType: analysisResult.worshipType || '주일예배',
-        worshipOrder: JSON.stringify(analysisResult.worshipOrder || []),
-        announcements: JSON.stringify(analysisResult.announcements || []),
-        prayerPerson: analysisResult.prayerPerson || null,
-        hymns: JSON.stringify(analysisResult.hymns || []),
-        scripture: analysisResult.scripture || null,
-        sermonTitle: analysisResult.sermonTitle || null,
-        offering: analysisResult.offering || null,
-        rawText: JSON.stringify(analysisResult),
-        isActive: true
-      }
-    });
+      // 기존 활성 주보 비활성화
+      await prisma.$executeRawUnsafe(`UPDATE "Bulletin" SET "isActive" = false WHERE "isActive" = true`);
 
-    console.log('✅ [주보 분석] DB 저장 완료! ID:', bulletin.id);
+      // 새 주보 DB 저장 (raw SQL로 안전 삽입)
+      const bulletinId = `bull_${Date.now().toString(36)}`;
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "Bulletin" ("id", "date", "worshipType", "worshipOrder", "announcements", "prayerPerson", "hymns", "scripture", "sermonTitle", "offering", "rawText", "isActive")
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, true)
+      `,
+        bulletinId,
+        analysisResult.date || '날짜 미상',
+        analysisResult.worshipType || '주일예배',
+        JSON.stringify(analysisResult.worshipOrder || []),
+        JSON.stringify(analysisResult.announcements || []),
+        analysisResult.prayerPerson || null,
+        JSON.stringify(analysisResult.hymns || []),
+        analysisResult.scripture || null,
+        analysisResult.sermonTitle || null,
+        analysisResult.offering || null,
+        JSON.stringify(analysisResult)
+      );
 
-    return NextResponse.json({
-      success: true,
-      bulletin: {
-        id: bulletin.id,
-        date: bulletin.date,
-        worshipType: bulletin.worshipType,
-        worshipOrder: analysisResult.worshipOrder,
-        announcements: analysisResult.announcements,
-        sermonTitle: analysisResult.sermonTitle,
-        scripture: analysisResult.scripture
-      },
-      reply: `주보 분석 완료! "${analysisResult.date}" ${analysisResult.worshipType}\n설교: ${analysisResult.sermonTitle || '미확인'}\n본문: ${analysisResult.scripture || '미확인'}\n온라인 주보가 자동으로 업데이트되었습니다, 사장님!`
-    });
+      console.log('✅ [주보 분석] DB 저장 완료! ID:', bulletinId);
+
+      return NextResponse.json({
+        success: true,
+        bulletin: {
+          id: bulletinId,
+          date: analysisResult.date,
+          worshipType: analysisResult.worshipType,
+          worshipOrder: analysisResult.worshipOrder,
+          announcements: analysisResult.announcements,
+          sermonTitle: analysisResult.sermonTitle,
+          scripture: analysisResult.scripture
+        },
+        reply: `주보 분석 완료! "${analysisResult.date}" ${analysisResult.worshipType}\n설교: ${analysisResult.sermonTitle || '미확인'}\n본문: ${analysisResult.scripture || '미확인'}\n온라인 주보가 자동으로 업데이트되었습니다, 사장님!`
+      });
+
+    } catch (dbError: any) {
+      console.error('🔥 [주보 DB 저장 에러]:', dbError.message);
+      // DB 에러가 나더라도, AI 분석 결과는 반환
+      return NextResponse.json({
+        success: true,
+        reply: `주보 분석은 성공했지만 DB 저장 중 오류: ${dbError.message?.slice(0, 80)}\n\n분석 결과:\n설교: ${analysisResult.sermonTitle || '미확인'}\n본문: ${analysisResult.scripture || '미확인'}\n찬송: ${(analysisResult.hymns || []).join(', ')}`,
+        bulletin: analysisResult
+      });
+    }
 
   } catch (error: any) {
     console.error('🔥 [주보 분석 치명적 에러]:', error.message);
@@ -146,15 +177,16 @@ export async function POST(req: Request) {
 // GET: 현재 활성 주보 조회
 export async function GET() {
   try {
-    const bulletin = await prisma.bulletin.findFirst({
-      where: { isActive: true },
-      orderBy: { createdAt: 'desc' }
-    });
+    // 테이블 없을 수 있으므로 raw SQL 사용
+    const results: any[] = await prisma.$queryRawUnsafe(
+      `SELECT * FROM "Bulletin" WHERE "isActive" = true ORDER BY "createdAt" DESC LIMIT 1`
+    );
 
-    if (!bulletin) {
+    if (!results || results.length === 0) {
       return NextResponse.json({ success: true, bulletin: null });
     }
 
+    const bulletin = results[0];
     return NextResponse.json({
       success: true,
       bulletin: {
@@ -165,6 +197,10 @@ export async function GET() {
       }
     });
   } catch (error: any) {
+    // 테이블이 없는 경우 null 반환
+    if (error.message?.includes('no such table')) {
+      return NextResponse.json({ success: true, bulletin: null });
+    }
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
