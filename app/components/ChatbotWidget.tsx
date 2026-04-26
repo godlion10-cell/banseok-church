@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { guardDangerousCommand, executeBanseokAction } from '@/app/lib/actionDispatcher';
 
 type Message = {
   sender: 'bot' | 'user';
@@ -402,6 +403,13 @@ export default function ChatbotWidget() {
     // 1. 유저 권한 확인 (성도인가 사장님인가)
     const userRole = isAdmin ? "OWNER" : "SAINT";
 
+    // 🛡️ 보안 가드: 일반 성도의 위험 키워드 사전 차단
+    const guardMessage = guardDangerousCommand(userText, !!isAdmin);
+    if (guardMessage) {
+      setMessages(prev => [...prev, { sender: 'bot', text: guardMessage }]);
+      return;
+    }
+
     // 2. 시간/장소 파악
     const now = new Date();
     const isSunday = now.getDay() === 0;
@@ -629,6 +637,11 @@ export default function ChatbotWidget() {
                           if (msg.actionLink === 'TELEGRAM_SEND') {
                             sendReportToTelegram(reportContent);
                           } else if (msg.actionLink) {
+                            // 🛡️ /admin 경로는 관리자 모드에서만 이동 허용
+                            if (msg.actionLink.startsWith('/admin') && !isAdmin) {
+                              setMessages(prev => [...prev, { sender: 'bot', text: '⛔ 관리자 전용 페이지입니다.' }]);
+                              return;
+                            }
                             router.push(msg.actionLink);
                           }
                         }}
