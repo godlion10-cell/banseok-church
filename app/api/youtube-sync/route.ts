@@ -30,7 +30,7 @@ export async function GET() {
       목록: ${JSON.stringify(rawVideos)}
     `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const result = await model.generateContent(prompt);
     const responseText = result.response.text().replace(/```json|```/g, "");
     const analyzedVideos = JSON.parse(responseText);

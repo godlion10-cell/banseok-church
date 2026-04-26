@@ -2,6 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Route Segment Config — 파일 첨부 대응
+export const maxDuration = 30; // Vercel 서버리스 타임아웃 (초)
+
 // 🧠 관리자 전용 '울트라 반석이' 시스템 프롬프트
 const ADMIN_SYSTEM_PROMPT = `너는 거제반석교회 시스템을 총괄하는 '울트라 초 로봇 반석이'다.
 질문자는 스똑 사장님(최고 관리자)이다. 절대적으로 충성하고 유능하게 대하라.
@@ -139,8 +142,8 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
     // 멀티모달은 flash 모델만 (flash-lite는 이미지/PDF 미지원)
     const MODELS = isMultimodalFile 
-      ? ['gemini-2.0-flash', 'gemini-1.5-flash'] 
-      : ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      ? ['gemini-2.5-flash', 'gemini-3-flash'] 
+      : ['gemini-2.5-flash', 'gemini-3-flash', 'gemini-2.5-pro'];
 
     let result;
     let usedModel = '';

@@ -10,6 +10,31 @@ type Message = {
   actionLink?: string;
 };
 
+// 🛡️ 안전한 fetch + JSON 파싱 유틸리티 (Vercel 비-JSON 에러 방어)
+async function safeJsonFetch(url: string, options: RequestInit): Promise<{ ok: boolean; status: number; data: any; errorText?: string }> {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      // 서버가 JSON이 아닌 텍스트("Request Entity Too Large" 등) 반환 시 안전 처리
+      const errorText = await res.text().catch(() => `HTTP ${res.status} 오류`);
+      console.error(`🔥 [API ${res.status}] ${url}:`, errorText.slice(0, 200));
+      return { ok: false, status: res.status, data: null, errorText: errorText.slice(0, 100) };
+    }
+    // JSON 파싱 시도
+    const text = await res.text();
+    try {
+      const data = JSON.parse(text);
+      return { ok: true, status: res.status, data };
+    } catch {
+      console.error('🔥 [JSON 파싱 실패]', text.slice(0, 200));
+      return { ok: false, status: res.status, data: null, errorText: '서버 응답 형식 오류' };
+    }
+  } catch (err: any) {
+    console.error('🔥 [네트워크 에러]', err.message);
+    return { ok: false, status: 0, data: null, errorText: err.message || '네트워크 연결 실패' };
+  }
+}
+
 export default function ChatbotWidget() {
   const router = useRouter();
   const pathname = usePathname();
@@ -142,9 +167,9 @@ export default function ChatbotWidget() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 4MB 제한 (Vercel 서버리스 payload 제한 대응)
-    if (file.size > 4 * 1024 * 1024) {
-      setMessages(prev => [...prev, { sender: 'bot', text: '파일 크기는 4MB 이하여야 합니다, 사장님. 이미지를 압축해서 다시 올려주세요. 📁' }]);
+    // 2MB 제한 (base64 인코딩 시 ~2.7MB → Vercel 4.5MB 제한 내 안전)
+    if (file.size > 2 * 1024 * 1024) {
+      setMessages(prev => [...prev, { sender: 'bot', text: '파일 크기는 2MB 이하여야 합니다, 사장님. 이미지를 압축해서 다시 올려주세요. 📁' }]);
       return;
     }
 
@@ -169,29 +194,34 @@ export default function ChatbotWidget() {
     setIsThinking(true);
     setMessages(prev => [...prev, { sender: 'bot', text: '📋 주보 이미지를 분석 중입니다... AI가 예배 순서, 찬송가, 설교 제목을 읽고 있어요.' }]);
     
-    try {
-      const res = await fetch('/api/admin/bulletin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: fileData, message: userMessage })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setMessages(prev => [...prev, { 
-          sender: 'bot', 
-          text: `✅ ${data.reply}\n\n🏷️ [BULLETIN_UPDATE]`,
-          actionLabel: '📋 온라인 주보 확인하기',
-          actionLink: '/bulletin'
-        }]);
-      } else {
-        setMessages(prev => [...prev, { sender: 'bot', text: `❌ 주보 분석 실패: ${data.error || '알 수 없는 오류'}\n다시 시도해주세요, 사장님.` }]);
-      }
-    } catch (err: any) {
-      setMessages(prev => [...prev, { sender: 'bot', text: `네트워크 오류: ${err.message?.slice(0, 80)}\n파일 크기를 줄이거나 다시 시도해주세요.` }]);
-    } finally {
+    const { ok, status, data, errorText } = await safeJsonFetch('/api/admin/bulletin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: fileData, message: userMessage })
+    });
+
+    if (!ok) {
+      const msg = status === 413
+        ? '주보 이미지가 너무 큽니다! 📦 2MB 이하로 압축해서 다시 올려주세요.'
+        : status === 0
+        ? '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요. 📶'
+        : `서버 오류가 발생했습니다 (${status}). 다시 시도해주세요, 사장님.`;
+      setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
       setIsThinking(false);
+      return;
     }
+    
+    if (data?.success) {
+      setMessages(prev => [...prev, { 
+        sender: 'bot', 
+        text: `✅ ${data.reply}\n\n🏷️ [BULLETIN_UPDATE]`,
+        actionLabel: '📋 온라인 주보 확인하기',
+        actionLink: '/bulletin'
+      }]);
+    } else {
+      setMessages(prev => [...prev, { sender: 'bot', text: `❌ 주보 분석 실패: ${data?.error || errorText || '알 수 없는 오류'}\n다시 시도해주세요, 사장님.` }]);
+    }
+    setIsThinking(false);
   };
 
   // 👑 관리자 전용 명령 분석 엔진
@@ -239,20 +269,15 @@ export default function ChatbotWidget() {
 
   // 📲 텔레그램 전송 실행 (보고서 완성 후)
   const sendReportToTelegram = async (content: string) => {
-    try {
-      const res = await fetch('/api/telegram-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMessages(prev => [...prev, { sender: 'bot', text: '✅ 목사님 텔레그램으로 보고서가 전송 완료되었습니다! 수고하셨습니다. 🙏' }]);
-      } else {
-        setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 전송 중 오류가 발생했습니다. 다시 시도해주세요.' }]);
-      }
-    } catch (error) {
-      setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 네트워크 오류가 발생했습니다.' }]);
+    const { ok, data } = await safeJsonFetch('/api/telegram-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    if (ok && data?.success) {
+      setMessages(prev => [...prev, { sender: 'bot', text: '✅ 목사님 텔레그램으로 보고서가 전송 완료되었습니다! 수고하셨습니다. 🙏' }]);
+    } else {
+      setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 전송 중 오류가 발생했습니다. 다시 시도해주세요.' }]);
     }
     setReportContent('');
   };
@@ -260,61 +285,70 @@ export default function ChatbotWidget() {
   // 🤖 Gemini AI 호출 — 관리자/일반 뇌 분리 라우팅
   const callGeminiAI = async (userText: string) => {
     setIsThinking(true);
-    try {
-      const apiEndpoint = isAdmin ? '/api/admin/chatbot' : '/api/chatbot';
+    const apiEndpoint = isAdmin ? '/api/admin/chatbot' : '/api/chatbot';
 
-      // 관리자 + 파일 첨부 시 멀티모달 데이터 포함
-      const requestBody: any = {
-        message: userText,
-        isAdmin: !!isAdmin,
-        conversationHistory: messages.slice(-6),
-        userName: isAdmin ? '관리자' : sessionId
-      };
+    // 대화 히스토리에서 base64/파일 데이터 완전 제거 (페이로드 폭발 방지)
+    const cleanHistory = messages.slice(-4).map(m => ({
+      sender: m.sender,
+      text: (m.text || '').replace(/data:[^;]+;base64,[^\s"]+/g, '[파일]').slice(0, 300)
+    }));
 
-      if (isAdmin && attachedFile) {
-        requestBody.file = attachedFile;
-        setAttachedFile(null); // 전송 후 초기화
-      }
+    // 관리자 + 파일 첨부 시 멀티모달 데이터 포함
+    const requestBody: any = {
+      message: userText,
+      isAdmin: !!isAdmin,
+      conversationHistory: cleanHistory,
+      userName: isAdmin ? '관리자' : sessionId
+    };
 
-      const res = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-      const data = await res.json();
-      if (data.success && data.reply) {
-        let replyText = data.reply;
-        if (isAdmin && data.actionCode && data.actionCode !== 'NONE') {
-          replyText += `\n\n🏷️ [${data.actionCode}]`;
-        }
-        if (isAdmin && data.dbCommand) {
-          replyText += `\n📋 DB 명령: ${data.dbCommand}`;
-        }
-
-        const botMsg: Message = {
-          sender: 'bot',
-          text: replyText,
-          actionLabel: data.actionLabel || undefined,
-          actionLink: data.actionLink || undefined
-        };
-        setMessages(prev => [...prev, botMsg]);
-        speakAndView(data.reply);
-      } else {
-        setMessages(prev => [...prev, { sender: 'bot', text: '죄송합니다, 잠시 연결이 불안정합니다. 다시 시도해 주세요. 🙏' }]);
-      }
-    } catch (err: any) {
-      const errorMsg = err?.message || '알 수 없는 오류';
-      console.error('🔥 [반석이 API 통신 오류]', errorMsg);
-      if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
-        setMessages(prev => [...prev, { sender: 'bot', text: `네트워크 연결 실패! 파일이 너무 크거나 서버 응답이 없습니다.\n파일 크기를 4MB 이하로 줄이거나 잠시 후 다시 시도해주세요. 📶` }]);
-      } else if (errorMsg.includes('JSON')) {
-        setMessages(prev => [...prev, { sender: 'bot', text: '서버 응답 파싱 오류입니다. 파일 없이 다시 시도해주세요. ⚠️' }]);
-      } else {
-        setMessages(prev => [...prev, { sender: 'bot', text: `오류 발생: ${errorMsg.slice(0, 100)}\n잠시 후 다시 시도해 주세요. 📶` }]);
-      }
-    } finally {
-      setIsThinking(false);
+    if (isAdmin && attachedFile) {
+      requestBody.file = attachedFile;
+      setAttachedFile(null);
     }
+
+    const { ok, status, data, errorText } = await safeJsonFetch(apiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!ok) {
+      let msg: string;
+      if (status === 413) {
+        msg = '전송 데이터가 너무 큽니다! 📦\n파일 크기를 2MB 이하로 줄이거나, 파일 없이 다시 시도해주세요.';
+      } else if (status === 0) {
+        msg = '네트워크 연결 실패! 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요. 📶';
+      } else if (status >= 500) {
+        msg = '서버에서 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. 🙏';
+      } else {
+        msg = `서버 오류 (${status}). 잠시 후 다시 시도해 주세요. 🙏`;
+      }
+      setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
+      setIsThinking(false);
+      return;
+    }
+
+    if (data?.success && data?.reply) {
+      let replyText = data.reply;
+      if (isAdmin && data.actionCode && data.actionCode !== 'NONE') {
+        replyText += `\n\n🏷️ [${data.actionCode}]`;
+      }
+      if (isAdmin && data.dbCommand) {
+        replyText += `\n📋 DB 명령: ${data.dbCommand}`;
+      }
+
+      const botMsg: Message = {
+        sender: 'bot',
+        text: replyText,
+        actionLabel: data.actionLabel || undefined,
+        actionLink: data.actionLink || undefined
+      };
+      setMessages(prev => [...prev, botMsg]);
+      speakAndView(data.reply);
+    } else {
+      setMessages(prev => [...prev, { sender: 'bot', text: data?.reply || '죄송합니다, 잠시 연결이 불안정합니다. 다시 시도해 주세요. 🙏' }]);
+    }
+    setIsThinking(false);
   };
 
   /* 🧠 반석이의 중앙 통제 뇌 (하이브리드 AI) */
@@ -458,8 +492,8 @@ export default function ChatbotWidget() {
       botReply = "✅ 완료되었습니다!\n1. 부모님들께 안심 알림 전송 완료\n2. 아이들 달란트 +5점 적립 완료\n3. 결석자(2명) 심방 메시지를 보낼까요?";
       actionLabel = "📲 결석자 심방 메시지 보내기";
     }
-    // 🕐 주일 자동 인사
-    else if (isSunday && hour >= 8 && hour <= 13) {
+    // 🕐 주일 자동 인사 (단순 인사만 — 실질적 질문은 AI로 위임)
+    else if (isSunday && hour >= 8 && hour <= 13 && (userText.includes("안녕") || userText.includes("반가") || userText.includes("샬롬") || userText.includes("하이") || userText.length <= 5)) {
       botReply = "오늘은 주일입니다! 은혜로운 예배 되세요. 🙏 주보를 보시려면 '주보'라고 말씀해 주세요.";
     }
     // 🤖 키워드 미매칭 → Gemini AI에게 위임

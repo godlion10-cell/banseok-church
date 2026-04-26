@@ -2,6 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Route Segment Config — 주보 이미지 업로드 대응
+export const maxDuration = 30;
+
 // 주보 이미지 분석용 특화 프롬프트
 const BULLETIN_ANALYSIS_PROMPT = `너는 교회 주보(예배 순서지) 이미지를 분석하는 전문 AI야.
 첨부된 주보 이미지에서 다음 정보를 정확하게 추출해서 JSON으로 반환해.
@@ -55,7 +58,7 @@ export async function POST(req: Request) {
 
     // Gemini 멀티모달 분석
     const genAI = new GoogleGenerativeAI(apiKey);
-    const MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    const MODELS = ['gemini-2.5-flash', 'gemini-3-flash'];
     
     let analysisResult: any = null;
 
