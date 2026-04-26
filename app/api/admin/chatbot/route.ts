@@ -103,11 +103,15 @@ export async function POST(req: Request) {
     }
 
     // ━━━ 멀티모달 파일 처리 유틸리티 ━━━
-    // base64 데이터에서 접두사 제거 — 정규식 기반으로 모든 포맷 대응
+    // base64 데이터에서 접두사 완전 제거 — 이중 안전장치
     const fileToGenerativePart = (base64Data: string, mimeType: string) => {
-      // "data:image/png;base64,iVBOR..." → "iVBOR..." (순수 base64만)
-      const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
-      console.log(`🧪 [fileToGenerativePart] mimeType=${mimeType}, 원본=${base64Data.length}자, 정제후=${cleanBase64.length}자`);
+      // 1차: 정규식으로 "data:image/png;base64," 접두사 제거
+      let cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+      // 2차: 혹시 정규식이 놓쳤으면 콤마 기준으로 한번 더
+      if (cleanBase64.includes(',')) {
+        cleanBase64 = cleanBase64.split(',').pop() || cleanBase64;
+      }
+      console.log(`🧪 [fileToGenerativePart] mimeType=${mimeType}, 원본=${base64Data.length}자, 정제후=${cleanBase64.length}자, 첫20자=${cleanBase64.slice(0,20)}`);
       return {
         inlineData: {
           data: cleanBase64,

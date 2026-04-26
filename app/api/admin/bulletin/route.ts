@@ -51,16 +51,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: '주보 이미지가 필요합니다.' }, { status: 400 });
     }
 
-    console.log('📋 [주보 분석] 시작:', file.name, file.type);
+    console.log('📋 [주보 분석] 시작:', file.name, file.type, `base64 원본 길이: ${file.base64?.length}`);
 
-    // Base64 정제
-    const cleanBase64 = file.base64.replace(/^data:[^;]+;base64,/, '');
+    // ✅ Base64 헤더 완전 제거 — 이중 안전장치
+    let cleanBase64 = file.base64;
+    // 방법1: 정규식으로 data:...;base64, 접두사 제거
+    cleanBase64 = cleanBase64.replace(/^data:[^;]+;base64,/, '');
+    // 방법2: 혹시 정규식이 놓쳤으면 콤마 기준으로 한번 더
+    if (cleanBase64.includes(',')) {
+      cleanBase64 = cleanBase64.split(',').pop() || cleanBase64;
+    }
+    
+    // mimeType 결정 (프론트에서 image/jpeg로 압축했으므로 이걸 우선 사용)
+    const mimeType = file.type || 'image/jpeg';
+    
+    console.log(`📋 [주보 분석] 정제 완료: base64 ${cleanBase64.length}자, 첫30자: ${cleanBase64.slice(0, 30)}..., mimeType: ${mimeType}`);
 
     // Gemini 멀티모달 분석
     const genAI = new GoogleGenerativeAI(apiKey);
     const MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro'];
     
     let analysisResult: any = null;
+    let lastError = '';
 
     for (const modelName of MODELS) {
       try {
@@ -71,27 +83,30 @@ export async function POST(req: Request) {
           BULLETIN_ANALYSIS_PROMPT + (message ? `\n\n추가 지시: ${message}` : ''),
           {
             inlineData: {
-              mimeType: file.type || 'image/jpeg',
+              mimeType,
               data: cleanBase64
             }
           }
         ]);
 
         const rawText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        console.log('📋 [주보 분석] AI 응답 길이:', rawText.length);
+        console.log('📋 [주보 분석] AI 응답 길이:', rawText.length, '첫100자:', rawText.slice(0, 100));
         
         analysisResult = JSON.parse(rawText);
         console.log(`✅ [주보 분석] ${modelName} 성공!`);
         break;
       } catch (err: any) {
-        console.error(`❌ [주보 분석] ${modelName} 실패:`, err.message);
+        lastError = err.message || String(err);
+        console.error(`❌ [주보 분석] ${modelName} 실패:`, lastError);
+        if (err.status) console.error(`   HTTP 상태: ${err.status}`);
+        if (err.errorDetails) console.error(`   상세:`, JSON.stringify(err.errorDetails));
       }
     }
 
     if (!analysisResult) {
       return NextResponse.json({ 
         success: false, 
-        error: '주보 이미지 분석에 실패했습니다. 이미지를 더 선명하게 찍어주세요.' 
+        error: `주보 이미지 분석 실패: ${lastError.slice(0, 100)}` 
       }, { status: 500 });
     }
 
