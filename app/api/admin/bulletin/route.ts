@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
     // Gemini 멀티모달 분석
     const genAI = new GoogleGenerativeAI(apiKey);
-    const MODELS = ['gemini-2.5-flash', 'gemini-3-flash'];
+    const MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro'];
     
     let analysisResult: any = null;
 

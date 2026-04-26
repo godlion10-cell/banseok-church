@@ -142,8 +142,8 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
     // 멀티모달은 flash 모델만 (flash-lite는 이미지/PDF 미지원)
     const MODELS = isMultimodalFile 
-      ? ['gemini-2.5-flash', 'gemini-3-flash'] 
-      : ['gemini-2.5-flash', 'gemini-3-flash', 'gemini-2.5-pro'];
+      ? ['gemini-2.5-flash', 'gemini-2.5-pro'] 
+      : ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
 
     let result;
     let usedModel = '';

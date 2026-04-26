@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     } catch (flashError) {
       console.warn('Flash 모델 처리 중 에러 발생. Pro 모델로 자동 전환합니다...', flashError);
       // 2차 시도: Flash가 실패하면 Pro 모델로 전환
-      const proModel = genAI.getGenerativeModel({ model: 'gemini-3-flash' });
+      const proModel = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
       result = await proModel.generateContent(finalPrompt);
       console.log('Pro 모델로 복구 처리 완료했습니다.');
     }
