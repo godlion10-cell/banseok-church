@@ -160,31 +160,74 @@ export default function ChatbotWidget() {
     recognition.start();
   };
 
-  // 📎 파일 첨부 (시각 이식 — 관리자 전용 멀티모달)
+  // 📎 파일 첨부 상태 (관리자 전용 멀티모달)
   const [attachedFile, setAttachedFile] = useState<{ name: string; type: string; base64: string } | null>(null);
+
+  // 📎 이미지 압축 유틸리티 (Canvas API — 서버 전송 전 용량 최적화)
+  const compressImage = (file: File, maxWidth = 1200, quality = 0.7): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas 생성 실패')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        // JPEG로 압축 (quality 0.7 → 원본 대비 60-80% 감소)
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        console.log(`📸 [이미지 압축] ${file.name}: ${Math.round(file.size/1024)}KB → ${Math.round(compressed.length * 0.75 / 1024)}KB`);
+        resolve(compressed);
+      };
+      img.onerror = () => reject(new Error('이미지 로드 실패'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 2MB 제한 (base64 인코딩 시 ~2.7MB → Vercel 4.5MB 제한 내 안전)
-    if (file.size > 2 * 1024 * 1024) {
-      setMessages(prev => [...prev, { sender: 'bot', text: '파일 크기는 2MB 이하여야 합니다, 사장님. 이미지를 압축해서 다시 올려주세요. 📁' }]);
+    // 4MB 원본 제한 (압축 후에는 훨씬 작아짐)
+    if (file.size > 4 * 1024 * 1024) {
+      setMessages(prev => [...prev, { sender: 'bot', text: '파일 크기는 4MB 이하여야 합니다, 사장님. 📁' }]);
       return;
     }
 
-    // Base64 변환 (접두사 포함 전체 저장 — 백엔드에서 정제)
-    const reader = new FileReader();
-    reader.onload = () => {
-      const fullBase64 = reader.result as string; // "data:image/png;base64,iVBOR..."
-      setAttachedFile({ name: file.name, type: file.type, base64: fullBase64 });
-      setMessages(prev => [...prev, { sender: 'user', text: `📎 파일 첨부: ${file.name} (${Math.round(file.size / 1024)}KB)` }]);
-      setMessages(prev => [...prev, { sender: 'bot', text: `파일을 받았습니다! "${file.name}" 분석할까요? 명령을 입력해주세요, 사장님.` }]);
-    };
-    reader.onerror = () => {
-      setMessages(prev => [...prev, { sender: 'bot', text: '파일 읽기에 실패했습니다. 다른 파일로 시도해주세요. ⚠️' }]);
-    };
-    reader.readAsDataURL(file);
+    // 이미지인 경우 → Canvas 압축 후 전송
+    if (file.type.startsWith('image/')) {
+      try {
+        const compressedBase64 = await compressImage(file);
+        setAttachedFile({ name: file.name, type: 'image/jpeg', base64: compressedBase64 });
+        const compressedSizeKB = Math.round(compressedBase64.length * 0.75 / 1024);
+        setMessages(prev => [...prev, { sender: 'user', text: `📎 파일 첨부: ${file.name} (${Math.round(file.size / 1024)}KB → 압축: ${compressedSizeKB}KB)` }]);
+        setMessages(prev => [...prev, { sender: 'bot', text: `파일을 받았습니다! "${file.name}" 분석할까요? 명령을 입력해주세요, 사장님.` }]);
+      } catch (err) {
+        setMessages(prev => [...prev, { sender: 'bot', text: '이미지 처리에 실패했습니다. 다른 이미지로 시도해주세요. ⚠️' }]);
+      }
+    } else {
+      // 비이미지 파일 — 기존 방식 (2MB 제한)
+      if (file.size > 2 * 1024 * 1024) {
+        setMessages(prev => [...prev, { sender: 'bot', text: '텍스트/문서 파일은 2MB 이하여야 합니다, 사장님. 📁' }]);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const fullBase64 = reader.result as string;
+        setAttachedFile({ name: file.name, type: file.type, base64: fullBase64 });
+        setMessages(prev => [...prev, { sender: 'user', text: `📎 파일 첨부: ${file.name} (${Math.round(file.size / 1024)}KB)` }]);
+        setMessages(prev => [...prev, { sender: 'bot', text: `파일을 받았습니다! "${file.name}" 분석할까요? 명령을 입력해주세요, 사장님.` }]);
+      };
+      reader.onerror = () => {
+        setMessages(prev => [...prev, { sender: 'bot', text: '파일 읽기에 실패했습니다. 다른 파일로 시도해주세요. ⚠️' }]);
+      };
+      reader.readAsDataURL(file);
+    }
     // input 초기화
     e.target.value = '';
   };
