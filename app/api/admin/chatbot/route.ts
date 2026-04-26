@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // Route Segment Config — 파일 첨부 대응
-export const maxDuration = 30; // Vercel 서버리스 타임아웃 (초)
+export const maxDuration = 60; // Vercel 서버리스 타임아웃 (초) — 멀티모달 분석 + DB 조회에 충분한 시간
 
 // 🧠 관리자 전용 '울트라 반석이' 시스템 프롬프트
 const ADMIN_SYSTEM_PROMPT = `너는 거제반석교회 시스템을 총괄하는 '울트라 초 로봇 반석이'다.

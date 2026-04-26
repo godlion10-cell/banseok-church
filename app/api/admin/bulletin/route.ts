@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // Route Segment Config — 주보 이미지 업로드 대응
-export const maxDuration = 30;
+export const maxDuration = 60; // Vercel 서버리스 타임아웃 (초) — AI 이미지 분석 + DB 저장에 충분한 시간
 
 // 주보 이미지 분석용 특화 프롬프트
 const BULLETIN_ANALYSIS_PROMPT = `너는 교회 주보(예배 순서지) 이미지를 분석하는 전문 AI야.

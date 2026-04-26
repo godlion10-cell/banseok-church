@@ -2,6 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Route Segment Config
+export const maxDuration = 60; // Vercel 서버리스 타임아웃 (초)
+
 // 🛡️ 스텔스 심방 레이더 — 감정/돌봄 키워드 감지기
 const PASTORAL_KEYWORDS: { keywords: string[]; reason: string; priority: 'URGENT' | 'HIGH' | 'NORMAL' }[] = [
   // 🔴 긴급 (URGENT) — 즉시 심방 필요
