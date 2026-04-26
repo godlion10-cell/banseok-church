@@ -21,7 +21,18 @@ export default function SmartAdminPage() {
         body: JSON.stringify({ documentText: text, taskType: type }),
       });
 
-      const data = await res.json();
+      if (!res.ok) {
+        alert(`서버 오류 (${res.status}). 다시 시도해주세요.`);
+        return;
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        alert('서버 응답 형식 오류입니다. 다시 시도해주세요.');
+        return;
+      }
       if (data.success) {
         setResult(data.data);
       } else {

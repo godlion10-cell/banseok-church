@@ -17,9 +17,12 @@ export default function AdminLoginPage() {
   // DB에서 스위치 상태 로드
   useEffect(() => {
     if (isLoggedIn) {
-      fetch('/api/admin/switches').then(r => r.json()).then(data => {
-        if (data.success) setSwitches(data.switches);
-      });
+      fetch('/api/admin/switches')
+        .then(r => r.ok ? r.json() : Promise.resolve({ success: false }))
+        .then(data => {
+          if (data.success) setSwitches(data.switches);
+        })
+        .catch(() => {});
     }
   }, [isLoggedIn]);
 
@@ -44,14 +47,19 @@ export default function AdminLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, value: newValue })
       });
-      const data = await res.json();
-      if (!data.success) {
+      if (!res.ok) {
         alert('저장 실패! 다시 시도해주세요.');
-        setSwitches({ ...switches, [key]: !newValue }); // 롤백
+        setSwitches({ ...switches, [key]: !newValue });
+      } else {
+        const data = await res.json();
+        if (!data.success) {
+          alert('저장 실패! 다시 시도해주세요.');
+          setSwitches({ ...switches, [key]: !newValue });
+        }
       }
     } catch {
       alert('서버 오류! 다시 시도해주세요.');
-      setSwitches({ ...switches, [key]: !newValue }); // 롤백
+      setSwitches({ ...switches, [key]: !newValue });
     }
     setLoading(false);
   };
