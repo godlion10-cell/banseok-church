@@ -244,11 +244,14 @@ export default function ChatbotWidget() {
     });
 
     if (!ok) {
+      // 서버가 보낸 진짜 에러 메시지를 표시
+      const serverError = data?.error || errorText || '';
       const msg = status === 413
-        ? '주보 이미지가 너무 큽니다! 📦 2MB 이하로 압축해서 다시 올려주세요.'
+        ? '주보 이미지가 너무 큽니다! 📦 더 작은 이미지로 다시 올려주세요.'
         : status === 0
         ? '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요. 📶'
-        : `서버 오류가 발생했습니다 (${status}). 다시 시도해주세요, 사장님.`;
+        : `❌ 주보 분석 실패 (${status})\n${serverError || '원인 불명 — Vercel Logs 확인 필요'}`;
+      console.error(`🔥 [주보 분석 실패] status=${status}, error=${serverError}, errorText=${errorText}`);
       setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
       setIsThinking(false);
       return;
@@ -356,16 +359,16 @@ export default function ChatbotWidget() {
     });
 
     if (!ok) {
+      const serverError = data?.reply || data?.error || errorText || '';
       let msg: string;
       if (status === 413) {
-        msg = '전송 데이터가 너무 큽니다! 📦\n파일 크기를 2MB 이하로 줄이거나, 파일 없이 다시 시도해주세요.';
+        msg = '전송 데이터가 너무 큽니다! 📦\n파일 크기를 줄이거나, 파일 없이 다시 시도해주세요.';
       } else if (status === 0) {
-        msg = '네트워크 연결 실패! 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요. 📶';
-      } else if (status >= 500) {
-        msg = '서버에서 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. 🙏';
+        msg = '네트워크 연결 실패! 인터넷 연결을 확인해주세요. 📶';
       } else {
-        msg = `서버 오류 (${status}). 잠시 후 다시 시도해 주세요. 🙏`;
+        msg = `❌ 오류 (${status})\n${serverError || '원인 불명'}`;
       }
+      console.error(`🔥 [AI 호출 실패] ${apiEndpoint} status=${status}, error=${serverError}`);
       setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
       setIsThinking(false);
       return;
