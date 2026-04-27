@@ -233,40 +233,52 @@ export default function ChatbotWidget() {
     e.target.value = '';
   };
 
-  // 📋 주보 이미지 자동 분석 → DB 등록
-  const analyzeBulletinImage = async (fileData: { name: string; type: string; base64: string }, userMessage: string) => {
+  // 🧠 스마트 분류 엔진 — 파일/텍스트 → AI 카테고리 판별 → DB 자동 저장 + UI 동기화
+  const analyzeWithSmartRouter = async (fileData: { name: string; type: string; base64: string } | null, userMessage: string, textContent?: string) => {
     setIsThinking(true);
-    setMessages(prev => [...prev, { sender: 'bot', text: '📋 주보 이미지를 분석 중입니다... AI가 예배 순서, 찬송가, 설교 제목을 읽고 있어요.' }]);
+    setMessages(prev => [...prev, { sender: 'bot', text: '🧠 스마트 분류 엔진 가동 중... AI가 콘텐츠를 분석하고 자동 분류합니다.' }]);
     
-    const { ok, status, data, errorText } = await safeJsonFetch('/api/admin/bulletin', {
+    const requestBody: any = { message: userMessage };
+    if (fileData) requestBody.file = fileData;
+    if (textContent) requestBody.text = textContent;
+
+    const { ok, status, data, errorText } = await safeJsonFetch('/api/admin/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file: fileData, message: userMessage })
+      body: JSON.stringify(requestBody)
     });
 
     if (!ok) {
-      // 서버가 보낸 진짜 에러 메시지를 표시
       const serverError = data?.error || errorText || '';
       const msg = status === 413
-        ? '주보 이미지가 너무 큽니다! 📦 더 작은 이미지로 다시 올려주세요.'
+        ? '파일이 너무 큽니다! 📦 더 작은 파일로 다시 올려주세요.'
         : status === 0
         ? '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요. 📶'
-        : `❌ 주보 분석 실패 (${status})\n${serverError || '원인 불명 — Vercel Logs 확인 필요'}`;
-      console.error(`🔥 [주보 분석 실패] status=${status}, error=${serverError}, errorText=${errorText}`);
+        : `❌ 스마트 분석 실패 (${status})\n${serverError || '원인 불명 — Vercel Logs 확인 필요'}`;
+      console.error(`🔥 [스마트 분석 실패] status=${status}, error=${serverError}`);
       setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
       setIsThinking(false);
       return;
     }
     
     if (data?.success) {
+      // 카테고리별 actionLink 매핑
+      const categoryLinks: Record<string, { label: string; link: string }> = {
+        BULLETIN: { label: '📋 온라인 주보 확인하기', link: '/bulletin' },
+        SERMON: { label: '🎬 설교 페이지 확인하기', link: '/sermon-video' },
+        NEWS: { label: '📢 교회소식 확인하기', link: '/' },
+      };
+      const linkInfo = categoryLinks[data.category] || { label: '🏠 홈으로 가기', link: '/' };
+      const confidenceEmoji = (data.confidence || 0) >= 0.9 ? '🎯' : (data.confidence || 0) >= 0.7 ? '✅' : '⚠️';
+
       setMessages(prev => [...prev, { 
         sender: 'bot', 
-        text: `✅ ${data.reply}\n\n🏷️ [BULLETIN_UPDATE]`,
-        actionLabel: '📋 온라인 주보 확인하기',
-        actionLink: '/bulletin'
+        text: `${confidenceEmoji} ${data.reply}\n\n📊 분류: ${data.category} (확신도: ${Math.round((data.confidence || 0) * 100)}%)\n💾 저장: ${data.savedTo || '실패'}\n🔄 UI 동기화: ${data.revalidatedPath || '—'}\n\n🏷️ [${data.category}_SAVED]`,
+        actionLabel: linkInfo.label,
+        actionLink: linkInfo.link
       }]);
     } else {
-      setMessages(prev => [...prev, { sender: 'bot', text: `❌ 주보 분석 실패: ${data?.error || errorText || '알 수 없는 오류'}\n다시 시도해주세요, 사장님.` }]);
+      setMessages(prev => [...prev, { sender: 'bot', text: `❌ 분석 실패: ${data?.error || errorText || '알 수 없는 오류'}\n다시 시도해주세요, 사장님.` }]);
     }
     setIsThinking(false);
   };
@@ -277,21 +289,30 @@ export default function ChatbotWidget() {
     let actionLabel: string | undefined = undefined;
     let actionLink: string | undefined = undefined;
 
-    // 주보 + 파일 첨부 → 자동 분석 실행!
-    if ((text.includes("주보") || text.includes("분석") || text.includes("업로드") || text.includes("등록")) && attachedFile) {
+    // 🧠 파일 첨부 + 아무 명령 → 스마트 분류 엔진 자동 가동!
+    if (attachedFile && (text.includes("분석") || text.includes("업로드") || text.includes("등록") || text.includes("주보") || text.includes("설교") || text.includes("소식") || text.includes("확인") || text.includes("해줘") || text.includes("처리"))) {
       const fileData = attachedFile;
       setAttachedFile(null);
-      analyzeBulletinImage(fileData, text);
+      analyzeWithSmartRouter(fileData, text);
+      return;
+    }
+
+    // 파일 첨부 상태에서 단순 메시지 → 스마트 분석 실행
+    if (attachedFile) {
+      const fileData = attachedFile;
+      setAttachedFile(null);
+      analyzeWithSmartRouter(fileData, text);
       return;
     }
 
     if (text.includes("주보") || text.includes("업로드")) {
-      botReply += "주보 이미지를 📎 버튼으로 첨부한 후, '주보 분석해줘'라고 말씀하시면 AI가 자동으로 읽어서 온라인 주보에 등록합니다!";
+      botReply += "파일을 📎 버튼으로 첨부한 후 아무 명령이나 하시면, AI가 자동으로 분류(주보/설교/소식)하여 등록합니다!";
       actionLabel = "📋 온라인 주보 보기";
       actionLink = "/bulletin";
     } else if (text.includes("설교") || text.includes("유튜브")) {
-      botReply += "설교 영상 링크를 인식했습니다. 이 링크를 '지난주 설교'로 교체하고 라디오 모드에 등록할까요?";
-      actionLabel = "🎬 설교 게시판 업데이트";
+      botReply += "설교 관련 파일을 📎 첨부하시면 AI가 자동 분류하여 설교 DB에 등록합니다. 또는 명령을 입력해주세요.";
+      actionLabel = "🎬 설교 영상 보기";
+      actionLink = "/sermon-video";
     } else if (text.includes("정리") || text.includes("정렬")) {
       botReply += "현재 홈페이지의 모든 데이터를 최신순으로 정렬하고 최적화 작업을 대기합니다.";
     } else if (text.includes("스위치") || text.includes("순례길")) {
