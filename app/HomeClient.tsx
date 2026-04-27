@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 // KakaoMap 제거 — 정적 이미지로 대체 (어르신 오클릭 방지)
+import {
+  IconBulletin, IconSermonVideo, IconRadio, IconBibleQuiz,
+  IconMyBible, IconNewcomer, IconNextGen, IconIeumdol,
+  IconNarrowGate, IconCrossHill, IconArmory, IconValley,
+  IconVanityFair, IconJoyMountain, IconPassport, IconMap,
+  GoldIconCard
+} from '@/app/components/GoldIcons';
 
 
 
@@ -454,61 +461,45 @@ export default function HomeClient() {
         )}
 
         {/* ═══════════════════════════════════════════════ */}
-        {/* 🚀 바로가기 — 모든 페이지를 홈에서 접근 가능하게 */}
+        {/* 🏅 바로가기 — Gold Line Icon System */}
         {/* ═══════════════════════════════════════════════ */}
         <div style={{ marginTop: '40px', padding: '0 4px' }}>
           {/* 섹션 헤더 */}
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{ fontSize: '0.8rem', color: '#c19c72', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '6px' }}>QUICK ACCESS</div>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: isDarkMode ? '#fff' : '#1E293B', margin: 0 }}>⚡ 바로가기</h3>
+            <div style={{ fontSize: '0.75rem', color: '#C5A55A', letterSpacing: '0.2em', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase' }}>Quick Access</div>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: isDarkMode ? '#E8D5C4' : '#1E293B', margin: 0 }}>바로가기</h3>
+            <div style={{ width: '40px', height: '2px', background: 'linear-gradient(90deg, transparent, #C5A55A, transparent)', margin: '10px auto 0' }} />
           </div>
 
           {/* 📌 핵심 서비스 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
             {[
-              { href: '/bulletin', icon: '📋', name: '온라인 주보', color: '#9F1239' },
-              { href: '/sermon-video', icon: '🎬', name: '설교 영상', color: '#5B272F' },
-              { href: '/sermon-radio', icon: '📻', name: '설교 라디오', color: '#064E3B' },
-              { href: '/bible-quiz', icon: '📖', name: '성경 퀴즈', color: '#1E3A8A' },
+              { href: '/bulletin', icon: <IconBulletin size={34} />, name: '온라인 주보' },
+              { href: '/sermon-video', icon: <IconSermonVideo size={34} />, name: '설교 영상' },
+              { href: '/sermon-radio', icon: <IconRadio size={34} />, name: '설교 라디오' },
+              { href: '/bible-quiz', icon: <IconBibleQuiz size={34} />, name: '성경 퀴즈' },
             ].map((item, i) => (
               <Link key={i} href={item.href} style={{ textDecoration: 'none' }}>
-                <div style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                  padding: '18px 8px', borderRadius: '16px',
-                  background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'white',
-                  boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.05)',
-                  border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid #f0ebe5',
-                  transition: 'all 0.2s', cursor: 'pointer',
-                }}>
-                  <span style={{ fontSize: '1.8rem' }}>{item.icon}</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isDarkMode ? '#e0d5c8' : item.color, textAlign: 'center', lineHeight: 1.3 }}>{item.name}</span>
-                </div>
+                <GoldIconCard icon={item.icon} name={item.name} dark={isDarkMode} />
               </Link>
             ))}
           </div>
 
           {/* 🌿 신앙 생활 */}
-          <div style={{ marginBottom: '8px' }}>
-            <div style={{ fontSize: '0.78rem', color: '#8D6E63', fontWeight: 700, marginBottom: '10px', paddingLeft: '4px' }}>🌿 신앙 생활</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingLeft: '4px' }}>
+              <div style={{ width: '3px', height: '14px', background: '#C5A55A', borderRadius: '2px' }} />
+              <span style={{ fontSize: '0.78rem', color: '#C5A55A', fontWeight: 700, letterSpacing: '0.05em' }}>신앙 생활</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
               {[
-                { href: '/my-bible', icon: '📖', name: '나의 성경', color: '#166534' },
-                { href: '/newcomer', icon: '🚪', name: '새가족 등록', color: '#0369A1' },
-                { href: '/next-gen', icon: '👶', name: '다음세대', color: '#7C3AED' },
-                { href: '/ieumdol/report', icon: '🤝', name: '이음돌', color: '#B45309' },
+                { href: '/my-bible', icon: <IconMyBible size={34} />, name: '나의 성경' },
+                { href: '/newcomer', icon: <IconNewcomer size={34} />, name: '새가족 등록' },
+                { href: '/next-gen', icon: <IconNextGen size={34} />, name: '다음세대' },
+                { href: '/ieumdol/report', icon: <IconIeumdol size={34} />, name: '이음돌' },
               ].map((item, i) => (
                 <Link key={i} href={item.href} style={{ textDecoration: 'none' }}>
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                    padding: '18px 8px', borderRadius: '16px',
-                    background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'white',
-                    boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.05)',
-                    border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid #f0ebe5',
-                    transition: 'all 0.2s', cursor: 'pointer',
-                  }}>
-                    <span style={{ fontSize: '1.8rem' }}>{item.icon}</span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isDarkMode ? '#e0d5c8' : item.color, textAlign: 'center', lineHeight: 1.3 }}>{item.name}</span>
-                  </div>
+                  <GoldIconCard icon={item.icon} name={item.name} dark={isDarkMode} />
                 </Link>
               ))}
             </div>
@@ -516,47 +507,43 @@ export default function HomeClient() {
 
           {/* 🗺️ 영적 순례길 */}
           <div style={{ marginBottom: '8px' }}>
-            <div style={{ fontSize: '0.78rem', color: '#8D6E63', fontWeight: 700, marginBottom: '10px', paddingLeft: '4px' }}>🗺️ 영적 순례길</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingLeft: '4px' }}>
+              <div style={{ width: '3px', height: '14px', background: '#C5A55A', borderRadius: '2px' }} />
+              <span style={{ fontSize: '0.78rem', color: '#C5A55A', fontWeight: 700, letterSpacing: '0.05em' }}>영적 순례길</span>
+            </div>
             <div style={{
               background: isDarkMode
-                ? 'linear-gradient(135deg, rgba(30,58,138,0.3), rgba(91,39,47,0.3))'
-                : 'linear-gradient(135deg, #FFFBF5, #F5E6D3)',
+                ? 'linear-gradient(135deg, rgba(30,31,48,0.9), rgba(42,26,46,0.9))'
+                : 'linear-gradient(135deg, #FDFBF7, #F5EDE0)',
               borderRadius: '20px', padding: '20px',
-              border: isDarkMode ? '1px solid rgba(193,156,114,0.15)' : '1px solid #e8ddd0',
+              border: '1px solid rgba(197,165,90,0.15)',
+              boxShadow: '0 4px 20px rgba(197,165,90,0.06)',
             }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '14px' }}>
                 {[
-                  { href: '/narrow-gate', icon: '🚪', name: '좁은 문', color: '#D97706' },
-                  { href: '/cross-hill', icon: '✝️', name: '십자가 언덕', color: '#B91C1C' },
-                  { href: '/armory', icon: '🛡️', name: '무기고', color: '#1E3A8A' },
-                  { href: '/valley', icon: '🌑', name: '골짜기', color: '#4F46E5' },
-                  { href: '/vanity-fair', icon: '🎪', name: '허영의 시장', color: '#0F172A' },
-                  { href: '/joy-mountain', icon: '⛰️', name: '기쁨의 산', color: '#166534' },
-                  { href: '/celestial-passport', icon: '🎫', name: '천성 여권', color: '#B45309' },
-                  { href: '/pilgrim', icon: '🗺️', name: '전체 지도', color: '#5B272F' },
+                  { href: '/narrow-gate', icon: <IconNarrowGate size={26} />, name: '좁은 문' },
+                  { href: '/cross-hill', icon: <IconCrossHill size={26} />, name: '십자가 언덕' },
+                  { href: '/armory', icon: <IconArmory size={26} />, name: '무기고' },
+                  { href: '/valley', icon: <IconValley size={26} />, name: '골짜기' },
+                  { href: '/vanity-fair', icon: <IconVanityFair size={26} />, name: '허영의 시장' },
+                  { href: '/joy-mountain', icon: <IconJoyMountain size={26} />, name: '기쁨의 산' },
+                  { href: '/celestial-passport', icon: <IconPassport size={26} />, name: '천성 여권' },
+                  { href: '/pilgrim', icon: <IconMap size={26} />, name: '전체 지도' },
                 ].map((item, i) => (
                   <Link key={i} href={item.href} style={{ textDecoration: 'none' }}>
-                    <div style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
-                      padding: '12px 4px', borderRadius: '12px',
-                      background: isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)',
-                      transition: 'all 0.2s', cursor: 'pointer',
-                    }}>
-                      <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
-                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: isDarkMode ? '#e0d5c8' : item.color, textAlign: 'center', lineHeight: 1.2 }}>{item.name}</span>
-                    </div>
+                    <GoldIconCard icon={item.icon} name={item.name} dark={isDarkMode} compact />
                   </Link>
                 ))}
               </div>
               <Link href="/pilgrim" style={{ textDecoration: 'none' }}>
                 <div style={{
                   textAlign: 'center', padding: '12px',
-                  background: isDarkMode ? 'rgba(193,156,114,0.15)' : 'rgba(91,39,47,0.06)',
-                  borderRadius: '12px', color: isDarkMode ? '#c19c72' : '#5B272F',
-                  fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
-                  transition: 'all 0.2s',
+                  background: isDarkMode ? 'rgba(197,165,90,0.08)' : 'rgba(197,165,90,0.06)',
+                  borderRadius: '12px', color: '#C5A55A',
+                  fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
+                  transition: 'all 0.3s', border: '1px solid rgba(197,165,90,0.12)',
                 }}>
-                  🗺️ 영적 순례길 전체 지도 보기 →
+                  영적 순례길 전체 지도 보기 →
                 </div>
               </Link>
             </div>
