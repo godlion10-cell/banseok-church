@@ -359,10 +359,9 @@ export default function HomeClient() {
             {isLoading ? (
               <div style={{ textAlign: 'center', padding: '50px', fontWeight: 'bold' }}>📡 유튜브에서 최신 은혜의 말씀을 불러오는 중입니다...</div>
             ) : !activeFilter ? (
-              /* 미선택 시 안내 화면 */
-              <div style={{ textAlign: 'center', padding: '50px 20px' }}>
-                <div style={{ fontSize: '3.5rem', marginBottom: '16px', opacity: 0.25 }}>⛪</div>
-                <p style={{ fontSize: '1.05rem', color: '#94A3B8', fontWeight: '600', lineHeight: '1.6' }}>원하시는 예배를 선택하여 시청해 주세요.</p>
+              /* 미선택 시 안내 — 한 줄 텍스트만 */
+              <div style={{ textAlign: 'center', padding: '30px 20px' }}>
+                <p style={{ fontSize: '1rem', color: '#94A3B8', fontWeight: '600', margin: 0 }}>원하시는 예배를 선택하여 시청해 주세요.</p>
               </div>
             ) : filteredSermons.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '50px', color: '#94A3B8' }}>해당 카테고리 설교 영상이 아직 없습니다.</div>
