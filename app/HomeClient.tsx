@@ -2,6 +2,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import KakaoMap from '@/app/components/KakaoMap';
 
 
 
@@ -346,10 +347,8 @@ export default function HomeClient() {
                 <div className="loc-item"><span className="loc-label">⏰ 예배</span><span>주일 오전 9시 / 11시, 수요 수 7:30, 금요 금 8시</span></div>
                 <div className="loc-item"><span className="loc-label">📺 유튜브</span><span><a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{ color: '#c19c72', fontWeight: 600 }}>@petros-church</a></span></div>
               </div>
-              <div className="map-frame">
-                <a href="https://map.kakao.com/?q=경상남도 거제시 연초면 소오비길 40-6" target="_blank" rel="noopener noreferrer" className="map-placeholder">
-                  <span style={{ fontSize: '2.5rem' }}>🗺️</span><span style={{ fontWeight: 700, fontSize: '1.1rem' }}>카카오맵에서 보기</span><span style={{ fontSize: '0.85rem', color: '#888' }}>거제시 연초면 소오비길 40-6</span>
-                </a>
+              <div className="map-frame" style={{ padding: 0, overflow: 'hidden', borderRadius: '16px', border: '1px solid #e8ddd0' }}>
+                <KakaoMap height="380px" showNavButtons={true} />
               </div>
             </div>
           </div>
@@ -372,14 +371,15 @@ export default function HomeClient() {
       {/* 지도 모달 */}
       {showMapModal && (
         <div className="mbg" onClick={() => setShowMapModal(false)}>
-          <div className="mm" onClick={e => e.stopPropagation()}>
-            <h3>오시는 길 안내</h3>
-            <p>경상남도 거제시 연초면 소오비길 40-6</p>
-            <div className="nvb">
-              <a href="https://map.kakao.com/link/to/거제반석교회,34.868,128.694" target="_blank" className="nl kk">🚗 카카오내비 실행</a>
-              <a href="tmap://route?goalname=거제반석교회" className="nl tm">🚙 T맵 실행</a>
+          <div className="mm" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '90vw', padding: '0', borderRadius: '20px', overflow: 'hidden' }}>
+            <div style={{ padding: '20px 20px 12px', background: 'white' }}>
+              <h3 style={{ margin: '0 0 4px', color: '#5b272f', fontSize: '1.15rem' }}>📍 오시는 길 안내</h3>
+              <p style={{ margin: 0, color: '#8D6E63', fontSize: '0.85rem' }}>경상남도 거제시 연초면 소오비길 40-6</p>
             </div>
-            <button className="clb" onClick={() => setShowMapModal(false)}>닫기</button>
+            <KakaoMap height="300px" showNavButtons={true} />
+            <div style={{ padding: '12px 20px', background: 'white', textAlign: 'center' }}>
+              <button className="clb" onClick={() => setShowMapModal(false)} style={{ width: '100%', padding: '12px', background: '#f5f0eb', border: 'none', borderRadius: '12px', fontWeight: 700, color: '#5b272f', cursor: 'pointer', fontSize: '0.95rem' }}>닫기</button>
+            </div>
           </div>
         </div>
       )}
