@@ -13,8 +13,48 @@ const FALLBACK_SERMONS = [
   { id: 's3', videoId: '', title: '모세를 부르신 하나님', category: '새벽기도', date: '2026. 4. 23', gradient: 'linear-gradient(135deg, #451a03, #78350f)', verse: '출 3:1-10', summary: ["자격 없는 자를 부르시는 은혜", "사명을 깨닫고 순종하는 삶"] },
 ];
 
+// ━━━ 다음 예배 카운트다운 유틸 ━━━
+const WORSHIP_SCHEDULE = [
+  { day: 0, hour: 9, min: 0, name: '주일 1부 예배', duration: 90 },
+  { day: 0, hour: 11, min: 0, name: '주일 2부 예배', duration: 90 },
+  { day: 0, hour: 13, min: 50, name: '주일 오후 예배', duration: 60 },
+  { day: 1, hour: 5, min: 30, name: '새벽기도', duration: 40 },
+  { day: 2, hour: 5, min: 30, name: '새벽기도', duration: 40 },
+  { day: 3, hour: 5, min: 30, name: '새벽기도', duration: 40 },
+  { day: 3, hour: 19, min: 30, name: '수요 저녁 예배', duration: 60 },
+  { day: 4, hour: 5, min: 30, name: '새벽기도', duration: 40 },
+  { day: 5, hour: 5, min: 30, name: '새벽기도', duration: 40 },
+  { day: 5, hour: 20, min: 0, name: '금요 기도회', duration: 60 },
+  { day: 6, hour: 5, min: 30, name: '새벽기도', duration: 40 },
+];
+
+function getNextWorship(now: Date) {
+  const currentDay = now.getDay();
+  const currentMin = now.getHours() * 60 + now.getMinutes();
+  // 이번 주 남은 예배 + 다음 주 예배 전체를 탐색
+  for (let offset = 0; offset <= 7; offset++) {
+    const targetDay = (currentDay + offset) % 7;
+    const candidates = WORSHIP_SCHEDULE
+      .filter(w => w.day === targetDay)
+      .sort((a, b) => a.hour * 60 + a.min - (b.hour * 60 + b.min));
+    for (const w of candidates) {
+      const wMin = w.hour * 60 + w.min;
+      if (offset === 0 && wMin <= currentMin) continue; // 이미 지난 예배 스킵
+      // 남은 시간 계산
+      const diffDays = offset;
+      const diffMinutes = (diffDays * 1440) + (wMin - currentMin);
+      const hours = Math.floor(diffMinutes / 60);
+      const mins = diffMinutes % 60;
+      const timeStr = `${String(w.hour).padStart(2, '0')}:${String(w.min).padStart(2, '0')}`;
+      return { name: w.name, time: timeStr, hours, mins, isToday: offset === 0 };
+    }
+  }
+  return { name: '주일 1부 예배', time: '09:00', hours: 0, mins: 0, isToday: false };
+}
+
 export default function HomeClient() {
-  const [popupVideo, setPopupVideo] = useState<any>(null);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const [activeVideoTitle, setActiveVideoTitle] = useState<string>('');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,6 +69,7 @@ export default function HomeClient() {
   const [isLive, setIsLive] = useState(false);
   const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [nextWorship, setNextWorship] = useState(getNextWorship(new Date()));
 
   // 🤫 비밀 관리자 진입: 푸터 5번 클릭
   const secretClickCount = useRef(0);
@@ -125,6 +166,11 @@ export default function HomeClient() {
 
   useEffect(() => {
     setIsMounted(true); // 디자인 옷 입기 완료!
+    // ⏱️ 다음 예배 카운트다운 실시간 갱신 (1분마다)
+    const timer = setInterval(() => {
+      setNextWorship(getNextWorship(new Date()));
+    }, 60000);
+    return () => clearInterval(timer);
   }, []);
   // 디자인이 적용되기 전(isMounted가 false)에는 깜빡이는 쌩얼 대신 깔끔한 배경색만 보여줌
   if (!isMounted) return <div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7' }} />;
@@ -155,24 +201,38 @@ export default function HomeClient() {
       </div>
 
       <div className="ct">
-        {/* 🔴 실시간 방송 배너 + 인라인 플레이어 */}
-        {isLive && liveVideoId && (
+        {/* 🔴 실시간 방송 / 🎬 VOD 인라인 플레이어 (Master-Detail) */}
+        {(isLive && liveVideoId) || activeVideo ? (
           <div className="live-section">
-            <div className="live-banner">
-              <span className="live-blink">● LIVE</span>
-              <strong>생방송 예배가 진행 중입니다</strong>
+            <div className="live-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {isLive && liveVideoId && !activeVideo ? (
+                  <><span className="live-blink">● LIVE</span><strong>생방송 예배가 진행 중입니다</strong></>
+                ) : (
+                  <><span style={{ color: '#FBBF24' }}>▶</span><strong style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70vw' }}>{activeVideoTitle || '영상 재생 중'}</strong></>
+                )}
+              </div>
+              {activeVideo && (
+                <button onClick={() => { setActiveVideo(null); setActiveVideoTitle(''); }} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px', padding: '6px 14px', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem', flexShrink: 0 }}>✕ 닫기</button>
+              )}
             </div>
             <div className="live-player-wrap">
               <iframe
-                src={`https://www.youtube.com/embed/${liveVideoId}?autoplay=1&mute=0&rel=0`}
-                title="실시간 예배 방송"
+                src={`https://www.youtube.com/embed/${activeVideo || liveVideoId}?autoplay=1&mute=0&rel=0&modestbranding=1`}
+                title={activeVideoTitle || '예배 방송'}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="live-player"
               />
             </div>
+            {activeVideo && (
+              <div style={{ display: 'flex', gap: '8px', padding: '10px 16px', background: 'rgba(15,23,42,0.8)' }}>
+                <button onClick={() => { if (navigator.share) navigator.share({ title: activeVideoTitle, url: `https://www.youtube.com/watch?v=${activeVideo}` }); }} style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>📤 말씀 공유</button>
+                <a href={`https://www.youtube.com/watch?v=${activeVideo}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '10px', background: '#FF0000', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 700, textAlign: 'center', textDecoration: 'none', fontSize: '0.85rem' }}>▶ 유튜브에서 보기</a>
+              </div>
+            )}
           </div>
-        )}
+        ) : null}
 
         {/* ===== 교회소개 탭 ===== */}
         {activeTab === '교회소개' && (
@@ -231,12 +291,25 @@ export default function HomeClient() {
 
         {/* ===== 설교말씀 탭 ===== */}
         {activeTab === '설교말씀' && (<>
-          <div className="hero">
-            <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>✝️</div>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>거제반석교회 온라인 성전</h3>
-            <div className="nb">주일 대예배: 오전 9시 / 11시</div>
-            <button className="bb" onClick={() => setShowBulletin(true)}>📄 이번 주 스마트 주보 보기</button>
-          </div>
+          {/* 히어로: 활성 영상이 없을 때만 표시 */}
+          {!activeVideo && (
+            <div className="hero">
+              <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>✝️</div>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>거제반석교회 온라인 성전</h3>
+              <div className="nb" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <span>다음 예배는</span>
+                <span style={{ background: 'rgba(91,39,47,0.1)', padding: '3px 12px', borderRadius: '20px', fontWeight: 800, color: '#5B272F' }}>{nextWorship.name}</span>
+                <span style={{ fontWeight: 800, color: '#c19c72' }}>{nextWorship.time}</span>
+                <span>입니다</span>
+                {nextWorship.hours > 0 || nextWorship.mins > 0 ? (
+                  <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>
+                    ({nextWorship.isToday ? '오늘' : ''} {nextWorship.hours > 0 ? `${nextWorship.hours}시간 ` : ''}{nextWorship.mins > 0 ? `${nextWorship.mins}분 ` : ''}후)
+                  </span>
+                ) : null}
+              </div>
+              <button className="bb" onClick={() => setShowBulletin(true)}>📄 이번 주 스마트 주보 보기</button>
+            </div>
+          )}
           {/* 카테고리 필터 — '전체' 제거, 버튼명 변경 */}
           <div className="fa"><div className="fb">
             {[{ key: '주일오전', label: '주일예배 보기' }, { key: '수요예배', label: '수요예배 보기' }, { key: '새벽기도', label: '새벽기도 보기' }].map(tag => (
@@ -261,15 +334,15 @@ export default function HomeClient() {
                 {filteredSermons.map(s => {
                   const parsed = parseTitle(s.title);
                   return (
-                    <div key={s.id} onClick={() => setPopupVideo(s)} className="lc" style={{ background: s.gradient }}>
+                    <div key={s.id} onClick={() => { if (s.videoId) { setActiveVideo(s.videoId); setActiveVideoTitle(parsed.sermonTitle || s.title); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} className="lc" style={{ background: s.gradient, cursor: s.videoId ? 'pointer' : 'default', border: activeVideo === s.videoId ? '3px solid #FBBF24' : 'none' }}>
                       <div className="lh" style={{ flexDirection: 'column', gap: '8px', padding: '35px 25px' }}>
                         {parsed.date && <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: '500', letterSpacing: '0.05em' }}>{parsed.date}</div>}
                         {parsed.worship && <div style={{ color: '#FBBF24', fontSize: '0.9rem', fontWeight: '700', padding: '4px 14px', background: 'rgba(0,0,0,0.25)', borderRadius: '20px', display: 'inline-block' }}>{parsed.worship}</div>}
                         <h3 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1.4', wordBreak: 'keep-all', margin: '5px 0' }}>"{parsed.sermonTitle}"</h3>
                       </div>
                       <div className="l-summary-overlay">
-                        <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>✨ 터치하여 재생</h4>
-                        <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>은혜의 말씀을 영상으로 들어보세요.</p></div>
+                        <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>{activeVideo === s.videoId ? '🔊 재생 중' : '✨ 터치하여 재생'}</h4>
+                        <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>{activeVideo === s.videoId ? '상단에서 영상을 시청하세요' : '은혜의 말씀을 영상으로 들어보세요.'}</p></div>
                       </div>
                     </div>
                   );
@@ -286,11 +359,11 @@ export default function HomeClient() {
                 {sermons.slice(0, 5).map(s => {
                   const p = parseTitle(s.title);
                   return (
-                    <div key={s.id} className="sr" onClick={() => setPopupVideo(s)}>
+                    <div key={s.id} className="sr" onClick={() => { if (s.videoId) { setActiveVideo(s.videoId); setActiveVideoTitle(p.sermonTitle || s.title); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} style={{ cursor: 'pointer', background: activeVideo === s.videoId ? 'rgba(251,191,36,0.08)' : undefined, borderLeft: activeVideo === s.videoId ? '3px solid #FBBF24' : undefined }}>
                       <span className="rb" style={{ background: s.category === '주일오전' ? '#9f1239' : s.category === '수요예배' ? '#0f766e' : '#475569' }}>{s.category}</span>
                       <span className="rt">{p.sermonTitle || s.title}</span>
                       <span style={{ fontSize: '0.8rem', color: '#888', marginRight: '10px' }}>{s.date}</span>
-                      <button className="rbt">재생</button>
+                      <button className="rbt">{activeVideo === s.videoId ? '재생중' : '재생'}</button>
                     </div>
                   );
                 })}
@@ -495,27 +568,7 @@ export default function HomeClient() {
         </div>
       )}
 
-      {/* 영상 팝업 */}
-      {popupVideo && (
-        <div className="mbg" onClick={() => setPopupVideo(null)}>
-          <div className="vc" onClick={e => e.stopPropagation()}>
-            {popupVideo.videoId ? (
-              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${popupVideo.videoId}?autoplay=1&modestbranding=1&rel=0`} allowFullScreen style={{ border: 'none' }} />
-            ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a1a2e,#16213e)', color: 'white', textAlign: 'center', padding: '20px' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '15px' }}>⛪</div>
-                <h3 style={{ margin: '0 0 10px 0' }}>유튜브에서 직접 시청해주세요</h3>
-                <p style={{ opacity: 0.7, marginBottom: '20px', fontSize: '0.95rem' }}>{popupVideo.title}</p>
-                <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{ background: '#FF0000', color: 'white', padding: '12px 30px', borderRadius: '30px', textDecoration: 'none', fontWeight: 'bold', fontSize: '1rem' }}>▶ 유튜브 채널 바로가기</a>
-              </div>
-            )}
-            <div className="va">
-              <button onClick={() => { if (navigator.share) { navigator.share({ title: popupVideo.title, url: popupVideo.videoId ? `https://www.youtube.com/watch?v=${popupVideo.videoId}` : 'https://www.youtube.com/@petros-church' }); } else { alert('링크가 복사되었습니다!'); } }} className="kb">📤 말씀 공유</button>
-              <button onClick={() => setPopupVideo(null)} style={{ color: '#888', background: 'none', border: 'none', cursor: 'pointer' }}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 🎬 레거시 팝업 제거됨 — Master-Detail 인라인 플레이어로 대체 */}
 
       {/* 📲 앱 설치 가이드 모달 */}
       {showInstallGuide && (
