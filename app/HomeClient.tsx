@@ -13,7 +13,7 @@ const FALLBACK_SERMONS = [
   { id: 's3', videoId: '', title: '모세를 부르신 하나님', category: '새벽기도', date: '2026. 4. 23', gradient: 'linear-gradient(135deg, #451a03, #78350f)', verse: '출 3:1-10', summary: ["자격 없는 자를 부르시는 은혜", "사명을 깨닫고 순종하는 삶"] },
 ];
 
-// ━━━ 다음 예배 카운트다운 유틸 ━━━
+// ━━━ 다음 예배 카운트다운 유틸 (초단위 정밀도) ━━━
 const WORSHIP_SCHEDULE = [
   { day: 0, hour: 9, min: 0, name: '주일 1부 예배', duration: 90 },
   { day: 0, hour: 11, min: 0, name: '주일 2부 예배', duration: 90 },
@@ -30,26 +30,27 @@ const WORSHIP_SCHEDULE = [
 
 function getNextWorship(now: Date) {
   const currentDay = now.getDay();
-  const currentMin = now.getHours() * 60 + now.getMinutes();
-  // 이번 주 남은 예배 + 다음 주 예배 전체를 탐색
   for (let offset = 0; offset <= 7; offset++) {
     const targetDay = (currentDay + offset) % 7;
     const candidates = WORSHIP_SCHEDULE
       .filter(w => w.day === targetDay)
       .sort((a, b) => a.hour * 60 + a.min - (b.hour * 60 + b.min));
     for (const w of candidates) {
-      const wMin = w.hour * 60 + w.min;
-      if (offset === 0 && wMin <= currentMin) continue; // 이미 지난 예배 스킵
-      // 남은 시간 계산
-      const diffDays = offset;
-      const diffMinutes = (diffDays * 1440) + (wMin - currentMin);
-      const hours = Math.floor(diffMinutes / 60);
-      const mins = diffMinutes % 60;
+      // 목표 시각 Date 객체 생성
+      const target = new Date(now);
+      target.setDate(target.getDate() + offset);
+      target.setHours(w.hour, w.min, 0, 0);
+      if (target.getTime() <= now.getTime()) continue; // 이미 지난 예배 스킵
+      const diffMs = target.getTime() - now.getTime();
+      const totalSec = Math.floor(diffMs / 1000);
+      const hours = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
       const timeStr = `${String(w.hour).padStart(2, '0')}:${String(w.min).padStart(2, '0')}`;
-      return { name: w.name, time: timeStr, hours, mins, isToday: offset === 0 };
+      return { name: w.name, time: timeStr, hours, mins, secs, isToday: offset === 0, targetDate: target };
     }
   }
-  return { name: '주일 1부 예배', time: '09:00', hours: 0, mins: 0, isToday: false };
+  return { name: '주일 1부 예배', time: '09:00', hours: 0, mins: 0, secs: 0, isToday: false, targetDate: new Date() };
 }
 
 export default function HomeClient() {
@@ -165,11 +166,11 @@ export default function HomeClient() {
   };
 
   useEffect(() => {
-    setIsMounted(true); // 디자인 옷 입기 완료!
-    // ⏱️ 다음 예배 카운트다운 실시간 갱신 (1분마다)
+    setIsMounted(true);
+    // ⏱️ Zero-Cost JavaScript 카운트다운 타이머 (매초 갱신)
     const timer = setInterval(() => {
       setNextWorship(getNextWorship(new Date()));
-    }, 60000);
+    }, 1000); // 🚨 1초마다 틱
     return () => clearInterval(timer);
   }, []);
   // 디자인이 적용되기 전(isMounted가 false)에는 깜빡이는 쌩얼 대신 깔끔한 배경색만 보여줌
@@ -293,21 +294,37 @@ export default function HomeClient() {
         {activeTab === '설교말씀' && (<>
           {/* 히어로: 활성 영상이 없을 때만 표시 */}
           {!activeVideo && (
-            <div className="hero">
-              <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>✝️</div>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>거제반석교회 온라인 성전</h3>
-              <div className="nb" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <span>다음 예배는</span>
-                <span style={{ background: 'rgba(91,39,47,0.1)', padding: '3px 12px', borderRadius: '20px', fontWeight: 800, color: '#5B272F' }}>{nextWorship.name}</span>
-                <span style={{ fontWeight: 800, color: '#c19c72' }}>{nextWorship.time}</span>
-                <span>입니다</span>
-                {nextWorship.hours > 0 || nextWorship.mins > 0 ? (
-                  <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>
-                    ({nextWorship.isToday ? '오늘' : ''} {nextWorship.hours > 0 ? `${nextWorship.hours}시간 ` : ''}{nextWorship.mins > 0 ? `${nextWorship.mins}분 ` : ''}후)
-                  </span>
-                ) : null}
+            <div className="hero" style={{ background: 'linear-gradient(135deg, #1E1F30, #2a1a2e)', padding: '35px 20px', borderRadius: '20px' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>✝️</div>
+              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#E8D5C4', marginBottom: '16px' }}>온라인 예배</h3>
+              {/* 다음 예배 카운트다운 */}
+              <div style={{ marginBottom: '18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>다음 예배는</span>
+                  <span style={{
+                    fontSize: '1.35rem', fontWeight: 900, color: '#FBBF24',
+                    background: 'rgba(251,191,36,0.12)', padding: '4px 16px', borderRadius: '24px',
+                    letterSpacing: '0.02em',
+                  }}>{nextWorship.name}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ffffff', fontFamily: "'Outfit', monospace", letterSpacing: '0.05em' }}>{nextWorship.time}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>입니다</span>
+                </div>
+                {/* ⏱️ 초단위 카운트다운 타이머 */}
+                <div style={{
+                  marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                  fontFamily: "'Outfit', monospace", fontSize: '1.05rem', color: '#c19c72', fontWeight: 700,
+                }}>
+                  <span style={{ background: 'rgba(193,156,114,0.12)', padding: '4px 10px', borderRadius: '8px', minWidth: '36px', textAlign: 'center' }}>{String(nextWorship.hours).padStart(2, '0')}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.3)' }}>:</span>
+                  <span style={{ background: 'rgba(193,156,114,0.12)', padding: '4px 10px', borderRadius: '8px', minWidth: '36px', textAlign: 'center' }}>{String(nextWorship.mins).padStart(2, '0')}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.3)' }}>:</span>
+                  <span style={{ background: 'rgba(193,156,114,0.12)', padding: '4px 10px', borderRadius: '8px', minWidth: '36px', textAlign: 'center' }}>{String(nextWorship.secs).padStart(2, '0')}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.78rem', marginLeft: '6px' }}>후</span>
+                </div>
               </div>
-              <button className="bb" onClick={() => setShowBulletin(true)}>📄 이번 주 스마트 주보 보기</button>
+              <button className="bb" onClick={() => setShowBulletin(true)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#E8D5C4', padding: '12px 28px', borderRadius: '30px', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }}>📄 이번 주 스마트 주보 보기</button>
             </div>
           )}
           {/* 카테고리 필터 — '전체' 제거, 버튼명 변경 */}
