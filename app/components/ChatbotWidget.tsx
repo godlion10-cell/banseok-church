@@ -62,7 +62,7 @@ export default function ChatbotWidget() {
   });
 
   const [messages, setMessages] = useState<Message[]>([
-    { sender: 'bot', text: '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!' }
+    { sender: 'bot', text: '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n무엇이든 말씀해 주세요. 또는 아래 버튼으로 바로 이동하세요!' }
   ]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -81,7 +81,7 @@ export default function ChatbotWidget() {
       sender: 'bot',
       text: isAdmin
         ? "👑 [관리자 전용 비서 모드]\n사장님, 반갑습니다. 무엇을 도와드릴까요?\n- 주보 파일을 주시면 자동으로 정렬합니다.\n- 설교 링크를 주시면 홈페이지에 즉시 반영합니다."
-        : '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n🎤 "설교 틀어줘", "심방 예약할래", "기도하고 싶어" 라고 말씀해 보세요!'
+        : '샬롬! 중앙 통제 비서 반석이입니다. 😊\n\n무엇이든 말씀해 주세요. 또는 아래 버튼으로 바로 이동하세요!'
     }]);
   }, [isAdmin, mounted]);
 
@@ -691,6 +691,33 @@ export default function ChatbotWidget() {
               )}
               <div ref={messagesEndRef} />
             </div>
+            {/* 🏅 게이트웨이 아이콘 — 새가족/다음세대/이음돌 */}
+            {!isAdmin && (
+              <div style={{ padding: '8px 15px', borderTop: '1px solid #F1F5F9', background: '#FAFBFD' }}>
+                <div style={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 600, marginBottom: '6px', letterSpacing: '0.05em' }}>바로가기</div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[
+                    { href: '/newcomer', label: '🚪 새가족 등록', bg: '#EFF6FF', color: '#1E40AF', border: '#BFDBFE' },
+                    { href: '/next-gen', label: '🌱 다음세대', bg: '#F5F3FF', color: '#6D28D9', border: '#DDD6FE' },
+                    { href: '/ieumdol/report', label: '🤝 이음돌', bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
+                  ].map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { router.push(item.href); setIsOpen(false); }}
+                      style={{
+                        flex: 1, padding: '10px 4px', background: item.bg,
+                        border: `1px solid ${item.border}`, borderRadius: '12px',
+                        color: item.color, fontWeight: 700, fontSize: '0.72rem',
+                        cursor: 'pointer', transition: 'all 0.2s', lineHeight: 1.3,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div style={{ padding: '10px 15px', background: 'white', borderTop: '1px solid #F1F5F9' }}>
               {/* 첨부 파일 미리보기 */}
