@@ -77,3 +77,18 @@ model Bulletin {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
 }
+
+// 📖 성경 DB — 개역한글 (GitHub Open Source 기반)
+model BibleVerse {
+  id        String @id @default(cuid())
+  bookKey   String   // 약어 키 (예: "gn", "jo", "ps", "rm")
+  bookName  String   // 한글 권명 (예: "창세기", "요한복음", "시편")
+  chapter   Int      // 장 번호
+  verse     Int      // 절 번호
+  text      String   // 절 본문
+
+  @@unique([bookKey, chapter, verse])
+  @@index([bookKey, chapter])
+  @@index([bookName, chapter])
+}
+

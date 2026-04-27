@@ -2,3 +2,9 @@ node_modules
 .next
 .env
 *.log
+
+# 🎵 찬송가 SVG 플레이스홀더 (scripts/generate-hymn-placeholders.js로 재생성 가능)
+public/assets/hymns/*.svg
+
+# 📖 성경 JSON 원본 데이터 (5MB — scripts/import-bible.js로 다시 다운로드 가능)
+data/

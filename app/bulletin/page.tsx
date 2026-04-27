@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import HymnViewer, { parseHymnNumber } from '@/app/components/HymnViewer';
 
 type OrderItem = { order: number; item: string; detail: string };
 
@@ -45,6 +46,20 @@ export default function BulletinPage() {
   const worshipOrder: OrderItem[] = bulletin.worshipOrder || [];
   const announcements: string[] = bulletin.announcements || [];
   const hymns: string[] = bulletin.hymns || [];
+  const hymnNumbers: number[] = bulletin.hymnNumbers || [];
+
+  // 🎵 hymns 텍스트에서 파싱된 번호+제목 매핑 생성
+  const hymnEntries = hymns.map((h: string) => {
+    const parsed = parseHymnNumber(h);
+    return parsed || { number: 0, title: h };
+  }).filter(e => e.number > 0);
+
+  // hymnNumbers에 있지만 hymns 텍스트에서 못 잡은 것도 추가
+  hymnNumbers.forEach((n: number) => {
+    if (!hymnEntries.find(e => e.number === n)) {
+      hymnEntries.push({ number: n, title: '' });
+    }
+  });
 
   return (
     <div style={{ minHeight: '100vh', background: '#FDFBF7', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
@@ -88,11 +103,33 @@ export default function BulletinPage() {
           </div>
         )}
 
-        {/* 찬송가 */}
-        {hymns.length > 0 && (
+        {/* 🎵 찬송가 악보 뷰어 — Zero-Error Hymn Display System */}
+        {hymnEntries.length > 0 && (
+          <div style={{ background: 'white', borderRadius: '20px', padding: '25px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
+            <h3 style={{ color: '#5b272f', fontSize: '1.2rem', fontWeight: '800', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ background: 'linear-gradient(135deg, #5B272F, #8B4513)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>♪</span>
+              오늘의 찬송가
+            </h3>
+            <p style={{ color: '#94A3B8', fontSize: '0.78rem', marginBottom: '18px', marginTop: '0' }}>
+              터치하면 악보를 크게 볼 수 있습니다
+            </p>
+
+            {hymnEntries.map((entry, i) => (
+              <HymnViewer
+                key={`hymn-${entry.number}-${i}`}
+                hymnNumber={entry.number}
+                hymnTitle={entry.title}
+                compact={true}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* 기존 텍스트 찬송가 (hymnEntries가 비어있지만 hymns 텍스트가 있는 경우 fallback) */}
+        {hymnEntries.length === 0 && hymns.length > 0 && (
           <div style={{ background: 'white', borderRadius: '20px', padding: '25px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
             <h3 style={{ color: '#5b272f', fontSize: '1.1rem', fontWeight: '800', marginBottom: '15px' }}>🎵 찬송가</h3>
-            {hymns.map((h, i) => (
+            {hymns.map((h: string, i: number) => (
               <div key={i} style={{ padding: '10px 15px', background: '#FEF3C7', borderRadius: '10px', marginBottom: '8px', color: '#92400E', fontWeight: '600', fontSize: '0.95rem' }}>♪ {h}</div>
             ))}
           </div>
