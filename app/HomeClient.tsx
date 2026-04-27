@@ -129,6 +129,21 @@ export default function HomeClient() {
     });
   }, []);
 
+  // 🏅 챗봇 허브 → 글꼴/다크모드 글로벌 이벤트 수신
+  useEffect(() => {
+    const handleFont = (e: Event) => {
+      const dir = (e as CustomEvent).detail;
+      setFontSize(prev => dir === 'up' ? Math.min(prev + 0.15, 2.5) : Math.max(prev - 0.15, 0.8));
+    };
+    const handleDark = () => setIsDarkMode(prev => !prev);
+    window.addEventListener('banseok:font', handleFont);
+    window.addEventListener('banseok:darkmode', handleDark);
+    return () => {
+      window.removeEventListener('banseok:font', handleFont);
+      window.removeEventListener('banseok:darkmode', handleDark);
+    };
+  }, []);
+
   // 🔴 실시간 방송 감지 (예배시간: 60초 / 평소: 5분)
   useEffect(() => {
     let timer: any;
@@ -345,10 +360,9 @@ export default function HomeClient() {
               <div style={{ textAlign: 'center', padding: '50px', fontWeight: 'bold' }}>📡 유튜브에서 최신 은혜의 말씀을 불러오는 중입니다...</div>
             ) : !activeFilter ? (
               /* 미선택 시 안내 화면 */
-              <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '20px', opacity: 0.3 }}>⛪</div>
-                <p style={{ fontSize: '1.2rem', color: '#94A3B8', fontWeight: '600', lineHeight: '1.8' }}>원하시는 예배의 버튼을 눌러주세요</p>
-                <p style={{ fontSize: '0.9rem', color: '#CBD5E1', marginTop: '10px' }}>주일예배 · 수요예배 · 새벽기도</p>
+              <div style={{ textAlign: 'center', padding: '50px 20px' }}>
+                <div style={{ fontSize: '3.5rem', marginBottom: '16px', opacity: 0.25 }}>⛪</div>
+                <p style={{ fontSize: '1.05rem', color: '#94A3B8', fontWeight: '600', lineHeight: '1.6' }}>원하시는 예배를 선택하여 시청해 주세요.</p>
               </div>
             ) : filteredSermons.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '50px', color: '#94A3B8' }}>해당 카테고리 설교 영상이 아직 없습니다.</div>
@@ -374,6 +388,7 @@ export default function HomeClient() {
               </div>
             )}
           </div>
+          {/* 다시 채우는 생수 → 서몸 VOD 위로 이동 */}
           {!isLoading && sermons.length > 0 && (
             <div className="arc">
               <h2 className="arc-t">💧 다시 채우는 생수</h2>
@@ -394,9 +409,6 @@ export default function HomeClient() {
               </div>
             </div>
           )}
-          <div style={{ textAlign: 'center', marginTop: '30px' }}>
-            <a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" className="yt-link">▶ 유튜브에서 더 보기</a>
-          </div>
         </>)}
 
         {/* ===== 교회소식 탭 ===== */}
