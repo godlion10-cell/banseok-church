@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import KakaoMap from '@/app/components/KakaoMap';
+// KakaoMap 제거 — 정적 이미지로 대체 (어르신 오클릭 방지)
 
 
 
@@ -408,7 +408,7 @@ export default function HomeClient() {
           </div>
         )}
 
-        {/* ===== 오시는길 탭 ===== */}
+        {/* ===== 오시는길 탭 (정적 이미지 — 클릭 요소 없음) ===== */}
         {activeTab === '오시는길' && (
           <div className="tab-content">
             <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>📍 오시는 길</h3></div>
@@ -418,10 +418,19 @@ export default function HomeClient() {
                 <div className="loc-item"><span className="loc-label">🏠 주소</span><span>경상남도 거제시 연초면 소오비길 40-6</span></div>
                 <div className="loc-item"><span className="loc-label">📞 문의</span><span>이주민 목사 (010.9825.5020)</span></div>
                 <div className="loc-item"><span className="loc-label">⏰ 예배</span><span>주일 오전 9시 / 11시, 수요 수 7:30, 금요 금 8시</span></div>
-                <div className="loc-item"><span className="loc-label">📺 유튜브</span><span><a href="https://www.youtube.com/@petros-church" target="_blank" rel="noopener noreferrer" style={{ color: '#c19c72', fontWeight: 600 }}>@petros-church</a></span></div>
+                <div className="loc-item"><span className="loc-label">📺 유튜브</span><span style={{ color: '#c19c72', fontWeight: 600 }}>@petros-church</span></div>
               </div>
-              <div className="map-frame" style={{ padding: 0, overflow: 'hidden', borderRadius: '16px', border: '1px solid #e8ddd0' }}>
-                <KakaoMap height="380px" showNavButtons={true} />
+              {/* 📍 순수 정적 지도 이미지 — 클릭/탭 동작 없음 */}
+              <div style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', border: '1px solid #e8ddd0' }}>
+                <img
+                  src="/assets/map-image.png"
+                  alt="거제반석교회 위치 — 경상남도 거제시 연초면 소오비길 40-6"
+                  style={{ width: '100%', display: 'block', objectFit: 'cover' }}
+                  draggable={false}
+                />
+                <div style={{ padding: '14px 18px', background: isDarkMode ? '#1E293B' : '#FDFBF7', textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: isDarkMode ? '#e0d5c8' : '#5b272f' }}>📍 경상남도 거제시 연초면 소오비길 40-6</p>
+                </div>
               </div>
             </div>
           </div>
@@ -552,16 +561,16 @@ export default function HomeClient() {
         </div>
       )}
 
-      {/* 지도 모달 */}
+      {/* 지도 모달 (정적 이미지 — 클릭 요소 없음) */}
       {showMapModal && (
         <div className="mbg" onClick={() => setShowMapModal(false)}>
           <div className="mm" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '90vw', padding: '0', borderRadius: '20px', overflow: 'hidden' }}>
             <div style={{ padding: '20px 20px 12px', background: 'white' }}>
               <h3 style={{ margin: '0 0 4px', color: '#5b272f', fontSize: '1.15rem' }}>📍 오시는 길 안내</h3>
-              <p style={{ margin: 0, color: '#8D6E63', fontSize: '0.85rem' }}>경상남도 거제시 연초면 소오비길 40-6</p>
             </div>
-            <KakaoMap height="300px" showNavButtons={true} />
-            <div style={{ padding: '12px 20px', background: 'white', textAlign: 'center' }}>
+            <img src="/assets/map-image.png" alt="거제반석교회 위치" style={{ width: '100%', display: 'block', objectFit: 'cover' }} draggable={false} />
+            <div style={{ padding: '14px 20px', background: 'white', textAlign: 'center' }}>
+              <p style={{ margin: '0 0 12px', fontSize: '0.88rem', fontWeight: 600, color: '#5b272f' }}>📍 경상남도 거제시 연초면 소오비길 40-6</p>
               <button className="clb" onClick={() => setShowMapModal(false)} style={{ width: '100%', padding: '12px', background: '#f5f0eb', border: 'none', borderRadius: '12px', fontWeight: 700, color: '#5b272f', cursor: 'pointer', fontSize: '0.95rem' }}>닫기</button>
             </div>
           </div>
