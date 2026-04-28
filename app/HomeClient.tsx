@@ -180,7 +180,7 @@ export default function HomeClient() {
       // 날짜 포맷 (20260419 → 2026.04.19)
       let formatted = rawDate;
       if (rawDate.length === 8) {
-        formatted = `${rawDate.slice(0,4)}.${rawDate.slice(4,6)}.${rawDate.slice(6,8)}`;
+        formatted = `${rawDate.slice(0, 4)}.${rawDate.slice(4, 6)}.${rawDate.slice(6, 8)}`;
       }
       return { date: formatted, worship, sermonTitle };
     }
@@ -216,12 +216,62 @@ export default function HomeClient() {
         <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
       </header>
 
-      {/* 플로팅 컨트롤 */}
-      <div className="fctrl" style={{ top: '80px' }}>
-        <button onClick={() => setFontSize(fontSize + 0.1)} className="cb">가+</button>
-        <button onClick={() => setFontSize(fontSize - 0.1)} className="cb">가-</button>
-        <button onClick={() => setIsDarkMode(!isDarkMode)} className="cb">{isDarkMode ? '☀️' : '🌙'}</button>
+      {/* ━━━ 시스템 컨트롤 (A+/A-/다크모드) — 상단 우측 고정 ━━━ */}
+      <div className="sys-ctrl">
+        <button onClick={() => setFontSize(prev => Math.min(prev + 0.15, 2.5))} className="sys-btn" aria-label="글자 크게">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 19L10.2 5h3.6L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M7.5 14h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M19 5h3M20.5 3.5v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+        </button>
+        <button onClick={() => setFontSize(prev => Math.max(prev - 0.15, 0.8))} className="sys-btn" aria-label="글자 작게">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 19L10.2 5h3.6L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M7.5 14h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M18 5h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+        </button>
+        <button onClick={() => setIsDarkMode(!isDarkMode)} className="sys-btn sys-dark" aria-label="다크모드">
+          {isDarkMode ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.8"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          )}
+        </button>
       </div>
+
+      {/* ━━━ 우측 고정 네비 (3 Pillars) — 중앙 수직 배치 ━━━ */}
+      <nav className="right-nav" aria-label="바로가기">
+        <a href="/newcomer" className="rn-item">
+          <span className="rn-tooltip">새가족 등록</span>
+          <span className="rn-icon">
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+              <rect x="12" y="6" width="24" height="36" rx="2" stroke="#C5A55A" strokeWidth="1.8"/>
+              <path d="M12 6 L8 10 V42 L12 42" stroke="#C5A55A" strokeWidth="1.2" opacity="0.4"/>
+              <circle cx="30" cy="24" r="2" fill="#C5A55A" opacity="0.6"/>
+              <path d="M24 16 C22 14, 19 14.5, 19 17 C19 19, 24 23, 24 23 C24 23, 29 19, 29 17 C29 14.5, 26 14, 24 16 Z" stroke="#C5A55A" strokeWidth="1.2" fill="#C5A55A" opacity="0.25"/>
+            </svg>
+          </span>
+        </a>
+        <a href="/next-gen" className="rn-item">
+          <span className="rn-tooltip">다음세대</span>
+          <span className="rn-icon">
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+              <path d="M24 42 V24" stroke="#C5A55A" strokeWidth="1.8" strokeLinecap="round"/>
+              <path d="M24 24 C24 24, 14 22, 14 14 C14 10, 18 8, 24 12" stroke="#C5A55A" strokeWidth="1.8" fill="none"/>
+              <path d="M24 20 C24 20, 34 18, 34 10 C34 6, 30 4, 24 8" stroke="#C5A55A" strokeWidth="1.8" fill="none"/>
+              <path d="M24 28 C20 28, 16 30, 16 30" stroke="#C5A55A" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
+              <path d="M24 28 C28 28, 32 30, 32 30" stroke="#C5A55A" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
+              <ellipse cx="24" cy="44" rx="8" ry="2" fill="#C5A55A" opacity="0.15"/>
+            </svg>
+          </span>
+        </a>
+        <a href="/ieumdol/report" className="rn-item">
+          <span className="rn-tooltip">이음돌</span>
+          <span className="rn-icon">
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+              <path d="M8 28 C8 28, 14 20, 20 22 C22 22.5, 24 24, 24 24" stroke="#C5A55A" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+              <path d="M40 28 C40 28, 34 20, 28 22 C26 22.5, 24 24, 24 24" stroke="#C5A55A" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+              <circle cx="24" cy="14" r="4" stroke="#C5A55A" strokeWidth="1.5"/>
+              <path d="M24 14 L24.8 16 L27 16.3 L25.5 17.8 L25.8 20 L24 19 L22.2 20 L22.5 17.8 L21 16.3 L23.2 16 Z" fill="#C5A55A" opacity="0.3"/>
+              <path d="M12 32 L36 32" stroke="#C5A55A" strokeWidth="1.2" strokeLinecap="round" strokeDasharray="3 3" opacity="0.4"/>
+            </svg>
+          </span>
+        </a>
+      </nav>
 
       <div className="ct">
         {/* 🔴 실시간 방송 / 🎬 VOD 인라인 플레이어 (Master-Detail) */}
@@ -275,70 +325,38 @@ export default function HomeClient() {
           </div>
         )}
 
-        {/* ===== 비전과사명 탭 — Seamless Dark Theme ===== */}
+        {/* ===== 비전과사명 탭 ===== */}
         {activeTab === '비전과사명' && (
           <div className="tab-content">
-            <div className="vm-wrap">
-              {/* 섹션 헤더 */}
-              <div className="vm-header">
-                <div className="vm-header-sub">거제반석교회 비전과 사명</div>
-                <h2 className="vm-header-title">다시 채우는 생수</h2>
-                <div className="vm-header-eng">Stand on Grace!!</div>
-                <div className="vm-header-line"></div>
+            <div className="vision-page-container">
+              <div className="vision-top-header">
+                <h2>Stand on Grace!!</h2>
+                <p>거제반석교회 목회 철학</p>
               </div>
-
-              {/* 3대 핵심 — 이미지 교차 배치, 카드 배경 없음 */}
-              <div className="vm-items">
-                {[
-                  { num: '01', sub: 'RESTORATION', title: '회복의 공동체', desc: '생수로 다시 채워지는 은혜의 포도나무 — 세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.', img: '/assets/vision/grapes.png' },
-                  { num: '02', sub: 'WORSHIP', title: '예배의 공동체', desc: '진리와 영으로 드려지는 거룩한 성전 — 하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.', img: '/assets/vision/temple.png' },
-                  { num: '03', sub: 'LIFE', title: '생명의 공동체', desc: '생명수가 흘러넘치는 푸른 나무 — 오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.', img: '/assets/vision/tree.png' },
-                ].map((item, idx) => (
-                  <div key={item.num} className={`vm-row ${idx % 2 !== 0 ? 'vm-row-reverse' : ''}`}>
-                    {/* 이미지 — mix-blend-mode:screen으로 검은 배경 녹임 */}
-                    <div className="vm-img-wrap">
-                      <div className="vm-img-glow"></div>
-                      <img src={item.img} alt={item.title} className="vm-img" />
-                    </div>
-                    {/* 텍스트 — 박스/카드 배경 없이 부유 */}
-                    <div className="vm-text">
-                      <div className="vm-num">{item.num}</div>
-                      <div className="vm-sub">{item.sub}</div>
-                      <h3 className="vm-title">{item.title}</h3>
-                      <p className="vm-desc">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 구분선 */}
-              <div className="vm-divider">
-                <span className="vm-divider-icon">✦</span>
-              </div>
-
-              {/* 4대 비전 — 투명 글래스 카드 */}
-              <div className="vm-grid4">
-                {[
-                  { icon: '/vision/icon-crystal.png', title: '단단한 교회', desc: '하나님의 진리로 순전해지며' },
-                  { icon: '/vision/icon-shield.png', title: '강건한 교회', desc: '예수의 생명력으로 세상을 이김' },
-                  { icon: '/vision/icon-column.png', title: '세우는 교회', desc: '다음 세대를 리더로 키우고' },
-                  { icon: '/vision/icon-anchor.png', title: '굳건한 교회', desc: '모든 영역에 하나님 나라를 확장함' },
-                ].map((v, i) => (
-                  <div key={i} className="vm-glass-card">
-                    <img src={v.icon} alt={v.title} className="vm-glass-icon" />
-                    <h4 className="vm-glass-title">{v.title}</h4>
-                    <p className="vm-glass-desc">{v.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* 하단 물맷돌 배너 — 경계 없이 부유 */}
-              <div className="vm-stone">
-                <img src="/vision/stone-hand.png" alt="물맷돌" className="vm-stone-img" />
-                <div className="vm-stone-text">
-                  <h3>하나님의 손에 붙잡힌 매끄러운 돌</h3>
-                  <p>다윗의 물맷돌처럼 성도 각 사람이 하나님의 도구가 되어 세상을 이기는 비전입니다.</p>
+              <div className="core-tree-layout">
+                <div className="tree-line"></div>
+                <div className="tree-item">
+                  <div className="tree-image-box"><img src="/vision/tree-fruit.png" alt="열매" className="custom-icon" /></div>
+                  <div className="tree-content"><h4>열매: 사역의 가치 (生命)</h4><p>세상의 가치가 아닌 성령의 능력으로만 가능한 생명에 집중합니다.</p></div>
                 </div>
+                <div className="tree-item">
+                  <div className="tree-image-box"><img src="/vision/tree-pillar.png" alt="기둥" className="custom-icon" /></div>
+                  <div className="tree-content"><h4>기둥: 신앙의 본질 (恩惠)</h4><p>하나님의 절대주권 아래 예수님을 머리로 삼고 순종하는 감격의 신앙입니다.</p></div>
+                </div>
+                <div className="tree-item">
+                  <div className="tree-image-box"><img src="/vision/tree-root.png" alt="뿌리" className="custom-icon" /></div>
+                  <div className="tree-content"><h4>뿌리: 복음의 진리 (盤石)</h4><p>오직 예수와 성경을 기준으로 삼는 순전한 신앙의 기초입니다.</p></div>
+                </div>
+              </div>
+              <div className="vision-four-grid">
+                <div className="v-card"><img src="/vision/icon-crystal.png" alt="단단한 교회" className="v-img-icon" /><h4>단단한 교회</h4><p>하나님의 진리로 순전해지며</p></div>
+                <div className="v-card"><img src="/vision/icon-shield.png" alt="강건한 교회" className="v-img-icon" /><h4>강건한 교회</h4><p>예수의 생명력으로 세상을 이김</p></div>
+                <div className="v-card"><img src="/vision/icon-column.png" alt="세우는 교회" className="v-img-icon" /><h4>세우는 교회</h4><p>다음 세대를 리더로 키우고</p></div>
+                <div className="v-card"><img src="/vision/icon-anchor.png" alt="굳건한 교회" className="v-img-icon" /><h4>굳건한 교회</h4><p>모든 영역에 하나님 나라를 확장함</p></div>
+              </div>
+              <div className="bottom-stone-banner">
+                <div className="stone-image-wrap"><img src="/vision/stone-hand.png" alt="물맷돌" className="stone-img" /></div>
+                <div className="stone-text"><h3>하나님의 손에 붙잡힌 매끄러운 돌</h3><p>다윗의 물맷돌처럼 성도 각 사람이 하나님의 도구가 되어 세상을 이기는 비전입니다.</p></div>
               </div>
             </div>
           </div>
@@ -603,55 +621,42 @@ export default function HomeClient() {
         .about-btn-outline{padding:14px 28px;background:transparent;color:#c19c72;border:2px solid #c19c72;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.3s;font-family:inherit}
         .about-btn-outline:hover{background:rgba(193,156,114,0.1)}
 
-        /* ✅ 비전과사명 — Seamless Dark Theme */
-        .vm-wrap{max-width:900px;margin:0 auto;background:#0B101E;border-radius:24px;padding:50px 30px;display:flex;flex-direction:column;gap:60px}
-        .lt .vm-wrap{background:#0B101E}
-        .vm-header{text-align:center}
-        .vm-header-sub{color:rgba(255,255,255,0.45);font-size:0.9rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:8px}
-        .vm-header-title{font-family:'Nanum Myeongjo',serif;font-size:2.4rem;font-weight:900;color:#E5B871;margin:0 0 6px;line-height:1.3}
-        .vm-header-eng{color:rgba(255,255,255,0.3);font-size:1rem;font-weight:700;letter-spacing:0.15em;margin-bottom:20px}
-        .vm-header-line{width:60px;height:3px;background:linear-gradient(90deg,transparent,#E5B871,transparent);margin:0 auto;border-radius:2px}
-
-        .vm-items{display:flex;flex-direction:column;gap:60px}
-        .vm-row{display:flex;align-items:center;gap:40px}
-        .vm-row-reverse{flex-direction:row-reverse}
-
-        .vm-img-wrap{position:relative;flex-shrink:0;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
-        .vm-img-glow{position:absolute;inset:10%;border-radius:50%;background:radial-gradient(circle,rgba(229,184,113,0.15) 0%,transparent 70%);filter:blur(20px);pointer-events:none}
-        .vm-img{width:100%;height:100%;object-fit:contain;mix-blend-mode:screen;opacity:0.92;transition:opacity 0.4s,transform 0.4s;filter:brightness(1.1)}
-        .vm-img-wrap:hover .vm-img{opacity:1;transform:scale(1.08)}
-
-        .vm-text{flex:1}
-        .vm-num{font-family:'Outfit',monospace;font-size:3.5rem;font-weight:900;color:rgba(229,184,113,0.08);line-height:1;margin-bottom:-10px;letter-spacing:-0.05em}
-        .vm-sub{font-size:0.8rem;font-weight:700;color:#E5B871;letter-spacing:0.25em;text-transform:uppercase;margin-bottom:6px}
-        .vm-title{font-size:1.6rem;font-weight:800;color:#ffffff;margin:0 0 12px;font-family:'Nanum Myeongjo',serif}
-        .vm-desc{font-size:0.95rem;color:rgba(255,255,255,0.55);line-height:1.8;word-break:keep-all;margin:0}
-
-        .vm-divider{text-align:center;padding:10px 0}
-        .vm-divider-icon{color:rgba(229,184,113,0.25);font-size:1.4rem}
-
-        .vm-grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-        .vm-glass-card{background:rgba(255,255,255,0.03);border:1px solid rgba(229,184,113,0.12);border-radius:16px;padding:28px 20px;text-align:center;transition:all 0.35s;backdrop-filter:blur(8px)}
-        .vm-glass-card:hover{background:rgba(229,184,113,0.06);border-color:rgba(229,184,113,0.3);transform:translateY(-4px)}
-        .vm-glass-icon{width:56px;height:56px;object-fit:contain;margin-bottom:14px;mix-blend-mode:screen;filter:brightness(1.1)}
-        .vm-glass-title{font-size:1.1rem;font-weight:800;color:#E5B871;margin:0 0 8px}
-        .vm-glass-desc{font-size:0.88rem;color:rgba(255,255,255,0.5);word-break:keep-all;margin:0;line-height:1.5}
-
-        .vm-stone{display:flex;align-items:center;gap:30px;padding:30px;border-radius:16px;background:linear-gradient(135deg,rgba(229,184,113,0.05),rgba(229,184,113,0.02))}
-        .vm-stone-img{width:90px;height:auto;object-fit:contain;flex-shrink:0;border-radius:12px;filter:brightness(0.95) contrast(1.1)}
-        .vm-stone-text h3{color:#FDE047;font-size:1.3rem;font-weight:800;margin:0 0 8px;font-family:'Nanum Myeongjo',serif}
-        .vm-stone-text p{font-size:0.95rem;color:rgba(255,255,255,0.6);line-height:1.7;word-break:keep-all;margin:0}
-
-        @media(max-width:768px){
-          .vm-wrap{padding:35px 18px;gap:45px}
-          .vm-row,.vm-row-reverse{flex-direction:column;gap:20px;text-align:center}
-          .vm-img-wrap{width:160px;height:160px}
-          .vm-num{font-size:2.5rem}
-          .vm-title{font-size:1.3rem}
-          .vm-grid4{grid-template-columns:1fr}
-          .vm-stone{flex-direction:column;text-align:center;gap:15px}
-          .vm-stone-img{width:70px}
-          .vm-header-title{font-size:1.8rem}
+        /* ✅ 비전 페이지 전용 CSS */
+        .vision-page-container { display: flex; flex-direction: column; gap: 50px; max-width: 800px; margin: 0 auto; }
+        .vision-top-header { text-align: center; background: #0F172A; color: white; padding: 40px 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .vision-top-header h2 { color: #FBBF24; font-size: 2.2rem; font-weight: 900; margin-bottom: 10px; }
+        .vision-top-header p { font-size: 1.2rem; font-weight: bold; }
+        .core-tree-layout { position: relative; display: flex; flex-direction: column; gap: 30px; padding-left: 20px; }
+        .tree-line { position: absolute; left: 60px; top: 20px; bottom: 20px; width: 4px; background: #CBD5E1; z-index: 1; }
+        .tree-item { display: flex; align-items: center; gap: 20px; z-index: 2; }
+        .tree-image-box { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); flex-shrink: 0; border: 3px solid #1E3A8A; overflow: hidden; }
+        .custom-icon { width: 60%; height: 60%; object-fit: contain; }
+        .tree-content { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex: 1; border-left: 5px solid #1E3A8A; }
+        .tree-content h4 { color: #1E293B; font-weight: 800; font-size: 1.1rem; margin-bottom: 8px; }
+        .tree-content p { color: #475569; font-size: 0.95rem; word-break: keep-all; line-height: 1.5; }
+        .dk .tree-image-box { background: #334155; border-color: #475569; }
+        .dk .tree-content { background: #1E293B; border-left-color: #475569; }
+        .dk .tree-content h4 { color: #eee; }
+        .dk .tree-content p { color: #aaa; }
+        .vision-four-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .v-card { background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #E2E8F0; transition: transform 0.2s; }
+        .v-card:hover { transform: translateY(-5px); }
+        .dk .v-card { background: #1E293B; border-color: #334155; }
+        .v-img-icon { width: 60px; height: 60px; object-fit: contain; margin-bottom: 15px; }
+        .v-card h4 { font-weight: bold; color: #0F172A; font-size: 1.1rem; margin-bottom: 10px; }
+        .dk .v-card h4 { color: #c19c72; }
+        .v-card p { font-size: 0.9rem; color: #64748B; word-break: keep-all; }
+        .dk .v-card p { color: #aaa; }
+        .bottom-stone-banner { background: linear-gradient(135deg, #1E3A8A, #111827); color: white; padding: 30px; border-radius: 15px; display: flex; align-items: center; gap: 30px; }
+        .stone-image-wrap { width: 100px; flex-shrink: 0; }
+        .stone-img { width: 100%; height: auto; object-fit: contain; }
+        .stone-text h3 { color: #FDE047; font-size: 1.4rem; font-weight: bold; margin-bottom: 8px; }
+        .stone-text p { font-size: 1rem; opacity: 0.9; line-height: 1.5; word-break: keep-all; }
+        @media (max-width: 600px) {
+          .vision-four-grid { grid-template-columns: 1fr; }
+          .bottom-stone-banner { flex-direction: column; text-align: center; gap: 15px; }
+          .tree-line { left: 40px; }
+          .tree-image-box { width: 60px; height: 60px; }
         }
 
         /* 교회소식 */
@@ -689,8 +694,27 @@ export default function HomeClient() {
         .dk .map-placeholder{background:#1E293B;color:#ccc}
 
 
-        .fctrl{position:fixed;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px}
-        .cb{width:45px;height:45px;border-radius:50%;border:1px solid #ddd;background:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+        /* ━━━ 시스템 컨트롤 (A+/A-/다크모드) ━━━ */
+        .sys-ctrl{position:fixed;top:80px;right:16px;z-index:2100;display:flex;gap:6px;padding:4px;background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);border-radius:28px;border:1px solid rgba(197,165,90,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+        .lt .sys-ctrl{background:rgba(255,255,255,0.85);border-color:rgba(197,165,90,0.2)}
+        .dk .sys-ctrl{background:rgba(15,23,42,0.7);border-color:rgba(197,165,90,0.2)}
+        .sys-btn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:#8B7355;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s}
+        .sys-btn:hover{background:rgba(197,165,90,0.12);color:#C5A55A;transform:scale(1.1)}
+        .sys-btn:active{transform:scale(0.92)}
+        .dk .sys-btn{color:#C5A55A}
+        .dk .sys-btn:hover{background:rgba(197,165,90,0.15)}
+        .sys-dark{}
+
+        /* ━━━ 우측 고정 네비 (3 Pillars) ━━━ */
+        .right-nav{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:1500;display:flex;flex-direction:column;gap:20px}
+        .rn-item{position:relative;display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer}
+        .rn-tooltip{position:absolute;right:56px;padding:6px 14px;background:rgba(11,16,30,0.92);color:#E5B871;font-size:0.78rem;font-weight:700;border-radius:8px;border:1px solid rgba(229,184,113,0.2);opacity:0;pointer-events:none;white-space:nowrap;transition:opacity 0.3s,transform 0.3s;transform:translateX(6px);backdrop-filter:blur(8px)}
+        .rn-tooltip::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);border-left:5px solid rgba(11,16,30,0.92);border-top:5px solid transparent;border-bottom:5px solid transparent}
+        .rn-item:hover .rn-tooltip{opacity:1;transform:translateX(0)}
+        .rn-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;transition:all 0.35s;filter:drop-shadow(0 0 6px rgba(197,165,90,0.25))}
+        .rn-item:hover .rn-icon{transform:scale(1.15);filter:drop-shadow(0 0 12px rgba(197,165,90,0.5))}
+        .rn-item:active .rn-icon{transform:scale(0.95)}
+        .lt .rn-icon{filter:drop-shadow(0 0 4px rgba(197,165,90,0.15))}
 
         .live-section{margin-bottom:25px}
         .live-banner{display:flex;align-items:center;justify-content:center;background:#D32F2F;color:white;padding:12px 20px;font-weight:bold;font-size:1.1rem;gap:10px;border-radius:12px 12px 0 0;flex-wrap:wrap}
@@ -765,6 +789,12 @@ export default function HomeClient() {
           .sr{flex-direction:column;align-items:flex-start;gap:10px}
           .rbt{width:100%;padding:10px}
           .bn{display:flex}
+          .sys-ctrl{top:68px;right:60px;gap:4px;padding:3px}
+          .sys-btn{width:30px;height:30px}
+          .right-nav{right:8px;gap:14px}
+          .rn-icon{width:36px;height:36px}
+          .rn-icon svg{width:22px;height:22px}
+          .rn-tooltip{display:none}
         }
       `}</style>
     </div>
