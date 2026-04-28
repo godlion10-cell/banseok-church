@@ -1,10 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-
-// react-player SSR 비활성화 (브라우저 전용)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ReactPlayer = dynamic(() => import('react-player') as any, { ssr: false }) as any;
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 type SermonVideo = {
   id: string;
@@ -23,9 +18,10 @@ export default function SermonRadioPage() {
   const [currentTime, setCurrentTime] = useState('00:00');
   const [duration, setDuration] = useState('00:00');
   const [loading, setLoading] = useState(true);
-  const [playerReady, setPlayerReady] = useState(false);
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  // 유튜브 설교 목록 불러오기
+  // 유튜브 설교 목록 불러오기 (기존 youtube-videos API 그대로 사용)
   useEffect(() => {
     const fetchSermons = async () => {
       try {
@@ -34,7 +30,6 @@ export default function SermonRadioPage() {
         if (data.success && data.videos.length > 0) {
           setSermons(data.videos);
         } else {
-          // API 실패 시 폴백 데이터
           setSermons([{
             id: 'fallback', videoId: '', title: '설교 영상을 불러올 수 없습니다',
             category: '안내', date: '', gradient: 'linear-gradient(135deg, #334155, #475569)'
@@ -54,38 +49,98 @@ export default function SermonRadioPage() {
   const currentSermon = sermons[currentIndex] || null;
 
   const formatTime = (seconds: number) => {
-    if (isNaN(seconds)) return '00:00';
+    if (isNaN(seconds) || !isFinite(seconds)) return '00:00';
     const min = Math.floor(seconds / 60);
     const sec = Math.floor(seconds % 60);
     return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
-  const handleProgress = useCallback((state: { played: number; playedSeconds: number }) => {
-    setProgress(state.played * 100);
-    setCurrentTime(formatTime(state.playedSeconds));
+  // 🎵 오디오 이벤트 핸들러
+  const handleTimeUpdate = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !audio.duration) return;
+    setProgress((audio.currentTime / audio.duration) * 100);
+    setCurrentTime(formatTime(audio.currentTime));
   }, []);
 
-  const handleDuration = useCallback((dur: number) => {
-    setDuration(formatTime(dur));
+  const handleLoadedMetadata = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    setDuration(formatTime(audio.duration));
+    setStreamError(null);
   }, []);
+
+  const handleEnded = useCallback(() => {
+    // 자동 다음 트랙 재생
+    if (sermons.length === 0) return;
+    const nextIdx = currentIndex < sermons.length - 1 ? currentIndex + 1 : 0;
+    setCurrentIndex(nextIdx);
+    setIsPlaying(true);
+  }, [currentIndex, sermons.length]);
+
+  const handleAudioError = useCallback(() => {
+    setStreamError('오디오 스트림 로딩 실패 — 다른 설교를 선택해주세요.');
+    setIsPlaying(false);
+  }, []);
+
+  // 트랙 변경 시 자동 로드 + 재생
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSermon?.videoId) return;
+    
+    setStreamError(null);
+    setProgress(0);
+    setCurrentTime('00:00');
+    setDuration('00:00');
+    
+    audio.src = `/api/radio?videoId=${currentSermon.videoId}`;
+    audio.load();
+    
+    if (isPlaying) {
+      audio.play().catch(() => {
+        setStreamError('자동 재생 차단됨 — ▶ 버튼을 눌러주세요.');
+        setIsPlaying(false);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, currentSermon?.videoId]);
+
+  // 재생/일시정지 토글
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio || !currentSermon?.videoId) return;
+
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch(() => {
+        setStreamError('재생 실패 — 브라우저에서 자동 재생을 차단했습니다.');
+      });
+    }
+  };
+
+  // 프로그레스 바 클릭 → 탐색
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const audio = audioRef.current;
+    if (!audio || !audio.duration) return;
+    const bar = e.currentTarget;
+    const clickPos = e.nativeEvent.offsetX;
+    const seekRatio = clickPos / bar.offsetWidth;
+    audio.currentTime = seekRatio * audio.duration;
+  };
 
   const handlePrev = () => {
     if (sermons.length === 0) return;
-    const newIndex = currentIndex > 0 ? currentIndex - 1 : sermons.length - 1;
-    setCurrentIndex(newIndex);
-    setProgress(0);
-    setCurrentTime('00:00');
-    setPlayerReady(false);
+    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : sermons.length - 1);
     setIsPlaying(true);
   };
 
   const handleNext = () => {
     if (sermons.length === 0) return;
-    const newIndex = currentIndex < sermons.length - 1 ? currentIndex + 1 : 0;
-    setCurrentIndex(newIndex);
-    setProgress(0);
-    setCurrentTime('00:00');
-    setPlayerReady(false);
+    setCurrentIndex(currentIndex < sermons.length - 1 ? currentIndex + 1 : 0);
     setIsPlaying(true);
   };
 
@@ -102,6 +157,16 @@ export default function SermonRadioPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0F172A', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'sans-serif' }}>
+
+      {/* 🎵 HTML5 Audio Element (백엔드 프록시 스트림) */}
+      <audio
+        ref={audioRef}
+        preload="none"
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
+        onError={handleAudioError}
+      />
 
       {/* 메인 플레이어 카드 */}
       <div style={{ maxWidth: '420px', width: '100%', background: '#1E293B', padding: '35px 25px', borderRadius: '30px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', textAlign: 'center' }}>
@@ -144,43 +209,17 @@ export default function SermonRadioPage() {
           </div>
         ) : null}
 
-        {/* ReactPlayer (숨김 — 소리만 재생) */}
-        {/* 🚨 YouTube는 1px 플레이어를 거부합니다. 실제 크기로 렌더하되 컨테이너를 숨깁니다 */}
-        {currentSermon && currentSermon.videoId && (
-          <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '320px', height: '180px', overflow: 'hidden', pointerEvents: 'none', opacity: 0 }}>
-            <ReactPlayer
-              url={`https://www.youtube.com/watch?v=${currentSermon.videoId}`}
-              playing={isPlaying}
-              controls={false}
-              width="320px"
-              height="180px"
-              onProgress={handleProgress as any}
-              onDuration={handleDuration as any}
-              onReady={() => setPlayerReady(true)}
-              onEnded={handleNext as any}
-              onError={(e: any) => console.error('ReactPlayer 에러:', e)}
-              config={{
-                youtube: {
-                  playerVars: {
-                    autoplay: isPlaying ? 1 : 0,
-                    modestbranding: 1,
-                    playsinline: 1,
-                  }
-                }
-              } as any}
-            />
+        {/* ⚠️ 스트리밍 에러 표시 */}
+        {streamError && (
+          <div style={{ padding: '10px 16px', marginBottom: '15px', borderRadius: '12px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#FCA5A5', fontSize: '0.82rem' }}>
+            ⚠️ {streamError}
           </div>
         )}
 
         {/* 프로그레스 바 */}
         <div style={{ marginBottom: '25px' }}>
           <div
-            onClick={(e) => {
-              const bar = e.currentTarget;
-              const clickPos = e.nativeEvent.offsetX;
-              const newProgress = clickPos / bar.offsetWidth;
-              setProgress(newProgress * 100);
-            }}
+            onClick={handleSeek}
             style={{ width: '100%', height: '6px', background: '#334155', borderRadius: '5px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
           >
             <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #3B82F6, #8B5CF6)', borderRadius: '5px', transition: 'width 0.3s' }} />
@@ -200,7 +239,7 @@ export default function SermonRadioPage() {
             ⏮
           </button>
 
-          <button onClick={() => { if (currentSermon?.videoId) setIsPlaying(!isPlaying); }}
+          <button onClick={togglePlay}
             style={{
               width: '70px', height: '70px', borderRadius: '50%',
               background: currentSermon?.videoId ? 'linear-gradient(135deg, #3B82F6, #8B5CF6)' : '#475569',
@@ -241,7 +280,7 @@ export default function SermonRadioPage() {
             {sermons.map((sermon, idx) => (
               <div
                 key={sermon.id}
-                onClick={() => { setCurrentIndex(idx); setIsPlaying(true); setProgress(0); setCurrentTime('00:00'); }}
+                onClick={() => { setCurrentIndex(idx); setIsPlaying(true); }}
                 style={{
                   padding: '14px 18px', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: '12px',
