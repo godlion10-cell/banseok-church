@@ -703,52 +703,6 @@ export default function ChatbotWidget() {
               )}
               <div ref={messagesEndRef} />
             </div>
-            {/* 🏅 설정 & 등록 패널 — Gold Line */}
-            {!isAdmin && (
-              <div style={{ padding: '10px 15px', borderTop: '1px solid rgba(197,165,90,0.12)', background: '#FAFBF8' }}>
-                {/* 1차 행: 글꼴/다크모드 컨트롤 */}
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-                  <button
-                    onClick={() => window.dispatchEvent(new CustomEvent('banseok:font', { detail: 'up' }))}
-                    style={{ flex: 1, padding: '8px 4px', background: 'transparent', border: '1px solid rgba(197,165,90,0.25)', borderRadius: '10px', color: '#C5A55A', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.2s' }}>
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style={{ verticalAlign: '-2px', marginRight: '3px' }}><text x="2" y="16" fill="#C5A55A" fontSize="15" fontWeight="800">가</text></svg>+
-                  </button>
-                  <button
-                    onClick={() => window.dispatchEvent(new CustomEvent('banseok:font', { detail: 'down' }))}
-                    style={{ flex: 1, padding: '8px 4px', background: 'transparent', border: '1px solid rgba(197,165,90,0.25)', borderRadius: '10px', color: '#C5A55A', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.2s' }}>
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style={{ verticalAlign: '-2px', marginRight: '3px' }}><text x="2" y="16" fill="#C5A55A" fontSize="15" fontWeight="800">가</text></svg>−
-                  </button>
-                  <button
-                    onClick={() => window.dispatchEvent(new CustomEvent('banseok:darkmode'))}
-                    style={{ flex: 1, padding: '8px 4px', background: 'transparent', border: '1px solid rgba(197,165,90,0.25)', borderRadius: '10px', color: '#C5A55A', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9c1.66 0 3.22-.45 4.56-1.24a7 7 0 01-4.56-6.56c0-2.76 1.6-5.14 3.92-6.28A8.96 8.96 0 0012 3z" stroke="#C5A55A" strokeWidth="1.5" fill="none"/></svg>
-                    다크모드
-                  </button>
-                </div>
-                {/* 2차 행: 등록 게이트웨이 */}
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  {[
-                    { href: '/newcomer', label: '새가족 등록' },
-                    { href: '/next-gen', label: '다음세대' },
-                    { href: '/ieumdol/report', label: '이음돌' },
-                  ].map((item, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { router.push(item.href); setIsOpen(false); }}
-                      style={{
-                        flex: 1, padding: '9px 4px', background: 'rgba(197,165,90,0.06)',
-                        border: '1px solid rgba(197,165,90,0.18)', borderRadius: '10px',
-                        color: '#8B7355', fontWeight: 700, fontSize: '0.72rem',
-                        cursor: 'pointer', transition: 'all 0.2s', lineHeight: 1.3,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div style={{ padding: '10px 15px', background: 'white', borderTop: '1px solid #F1F5F9' }}>
               {/* 첨부 파일 미리보기 */}

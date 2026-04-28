@@ -66,7 +66,7 @@ export default function HomeClient() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [fontSize, setFontSize] = useState(1.3);
+  const [fontSize, setFontSize] = useState(16);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('설교말씀');
   const [showBulletin, setShowBulletin] = useState(false);
@@ -216,12 +216,12 @@ export default function HomeClient() {
         <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
       </header>
 
-      {/* ━━━ 시스템 컨트롤 (A+/A-/다크모드) — 상단 우측 고정 ━━━ */}
+      {/* ━━━ 시스템 컨트롤 (가+/가-/다크모드) — 상단 우측 고정 ━━━ */}
       <div className="sys-ctrl">
-        <button onClick={() => setFontSize(prev => Math.min(prev + 0.15, 2.5))} className="sys-btn" aria-label="글자 크게">
+        <button onClick={() => { setFontSize(prev => { const next = Math.min(prev + 2, 24); document.documentElement.style.fontSize = next + 'px'; return next; }); }} className="sys-btn" aria-label="글자 크게">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 19L10.2 5h3.6L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M7.5 14h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M19 5h3M20.5 3.5v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
         </button>
-        <button onClick={() => setFontSize(prev => Math.max(prev - 0.15, 0.8))} className="sys-btn" aria-label="글자 작게">
+        <button onClick={() => { setFontSize(prev => { const next = Math.max(prev - 2, 12); document.documentElement.style.fontSize = next + 'px'; return next; }); }} className="sys-btn" aria-label="글자 작게">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 19L10.2 5h3.6L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M7.5 14h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M18 5h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
         </button>
         <button onClick={() => setIsDarkMode(!isDarkMode)} className="sys-btn sys-dark" aria-label="다크모드">
@@ -232,46 +232,6 @@ export default function HomeClient() {
           )}
         </button>
       </div>
-
-      {/* ━━━ 우측 고정 네비 (3 Pillars) — 중앙 수직 배치 ━━━ */}
-      <nav className="right-nav" aria-label="바로가기">
-        <a href="/newcomer" className="rn-item">
-          <span className="rn-tooltip">새가족 등록</span>
-          <span className="rn-icon">
-            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-              <rect x="12" y="6" width="24" height="36" rx="2" stroke="#C5A55A" strokeWidth="1.8"/>
-              <path d="M12 6 L8 10 V42 L12 42" stroke="#C5A55A" strokeWidth="1.2" opacity="0.4"/>
-              <circle cx="30" cy="24" r="2" fill="#C5A55A" opacity="0.6"/>
-              <path d="M24 16 C22 14, 19 14.5, 19 17 C19 19, 24 23, 24 23 C24 23, 29 19, 29 17 C29 14.5, 26 14, 24 16 Z" stroke="#C5A55A" strokeWidth="1.2" fill="#C5A55A" opacity="0.25"/>
-            </svg>
-          </span>
-        </a>
-        <a href="/next-gen" className="rn-item">
-          <span className="rn-tooltip">다음세대</span>
-          <span className="rn-icon">
-            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-              <path d="M24 42 V24" stroke="#C5A55A" strokeWidth="1.8" strokeLinecap="round"/>
-              <path d="M24 24 C24 24, 14 22, 14 14 C14 10, 18 8, 24 12" stroke="#C5A55A" strokeWidth="1.8" fill="none"/>
-              <path d="M24 20 C24 20, 34 18, 34 10 C34 6, 30 4, 24 8" stroke="#C5A55A" strokeWidth="1.8" fill="none"/>
-              <path d="M24 28 C20 28, 16 30, 16 30" stroke="#C5A55A" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
-              <path d="M24 28 C28 28, 32 30, 32 30" stroke="#C5A55A" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
-              <ellipse cx="24" cy="44" rx="8" ry="2" fill="#C5A55A" opacity="0.15"/>
-            </svg>
-          </span>
-        </a>
-        <a href="/ieumdol/report" className="rn-item">
-          <span className="rn-tooltip">이음돌</span>
-          <span className="rn-icon">
-            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-              <path d="M8 28 C8 28, 14 20, 20 22 C22 22.5, 24 24, 24 24" stroke="#C5A55A" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-              <path d="M40 28 C40 28, 34 20, 28 22 C26 22.5, 24 24, 24 24" stroke="#C5A55A" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-              <circle cx="24" cy="14" r="4" stroke="#C5A55A" strokeWidth="1.5"/>
-              <path d="M24 14 L24.8 16 L27 16.3 L25.5 17.8 L25.8 20 L24 19 L22.2 20 L22.5 17.8 L21 16.3 L23.2 16 Z" fill="#C5A55A" opacity="0.3"/>
-              <path d="M12 32 L36 32" stroke="#C5A55A" strokeWidth="1.2" strokeLinecap="round" strokeDasharray="3 3" opacity="0.4"/>
-            </svg>
-          </span>
-        </a>
-      </nav>
 
       <div className="ct">
         {/* 🔴 실시간 방송 / 🎬 VOD 인라인 플레이어 (Master-Detail) */}
@@ -670,7 +630,7 @@ export default function HomeClient() {
         .vm-row-reverse{flex-direction:row-reverse}
         .vm-img-wrap{position:relative;flex-shrink:0;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
         .vm-glow{position:absolute;inset:10%;border-radius:50%;background:radial-gradient(circle,rgba(197,165,90,0.12) 0%,transparent 70%);filter:blur(20px);z-index:0}
-        .vm-img{position:relative;z-index:1;width:200px;height:200px;object-fit:contain;mix-blend-mode:screen;filter:brightness(1.1);transition:transform 0.4s ease}
+        .vm-img{position:relative;z-index:1;width:200px;height:200px;object-fit:contain;mix-blend-mode:screen;filter:brightness(1.4) contrast(1.3) drop-shadow(0 0 15px rgba(197,165,90,0.4));transition:transform 0.4s ease}
         .vm-img:hover{transform:scale(1.08)}
         .vm-text{flex:1}
         .vm-num{font-size:3.5rem;font-weight:900;color:rgba(197,165,90,0.08);line-height:1;display:block;margin-bottom:-15px;font-family:'Outfit',sans-serif}
@@ -747,16 +707,7 @@ export default function HomeClient() {
         .dk .sys-btn:hover{background:rgba(197,165,90,0.15)}
         .sys-dark{}
 
-        /* ━━━ 우측 고정 네비 (3 Pillars) ━━━ */
-        .right-nav{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:1500;display:flex;flex-direction:column;gap:20px}
-        .rn-item{position:relative;display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer}
-        .rn-tooltip{position:absolute;right:56px;padding:6px 14px;background:rgba(11,16,30,0.92);color:#E5B871;font-size:0.78rem;font-weight:700;border-radius:8px;border:1px solid rgba(229,184,113,0.2);opacity:0;pointer-events:none;white-space:nowrap;transition:opacity 0.3s,transform 0.3s;transform:translateX(6px);backdrop-filter:blur(8px)}
-        .rn-tooltip::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);border-left:5px solid rgba(11,16,30,0.92);border-top:5px solid transparent;border-bottom:5px solid transparent}
-        .rn-item:hover .rn-tooltip{opacity:1;transform:translateX(0)}
-        .rn-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;transition:all 0.35s;filter:drop-shadow(0 0 6px rgba(197,165,90,0.25))}
-        .rn-item:hover .rn-icon{transform:scale(1.15);filter:drop-shadow(0 0 12px rgba(197,165,90,0.5))}
-        .rn-item:active .rn-icon{transform:scale(0.95)}
-        .lt .rn-icon{filter:drop-shadow(0 0 4px rgba(197,165,90,0.15))}
+
 
         .live-section{margin-bottom:25px}
         .live-banner{display:flex;align-items:center;justify-content:center;background:#D32F2F;color:white;padding:12px 20px;font-weight:bold;font-size:1.1rem;gap:10px;border-radius:12px 12px 0 0;flex-wrap:wrap}
@@ -833,10 +784,6 @@ export default function HomeClient() {
           .bn{display:flex}
           .sys-ctrl{top:68px;right:60px;gap:4px;padding:3px}
           .sys-btn{width:30px;height:30px}
-          .right-nav{right:8px;gap:14px}
-          .rn-icon{width:36px;height:36px}
-          .rn-icon svg{width:22px;height:22px}
-          .rn-tooltip{display:none}
         }
       `}</style>
     </div>
