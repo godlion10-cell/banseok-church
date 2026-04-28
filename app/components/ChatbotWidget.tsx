@@ -238,49 +238,53 @@ export default function ChatbotWidget() {
     setIsThinking(true);
     setMessages(prev => [...prev, { sender: 'bot', text: '🧠 스마트 분류 엔진 가동 중... AI가 콘텐츠를 분석하고 자동 분류합니다.' }]);
     
-    const requestBody: any = { message: userMessage };
-    if (fileData) requestBody.file = fileData;
-    if (textContent) requestBody.text = textContent;
+    try {
+      const requestBody: any = { message: userMessage };
+      if (fileData) requestBody.file = fileData;
+      if (textContent) requestBody.text = textContent;
 
-    const { ok, status, data, errorText } = await safeJsonFetch('/api/admin/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
+      const { ok, status, data, errorText } = await safeJsonFetch('/api/admin/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
 
-    if (!ok) {
-      const serverError = data?.error || errorText || '';
-      const msg = status === 413
-        ? '파일이 너무 큽니다! 📦 더 작은 파일로 다시 올려주세요.'
-        : status === 0
-        ? '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요. 📶'
-        : `❌ 스마트 분석 실패 (${status})\n${serverError || '원인 불명 — Vercel Logs 확인 필요'}`;
-      console.error(`🔥 [스마트 분석 실패] status=${status}, error=${serverError}`);
-      setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
+      if (!ok) {
+        const serverError = data?.error || errorText || '';
+        const msg = status === 413
+          ? '파일이 너무 큽니다! 📦 더 작은 파일로 다시 올려주세요.'
+          : status === 0
+          ? '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요. 📶'
+          : `❌ 스마트 분석 실패 (${status})\n${serverError || '원인 불명 — Vercel Logs 확인 필요'}`;
+        console.error(`🔥 [스마트 분석 실패] status=${status}, error=${serverError}`);
+        setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
+        return;
+      }
+      
+      if (data?.success) {
+        const categoryLinks: Record<string, { label: string; link: string }> = {
+          BULLETIN: { label: '📋 온라인 주보 확인하기', link: '/bulletin' },
+          SERMON: { label: '🎬 설교 페이지 확인하기', link: '/sermon-video' },
+          NEWS: { label: '📢 교회소식 확인하기', link: '/' },
+        };
+        const linkInfo = categoryLinks[data.category] || { label: '🏠 홈으로 가기', link: '/' };
+        const confidenceEmoji = (data.confidence || 0) >= 0.9 ? '🎯' : (data.confidence || 0) >= 0.7 ? '✅' : '⚠️';
+
+        setMessages(prev => [...prev, { 
+          sender: 'bot', 
+          text: `${confidenceEmoji} ${data.reply}\n\n📊 분류: ${data.category} (확신도: ${Math.round((data.confidence || 0) * 100)}%)\n💾 저장: ${data.savedTo || '실패'}\n🔄 UI 동기화: ${data.revalidatedPath || '—'}\n\n🏷️ [${data.category}_SAVED]`,
+          actionLabel: linkInfo.label,
+          actionLink: linkInfo.link
+        }]);
+      } else {
+        setMessages(prev => [...prev, { sender: 'bot', text: `❌ 분석 실패: ${data?.error || errorText || '알 수 없는 오류'}\n다시 시도해주세요, 사장님.` }]);
+      }
+    } catch (err) {
+      console.error('🔥 [스마트 분류 예외]', err);
+      setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 예기치 못한 오류가 발생했습니다. 다시 시도해주세요.' }]);
+    } finally {
       setIsThinking(false);
-      return;
     }
-    
-    if (data?.success) {
-      // 카테고리별 actionLink 매핑
-      const categoryLinks: Record<string, { label: string; link: string }> = {
-        BULLETIN: { label: '📋 온라인 주보 확인하기', link: '/bulletin' },
-        SERMON: { label: '🎬 설교 페이지 확인하기', link: '/sermon-video' },
-        NEWS: { label: '📢 교회소식 확인하기', link: '/' },
-      };
-      const linkInfo = categoryLinks[data.category] || { label: '🏠 홈으로 가기', link: '/' };
-      const confidenceEmoji = (data.confidence || 0) >= 0.9 ? '🎯' : (data.confidence || 0) >= 0.7 ? '✅' : '⚠️';
-
-      setMessages(prev => [...prev, { 
-        sender: 'bot', 
-        text: `${confidenceEmoji} ${data.reply}\n\n📊 분류: ${data.category} (확신도: ${Math.round((data.confidence || 0) * 100)}%)\n💾 저장: ${data.savedTo || '실패'}\n🔄 UI 동기화: ${data.revalidatedPath || '—'}\n\n🏷️ [${data.category}_SAVED]`,
-        actionLabel: linkInfo.label,
-        actionLink: linkInfo.link
-      }]);
-    } else {
-      setMessages(prev => [...prev, { sender: 'bot', text: `❌ 분석 실패: ${data?.error || errorText || '알 수 없는 오류'}\n다시 시도해주세요, 사장님.` }]);
-    }
-    setIsThinking(false);
   };
 
   // 👑 관리자 전용 명령 분석 엔진
@@ -355,68 +359,73 @@ export default function ChatbotWidget() {
     setIsThinking(true);
     const apiEndpoint = isAdmin ? '/api/admin/chatbot' : '/api/chatbot';
 
-    // 대화 히스토리에서 base64/파일 데이터 완전 제거 (페이로드 폭발 방지)
-    const cleanHistory = messages.slice(-4).map(m => ({
-      sender: m.sender,
-      text: (m.text || '').replace(/data:[^;]+;base64,[^\s"]+/g, '[파일]').slice(0, 300)
-    }));
+    try {
+      // 대화 히스토리에서 base64/파일 데이터 완전 제거 (페이로드 폭발 방지)
+      const cleanHistory = messages.slice(-4).map(m => ({
+        sender: m.sender,
+        text: (m.text || '').replace(/data:[^;]+;base64,[^\s"]+/g, '[파일]').slice(0, 300)
+      }));
 
-    // 관리자 + 파일 첨부 시 멀티모달 데이터 포함
-    const requestBody: any = {
-      message: userText,
-      isAdmin: !!isAdmin,
-      conversationHistory: cleanHistory,
-      userName: isAdmin ? '관리자' : sessionId
-    };
-
-    if (isAdmin && attachedFile) {
-      requestBody.file = attachedFile;
-      setAttachedFile(null);
-    }
-
-    const { ok, status, data, errorText } = await safeJsonFetch(apiEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!ok) {
-      const serverError = data?.reply || data?.error || errorText || '';
-      let msg: string;
-      if (status === 413) {
-        msg = '전송 데이터가 너무 큽니다! 📦\n파일 크기를 줄이거나, 파일 없이 다시 시도해주세요.';
-      } else if (status === 0) {
-        msg = '네트워크 연결 실패! 인터넷 연결을 확인해주세요. 📶';
-      } else {
-        msg = `❌ 오류 (${status})\n${serverError || '원인 불명'}`;
-      }
-      console.error(`🔥 [AI 호출 실패] ${apiEndpoint} status=${status}, error=${serverError}`);
-      setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
-      setIsThinking(false);
-      return;
-    }
-
-    if (data?.success && data?.reply) {
-      let replyText = data.reply;
-      if (isAdmin && data.actionCode && data.actionCode !== 'NONE') {
-        replyText += `\n\n🏷️ [${data.actionCode}]`;
-      }
-      if (isAdmin && data.dbCommand) {
-        replyText += `\n📋 DB 명령: ${data.dbCommand}`;
-      }
-
-      const botMsg: Message = {
-        sender: 'bot',
-        text: replyText,
-        actionLabel: data.actionLabel || undefined,
-        actionLink: data.actionLink || undefined
+      // 관리자 + 파일 첨부 시 멀티모달 데이터 포함
+      const requestBody: any = {
+        message: userText,
+        isAdmin: !!isAdmin,
+        conversationHistory: cleanHistory,
+        userName: isAdmin ? '관리자' : sessionId
       };
-      setMessages(prev => [...prev, botMsg]);
-      speakAndView(data.reply);
-    } else {
-      setMessages(prev => [...prev, { sender: 'bot', text: data?.reply || '죄송합니다, 잠시 연결이 불안정합니다. 다시 시도해 주세요. 🙏' }]);
+
+      if (isAdmin && attachedFile) {
+        requestBody.file = attachedFile;
+        setAttachedFile(null);
+      }
+
+      const { ok, status, data, errorText } = await safeJsonFetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!ok) {
+        const serverError = data?.reply || data?.error || errorText || '';
+        let msg: string;
+        if (status === 413) {
+          msg = '전송 데이터가 너무 큽니다! 📦\n파일 크기를 줄이거나, 파일 없이 다시 시도해주세요.';
+        } else if (status === 0) {
+          msg = '네트워크 연결 실패! 인터넷 연결을 확인해주세요. 📶';
+        } else {
+          msg = `❌ 오류 (${status})\n${serverError || '원인 불명'}`;
+        }
+        console.error(`🔥 [AI 호출 실패] ${apiEndpoint} status=${status}, error=${serverError}`);
+        setMessages(prev => [...prev, { sender: 'bot', text: msg }]);
+        return;
+      }
+
+      if (data?.success && data?.reply) {
+        let replyText = data.reply;
+        if (isAdmin && data.actionCode && data.actionCode !== 'NONE') {
+          replyText += `\n\n🏷️ [${data.actionCode}]`;
+        }
+        if (isAdmin && data.dbCommand) {
+          replyText += `\n📋 DB 명령: ${data.dbCommand}`;
+        }
+
+        const botMsg: Message = {
+          sender: 'bot',
+          text: replyText,
+          actionLabel: data.actionLabel || undefined,
+          actionLink: data.actionLink || undefined
+        };
+        setMessages(prev => [...prev, botMsg]);
+        speakAndView(data.reply);
+      } else {
+        setMessages(prev => [...prev, { sender: 'bot', text: data?.reply || '죄송합니다, 잠시 연결이 불안정합니다. 다시 시도해 주세요. 🙏' }]);
+      }
+    } catch (err) {
+      console.error('🔥 [AI 호출 예외]', err);
+      setMessages(prev => [...prev, { sender: 'bot', text: '⚠️ 예기치 못한 오류가 발생했습니다. 다시 시도해주세요. 🙏' }]);
+    } finally {
+      setIsThinking(false);
     }
-    setIsThinking(false);
   };
 
   /* 🧠 반석이의 중앙 통제 뇌 (하이브리드 AI) */
@@ -602,8 +611,11 @@ export default function ChatbotWidget() {
 
   const onSubmitForm = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isThinking) return; // 🛡️ 중복 제출 방지 — 응답 대기 중 잠금
     if (inputRef.current) {
-      handleUserMessage(inputRef.current.value);
+      const val = inputRef.current.value.trim();
+      if (!val) return;
+      handleUserMessage(val);
       inputRef.current.value = '';
     }
   };
@@ -764,11 +776,11 @@ export default function ChatbotWidget() {
                   <Image src="/icons/realistic-mic.png" alt="음성입력" width={26} height={26} style={{ objectFit: 'contain', filter: isListening ? 'drop-shadow(0 0 6px #EF4444)' : 'none' }} />
                 </button>
                 {/* 텍스트 입력 */}
-                <input type="text" ref={inputRef} placeholder={isAdmin ? '사장님, 명령하세요...' : '입력하거나 🎤을 누르세요'}
-                  style={{ flex: 1, border: '1px solid #E2E8F0', padding: '11px 14px', borderRadius: '20px', outline: 'none', fontSize: '0.9rem', background: '#FAFAFA' }} />
+                <input type="text" ref={inputRef} disabled={isThinking} placeholder={isThinking ? '반석이가 생각 중...' : (isAdmin ? '사장님, 명령하세요...' : '입력하거나 🎤을 누르세요')}
+                  style={{ flex: 1, border: '1px solid #E2E8F0', padding: '11px 14px', borderRadius: '20px', outline: 'none', fontSize: '0.9rem', background: isThinking ? '#F1F5F9' : '#FAFAFA', opacity: isThinking ? 0.6 : 1, cursor: isThinking ? 'not-allowed' : 'text' }} />
                 {/* 전송 */}
-                <button type="submit" title="전송"
-                  style={{ background: theme.btnBg, border: 'none', color: 'white', borderRadius: '50%', width: '38px', height: '38px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.1rem', transition: '0.2s' }}>➤</button>
+                <button type="submit" title="전송" disabled={isThinking}
+                  style={{ background: isThinking ? '#94A3B8' : theme.btnBg, border: 'none', color: 'white', borderRadius: '50%', width: '38px', height: '38px', cursor: isThinking ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.1rem', transition: '0.2s' }}>{isThinking ? '⏳' : '➤'}</button>
               </form>
             </div>
           </div>

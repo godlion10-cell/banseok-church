@@ -144,15 +144,16 @@ export default function SermonRadioPage() {
           </div>
         ) : null}
 
-        {/* ReactPlayer (숨김 — 소리만) */}
+        {/* ReactPlayer (숨김 — 소리만 재생) */}
+        {/* 🚨 YouTube는 1px 플레이어를 거부합니다. 실제 크기로 렌더하되 컨테이너를 숨깁니다 */}
         {currentSermon && currentSermon.videoId && (
-          <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}>
+          <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '320px', height: '180px', overflow: 'hidden', pointerEvents: 'none', opacity: 0 }}>
             <ReactPlayer
               url={`https://www.youtube.com/watch?v=${currentSermon.videoId}`}
               playing={isPlaying}
               controls={false}
-              width="1px"
-              height="1px"
+              width="320px"
+              height="180px"
               onProgress={handleProgress as any}
               onDuration={handleDuration as any}
               onReady={() => setPlayerReady(true)}
@@ -163,6 +164,7 @@ export default function SermonRadioPage() {
                   playerVars: {
                     autoplay: isPlaying ? 1 : 0,
                     modestbranding: 1,
+                    playsinline: 1,
                   }
                 }
               } as any}
