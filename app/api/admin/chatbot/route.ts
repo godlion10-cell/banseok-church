@@ -24,7 +24,7 @@ const ADMIN_SYSTEM_PROMPT = `너는 거제반석교회 시스템을 총괄하는
 ## 액션 코드 시스템
 사장님이 데이터 조작을 명령하면, 응답 끝에 반드시 해당 액션 코드를 붙여라:
 - [ACTION: ADD_SERMON] — 설교 추가 요청
-- [ACTION: ADD_NEWS] — 교회 소식 추가 요청
+- [ACTION: ADD_NEWS] — 교회 소식 추가 요청 (반드시 order 번호를 순서대로 지정. 예: 1번 소식, 2번 소식. 이미 등록된 소식과 제목이 동일하면 중복이므로 추가하지 말 것)
 - [ACTION: UPDATE_SCHEDULE] — 예배 일정 수정 요청
 - [ACTION: UPDATE_WORSHIP_ORDER] — 예배 순서 수정 요청
 - [ACTION: BULLETIN_UPDATE] — 주보 이미지 분석 및 온라인 주보 업데이트 요청

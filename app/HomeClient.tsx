@@ -552,23 +552,36 @@ export default function HomeClient() {
           })()}
         </>)}
 
-        {/* ===== 교회소식 탭 ===== */}
+        {/* ===== 교회소식 탭 (스마트 박스 시스템) ===== */}
         {activeTab === '교회소식' && (
           <div className="tab-content">
             <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>📢 반석교회 소식</h3></div>
-            {newsItems.length > 0 ? (
-              <div className="news-grid">
-                {newsItems.map((n: any, idx: number) => (
-                  <div key={n.id || idx} className="news-card"><h3>{idx + 1}. {n.title}</h3><p style={{ whiteSpace: 'pre-line' }}>{n.content}</p></div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '50px 20px', color: '#94A3B8' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '15px', opacity: 0.4 }}>📢</div>
-                <p style={{ fontSize: '1.05rem', fontWeight: '600' }}>아직 등록된 교회 소식이 없습니다.</p>
-                <p style={{ fontSize: '0.9rem', marginTop: '8px' }}>관리자가 소식을 등록하면 자동으로 표시됩니다.</p>
-              </div>
-            )}
+            {(() => {
+              // 중복 제거: 동일 제목은 첫 번째만 유지
+              const unique = newsItems.filter(
+                (item: any, idx: number, arr: any[]) => arr.findIndex((n: any) => n.title === item.title) === idx
+              );
+              return unique.length > 0 ? (
+                <div className="news-box-list">
+                  {unique.map((n: any, idx: number) => (
+                    <div key={n.id || idx} className="news-box">
+                      <div className="news-box-badge">{idx + 1}</div>
+                      <div className="news-box-content">
+                        <h3 className="news-box-title">{n.title}</h3>
+                        <div className="news-box-divider" />
+                        <p className="news-box-text">{n.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '50px 20px', color: '#94A3B8' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '15px', opacity: 0.4 }}>📢</div>
+                  <p style={{ fontSize: '1.05rem', fontWeight: '600' }}>아직 등록된 교회 소식이 없습니다.</p>
+                  <p style={{ fontSize: '0.9rem', marginTop: '8px' }}>관리자가 소식을 등록하면 자동으로 표시됩니다.</p>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -844,15 +857,19 @@ export default function HomeClient() {
           .vm-stone{flex-direction:column;text-align:center;gap:15px}
         }
 
-        /* 교회소식 */
-        .news-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:25px}
-        .news-card{background:white;border-radius:16px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,0.06);border-left:4px solid #c19c72;transition:transform 0.3s}
-        .news-card:hover{transform:translateY(-4px)}
-        .dk .news-card{background:#1E293B}
-        .news-card h3{color:#5b272f;font-size:1rem;margin:0 0 10px}
-        .dk .news-card h3{color:#c19c72}
-        .news-card p{color:#555;font-size:0.9rem;line-height:1.7;margin:0}
-        .dk .news-card p{color:#aaa}
+        /* 교회소식 — 스마트 박스 시스템 */
+        .news-box-list{display:flex;flex-direction:column;gap:20px;margin-top:25px}
+        .news-box{display:flex;gap:16px;background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.05);border-left:4px solid #c19c72;transition:transform 0.2s,box-shadow 0.2s}
+        .news-box:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.08)}
+        .dk .news-box{background:#1E293B;border-left-color:#C5A55A}
+        .news-box-badge{width:36px;height:36px;border-radius:50%;background:#5b272f;color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;flex-shrink:0;margin-top:2px}
+        .dk .news-box-badge{background:#C5A55A;color:#0F172A}
+        .news-box-content{flex:1;min-width:0}
+        .news-box-title{color:#5b272f;font-size:1.05rem;font-weight:700;margin:0 0 8px;word-break:keep-all}
+        .dk .news-box-title{color:#E5B871}
+        .news-box-divider{height:1px;background:linear-gradient(90deg,#c19c72 0%,transparent 100%);margin-bottom:10px;opacity:0.3}
+        .news-box-text{color:#555;font-size:0.92rem;line-height:1.75;margin:0;white-space:pre-line;word-break:keep-all}
+        .dk .news-box-text{color:#aaa}
 
         /* 예배안내 */
         .worship-wrap{margin-top:25px}
