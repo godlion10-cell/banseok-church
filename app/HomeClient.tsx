@@ -1,7 +1,6 @@
 // @ts-nocheck
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 // KakaoMap 제거 — 정적 이미지로 대체 (어르신 오클릭 방지)
 import {
   IconBulletin, IconSermonVideo, IconRadio, IconBibleQuiz,
@@ -225,36 +224,18 @@ export default function HomeClient() {
     <div className={`pw ${isDarkMode ? 'dk' : 'lt'}`}>
       {/* 교회 헤더 메뉴 */}
       <header className="ch-header">
-        <div className="ch-logo">
+        <div className="ch-logo" onClick={() => { setActiveTab('설교말씀'); setActiveVideo(null); setActiveFilter(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer' }} title="성전 로비로 이동">
           <img src="/church-logo.png" alt="반석교회" className="ch-logo-img" />
         </div>
         <nav className={`ch-nav ${showMobileMenu ? 'ch-nav-open' : ''}`}>
           {['교회소개', '비전과사명', '설교말씀', '교회소식', '예배안내', '오시는길'].map(tab => (
             <button key={tab} className={`ch-nav-link ${activeTab === tab ? 'ch-nav-active' : ''}`} onClick={() => { setActiveTab(tab); setShowMobileMenu(false); }}>{tab}</button>
           ))}
-          <Link href="/pilgrim" style={{ fontWeight: 'bold', color: '#D97706', textDecoration: 'none', marginLeft: '15px', whiteSpace: 'nowrap' }}>
-            🗺️ 영적 순례길
-          </Link>
         </nav>
         <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
       </header>
 
-      {/* ━━━ 시스템 컨트롤 (가+/가-/다크모드) — 상단 우측 고정 ━━━ */}
-      <div className="sys-ctrl">
-        <button onClick={() => { setFontSize(prev => { const next = Math.min(prev + 2, 24); document.documentElement.style.fontSize = next + 'px'; return next; }); }} className="sys-btn" aria-label="글자 크게">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 19L10.2 5h3.6L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M7.5 14h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M19 5h3M20.5 3.5v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-        </button>
-        <button onClick={() => { setFontSize(prev => { const next = Math.max(prev - 2, 12); document.documentElement.style.fontSize = next + 'px'; return next; }); }} className="sys-btn" aria-label="글자 작게">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 19L10.2 5h3.6L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M7.5 14h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M18 5h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-        </button>
-        <button onClick={() => setIsDarkMode(!isDarkMode)} className="sys-btn sys-dark" aria-label="다크모드">
-          {isDarkMode ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.8"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          )}
-        </button>
-      </div>
+      {/* 시스템 컨트롤은 챗봇 허브에서 제어 — 헤더 UI 정리 */}
 
       <div className="ct">
         {/* 🔴 실시간 방송 / 🎬 VOD 인라인 플레이어 (Master-Detail) */}
