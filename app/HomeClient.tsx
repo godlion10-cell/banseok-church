@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-// KakaoMap 제거 — 정적 이미지로 대체 (어르신 오클릭 방지)
+import KakaoMap from '@/app/components/KakaoMap';
 import {
   IconBulletin, IconSermonVideo, IconRadio, IconBibleQuiz,
   IconMyBible, IconNewcomer, IconNextGen, IconIeumdol,
@@ -603,8 +603,8 @@ export default function HomeClient() {
                     { title: '주일오후예배', time: '오후 01:50', place: '2층 본당', officer: '이주민 목사' },
                     { title: '청소년 예배', time: '오전 10:00', place: '3층 교육관', officer: '김민정 전도사' },
                     { title: '어린이 예배', time: '오전 11:00', place: '3층 교육관', officer: '김민정 전도사' },
-                    { title: '수요 저녁예배', time: '수 07:30', place: '2층 본당', officer: '이주민 목사' },
-                    { title: '금요기도회', time: '금 08:00', place: '2층 본당', officer: '이주민 목사' },
+                    { title: '수요 저녁예배', time: '오후 07:30', place: '2층 본당', officer: '이주민 목사' },
+                    { title: '금요기도회', time: '오후 08:00', place: '2층 본당', officer: '이주민 목사' },
                     { title: '새벽예배', time: '오전 05:30', place: '2층 본당', officer: '이주민 목사' },
                   ]).map((s: any, i: number) => (
                     <tr key={s.id || i} className="worship-row"><th>{s.title}</th><td><span className="sch-time">{s.time}</span></td><td>{s.place}</td><td>{s.officer}</td></tr>
@@ -629,21 +629,11 @@ export default function HomeClient() {
                 <h3 style={{ fontFamily: "'Nanum Myeongjo',serif", fontSize: '1.6rem', color: '#5b272f', marginBottom: '2rem', lineHeight: 1.3 }}>대한예수교장로회<br />거제반석교회</h3>
                 <div className="loc-item"><span className="loc-label">🏠 주소</span><span>경상남도 거제시 연초면 소오비길 40-6</span></div>
                 <div className="loc-item"><span className="loc-label">📞 문의</span><span>이주민 목사 (010.9825.5020)</span></div>
-                <div className="loc-item"><span className="loc-label">⏰ 예배</span><span>주일 오전 9시 / 11시, 수요 수 7:30, 금요 금 8시</span></div>
+                <div className="loc-item"><span className="loc-label">⏰ 예배</span><span>주일 오전 9시 / 11시, 수요 오후 7:30, 금요 오후 8시</span></div>
                 <div className="loc-item"><span className="loc-label">📺 유튜브</span><span style={{ color: '#c19c72', fontWeight: 600 }}>@petros-church</span></div>
               </div>
-              {/* 📍 순수 정적 지도 이미지 — 클릭/탭 동작 없음 */}
-              <div style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', border: '1px solid #e8ddd0' }}>
-                <img
-                  src="/assets/map-image.png"
-                  alt="거제반석교회 위치 — 경상남도 거제시 연초면 소오비길 40-6"
-                  style={{ width: '100%', display: 'block', objectFit: 'cover' }}
-                  draggable={false}
-                />
-                <div style={{ padding: '14px 18px', background: isDarkMode ? '#1E293B' : '#FDFBF7', textAlign: 'center' }}>
-                  <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: isDarkMode ? '#e0d5c8' : '#5b272f' }}>📍 경상남도 거제시 연초면 소오비길 40-6</p>
-                </div>
-              </div>
+              {/* 📍 카카오맵 실제 지도 */}
+              <KakaoMap height="350px" showNavButtons={true} />
             </div>
           </div>
         )}
