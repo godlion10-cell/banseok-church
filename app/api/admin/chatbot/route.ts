@@ -103,16 +103,20 @@ export async function POST(req: Request) {
     const now = new Date();
     const timeContext = `\n[현재 시간: ${now.toLocaleDateString('ko-KR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} ${now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}]`;
 
-    // ━━━ 4️⃣ DB 현황 실시간 조회 (사장님에게 정확한 정보 제공) ━━━
+    // ━━━ 4️⃣ DB 현황 실시간 조회 + 소식 목록 (정확한 삭제/추가 판단용) ━━━
     let dbStatus = '';
     try {
-      const [sermonCount, newsCount, scheduleCount, careCount] = await Promise.all([
+      const [sermonCount, newsCount, scheduleCount, careCount, newsList] = await Promise.all([
         prisma.sermon.count(),
         prisma.news.count(),
         prisma.schedule.count(),
         prisma.pastoralCare.count({ where: { status: 'NEEDS_CARE' } }),
+        prisma.news.findMany({ orderBy: { order: 'asc' }, select: { title: true, order: true } }),
       ]);
-      dbStatus = `\n[DB 현황: 설교 ${sermonCount}건, 소식 ${newsCount}건, 일정 ${scheduleCount}건, 심방 대기 ${careCount}건]`;
+      const newsListStr = newsList.length > 0
+        ? newsList.map((n: any, i: number) => `${i + 1}번: ${n.title}`).join(', ')
+        : '(없음)';
+      dbStatus = `\n[DB 현황: 설교 ${sermonCount}건, 소식 ${newsCount}건, 일정 ${scheduleCount}건, 심방 대기 ${careCount}건]\n[현재 교회소식 목록: ${newsListStr}]`;
     } catch {
       dbStatus = '\n[DB 현황: 조회 실패 — 연결 확인 필요]';
     }
@@ -230,66 +234,85 @@ export async function POST(req: Request) {
         } catch { /* 무시 */ }
       }
 
-      // 📢 교회소식 추가 — newsItems 배열을 DB에 자동 저장
+      // 📢 교회소식 추가 — newsItems 배열을 DB에 자동 저장 + 등록 목록 표시
       if (actionCode === 'ADD_NEWS' && parsed.newsItems && Array.isArray(parsed.newsItems)) {
         try {
           const existing = await prisma.news.findMany({ select: { title: true } });
           const existingTitles = new Set(existing.map((n: any) => n.title));
           let added = 0;
+          let skipped = 0;
+          const addedTitles: string[] = [];
           for (const item of parsed.newsItems) {
             if (item.title && item.content && !existingTitles.has(item.title)) {
               await prisma.news.create({ data: { title: item.title, content: item.content, order: item.order || 0 } });
               added++;
+              addedTitles.push(item.title);
+            } else if (existingTitles.has(item.title)) {
+              skipped++;
             }
           }
-          parsed.reply += `\n\n✅ 교회소식 ${added}건이 그리드 박스로 등록되었습니다.`;
+          const totalAfter = await prisma.news.count();
+          parsed.reply = `✅ 교회소식 ${added}건 등록 완료!`;
+          if (addedTitles.length > 0) parsed.reply += `\n📋 등록 목록: ${addedTitles.map((t, i) => `${i+1}. ${t}`).join(', ')}`;
+          if (skipped > 0) parsed.reply += `\n⚠️ 중복 ${skipped}건 스킵됨`;
+          parsed.reply += `\n📊 현재 총 소식: ${totalAfter}건`;
           autoProcessed = true;
         } catch (e: any) {
           parsed.reply += `\n\n❌ 소식 등록 실패: ${e.message}`;
         }
       }
 
-      // 🗑️ 교회소식 삭제 — 번호 또는 키워드로 삭제
+      // 🗑️ 교회소식 삭제 — 다중 번호 + 키워드 지원 + 삭제 후 재정렬
       if (actionCode === 'DELETE_NEWS') {
         try {
           const allText = [parsed.dbCommand, parsed.reply, message].filter(Boolean).join(' ');
-          let deleted = false;
-          // 1차: 번호로 삭제 (예: "3번 삭제")
-          const numMatch = allText.match(/(\d+)\s*번/);
-          if (numMatch) {
-            const idx = parseInt(numMatch[1]);
+          const deletedNames: string[] = [];
+          // 1차: 다중 번호 삭제 (예: "1번, 3번 삭제", "1번이랑 3번")
+          const numMatches = allText.match(/(\d+)\s*번/g);
+          if (numMatches && numMatches.length > 0) {
+            const indices = numMatches.map(m => parseInt(m.replace(/[^0-9]/g, '')));
             const allNews = await prisma.news.findMany({ orderBy: { order: 'asc' } });
-            if (allNews[idx - 1]) {
-              const t = allNews[idx - 1];
-              await prisma.news.delete({ where: { id: t.id } });
-              parsed.reply = `${idx}번 그리드 박스 '${t.title}' 삭제 완료, 사장님.`;
-              deleted = true;
+            // 큰 번호부터 삭제 (인덱스 변동 방지)
+            for (const idx of [...new Set(indices)].sort((a, b) => b - a)) {
+              if (allNews[idx - 1]) {
+                const t = allNews[idx - 1];
+                await prisma.news.delete({ where: { id: t.id } });
+                deletedNames.unshift(`${idx}번 '${t.title}'`);
+              }
             }
           }
-          // 2차: 키워드 매칭
-          if (!deleted) {
+          // 2차: 키워드 매칭 (번호로 못 찾은 경우)
+          if (deletedNames.length === 0) {
             const allNews = await prisma.news.findMany();
             for (const n of allNews) {
               if (allText.includes(n.title)) {
                 await prisma.news.delete({ where: { id: n.id } });
-                parsed.reply = `'${n.title}' 소식 삭제 완료, 사장님.`;
-                deleted = true;
+                deletedNames.push(`'${n.title}'`);
                 break;
               }
             }
           }
-          if (!deleted) parsed.reply += '\n삭제 대상을 찾지 못했습니다. "3번 삭제" 형태로 명령해주세요.';
+          // 삭제 후 order 재정렬
+          if (deletedNames.length > 0) {
+            const remaining = await prisma.news.findMany({ orderBy: { order: 'asc' } });
+            for (let i = 0; i < remaining.length; i++) {
+              await prisma.news.update({ where: { id: remaining[i].id }, data: { order: i + 1 } });
+            }
+            parsed.reply = `🗑️ ${deletedNames.join(', ')} 삭제 완료!\n📊 남은 소식: ${remaining.length}건 (순서 자동 재정렬됨)`;
+          } else {
+            parsed.reply += '\n삭제 대상을 찾지 못했습니다. "3번 삭제" 형태로 명령해주세요.';
+          }
           autoProcessed = true;
         } catch (e: any) {
           parsed.reply += `\n삭제 실패: ${e.message}`;
         }
       }
 
-      // 🗑️ 교회소식 전체 삭제
+      // 🗑️ 교회소식 전체 삭제 (변수명 충돌 해결)
       if (actionCode === 'CLEAR_NEWS') {
         try {
-          const result = await prisma.news.deleteMany({});
-          parsed.reply += `\n\n✅ 교회소식 ${result.count}건이 전체 삭제되었습니다.`;
+          const deleteResult = await prisma.news.deleteMany({});
+          parsed.reply = `🗑️ 교회소식 ${deleteResult.count}건이 전체 삭제되었습니다. 바둑판이 비워졌습니다.`;
           autoProcessed = true;
         } catch (e: any) {
           parsed.reply += `\n\n❌ 전체 삭제 실패: ${e.message}`;

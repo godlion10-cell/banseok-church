@@ -293,8 +293,14 @@ export default function ChatbotWidget() {
     let actionLabel: string | undefined = undefined;
     let actionLink: string | undefined = undefined;
 
-    // 🧠 파일 첨부 + 아무 명령 → 스마트 분류 엔진 자동 가동!
-    if (attachedFile && (text.includes("분석") || text.includes("업로드") || text.includes("등록") || text.includes("주보") || text.includes("설교") || text.includes("소식") || text.includes("확인") || text.includes("해줘") || text.includes("처리"))) {
+    // 🧠 파일 첨부 + 소식 관련 → AI 챗봇으로 직접 전송 (newsItems 자동저장 지원)
+    if (attachedFile && (text.includes("소식") || text.includes("뉴스") || text.includes("등록") || text.includes("추가"))) {
+      callGeminiAI(text);
+      return;
+    }
+
+    // 🧠 파일 첨부 + 기타 명령 → 스마트 분류 엔진
+    if (attachedFile && (text.includes("분석") || text.includes("업로드") || text.includes("주보") || text.includes("설교") || text.includes("확인") || text.includes("해줘") || text.includes("처리"))) {
       const fileData = attachedFile;
       setAttachedFile(null);
       analyzeWithSmartRouter(fileData, text);
@@ -306,6 +312,12 @@ export default function ChatbotWidget() {
       const fileData = attachedFile;
       setAttachedFile(null);
       analyzeWithSmartRouter(fileData, text);
+      return;
+    }
+
+    // 교회소식 관련 키워드 → AI에게 직접 위임 (DELETE_NEWS/ADD_NEWS/CLEAR_NEWS 자동 처리)
+    if (text.includes("소식") || text.includes("뉴스") || text.includes("삭제") || text.includes("추가")) {
+      callGeminiAI(text);
       return;
     }
 
