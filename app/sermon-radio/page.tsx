@@ -16,8 +16,13 @@ export default function SermonRadioPage() {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(80);
+  const [isSeeking, setIsSeeking] = useState(false);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const progressTimer = useRef<any>(null);
 
   // YouTube IFrame API 로드
   useEffect(() => {
@@ -94,6 +99,17 @@ export default function SermonRadioPage() {
             setPlayerReady(true);
             setIsPlaying(true);
             playerRef.current?.playVideo();
+            playerRef.current?.setVolume(volume);
+            // 재생 시간 추적 시작
+            if (progressTimer.current) clearInterval(progressTimer.current);
+            progressTimer.current = setInterval(() => {
+              if (playerRef.current && !isSeeking) {
+                const t = playerRef.current.getCurrentTime?.() || 0;
+                const d = playerRef.current.getDuration?.() || 0;
+                setCurrentTime(t);
+                if (d > 0) setDuration(d);
+              }
+            }, 500);
           },
           onStateChange: (event: any) => {
             // 0 = ended, 1 = playing, 2 = paused
@@ -120,6 +136,26 @@ export default function SermonRadioPage() {
       (window as any).onYouTubeIframeAPIReady = initPlayer;
     }
   }, [sermons, currentIndex]);
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+  };
+
+  const handleSeek = (value: number) => {
+    setCurrentTime(value);
+    if (playerRef.current?.seekTo) {
+      playerRef.current.seekTo(value, true);
+    }
+  };
+
+  const handleVolume = (value: number) => {
+    setVolume(value);
+    if (playerRef.current?.setVolume) {
+      playerRef.current.setVolume(value);
+    }
+  };
 
   const currentSermon = sermons[currentIndex] || null;
 
@@ -211,7 +247,7 @@ export default function SermonRadioPage() {
         ) : null}
 
         {/* 재생 컨트롤 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '30px', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '30px', marginBottom: '15px' }}>
           <button onClick={prevTrack}
             style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '2rem', cursor: 'pointer', transition: '0.2s', padding: '5px' }}
             onMouseEnter={(e) => e.currentTarget.style.color = '#F1F5F9'}
@@ -239,6 +275,44 @@ export default function SermonRadioPage() {
             onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}>
             ⏭
           </button>
+        </div>
+
+        {/* 구간 이동 슬라이더 */}
+        {duration > 0 && (
+          <div style={{ padding: '0 15px', marginBottom: '15px' }}>
+            <input
+              type="range"
+              min={0}
+              max={Math.floor(duration)}
+              value={Math.floor(currentTime)}
+              onMouseDown={() => setIsSeeking(true)}
+              onTouchStart={() => setIsSeeking(true)}
+              onChange={(e) => setCurrentTime(Number(e.target.value))}
+              onMouseUp={(e) => { setIsSeeking(false); handleSeek(Number((e.target as HTMLInputElement).value)); }}
+              onTouchEnd={(e) => { setIsSeeking(false); handleSeek(Number((e.target as HTMLInputElement).value)); }}
+              className="radio-seek"
+              style={{ width: '100%', height: '6px', cursor: 'pointer', accentColor: '#c19c72' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+        )}
+
+        {/* 볼륨 조절 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 25px', marginBottom: '15px' }}>
+          <span style={{ fontSize: '1rem', color: '#64748B', flexShrink: 0 }}>{volume === 0 ? '🔇' : volume < 40 ? '🔈' : volume < 70 ? '🔉' : '🔊'}</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={volume}
+            onChange={(e) => handleVolume(Number(e.target.value))}
+            className="radio-vol"
+            style={{ flex: 1, height: '4px', cursor: 'pointer', accentColor: '#c19c72' }}
+          />
+          <span style={{ fontSize: '0.7rem', color: '#475569', minWidth: '28px', textAlign: 'right' }}>{volume}%</span>
         </div>
 
         <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>
