@@ -70,6 +70,7 @@ export default function HomeClient() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('설교말씀');
   const [showBulletin, setShowBulletin] = useState(false);
+  const [sermonPage, setSermonPage] = useState(0);
   const [bulletinData, setBulletinData] = useState<any>(null);
   const [newsItems, setNewsItems] = useState<any[]>([]);
   const [dbSchedules, setDbSchedules] = useState<any[]>([]);
@@ -454,27 +455,44 @@ export default function HomeClient() {
               </div>
             )}
           </div>
-          {/* 다시 채우는 생수 → 서몸 VOD 위로 이동 */}
-          {!isLoading && sermons.length > 0 && (
-            <div className="arc">
-              <h2 className="arc-t">💧 다시 채우는 생수</h2>
-              <p className="arc-s">최근 한 달간의 은혜로운 말씀 모음</p>
-              <div className="smb">
-                <div className="mhb">최신 설교 영상 <span>▲</span></div>
-                {sermons.slice(0, 5).map(s => {
-                  const p = parseTitle(s.title);
-                  return (
-                    <div key={s.id} className="sr" onClick={() => { if (s.videoId) { setActiveVideo(s.videoId); setActiveVideoTitle(p.sermonTitle || s.title); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} style={{ cursor: 'pointer', background: activeVideo === s.videoId ? 'rgba(251,191,36,0.08)' : undefined, borderLeft: activeVideo === s.videoId ? '3px solid #FBBF24' : undefined }}>
-                      <span className="rb" style={{ background: s.category === '주일오전' ? '#9f1239' : s.category === '수요예배' ? '#0f766e' : '#475569' }}>{s.category}</span>
-                      <span className="rt">{p.sermonTitle || s.title}</span>
-                      <span style={{ fontSize: '0.8rem', color: '#888', marginRight: '10px' }}>{s.date}</span>
-                      <button className="rbt">{activeVideo === s.videoId ? '재생중' : '재생'}</button>
-                    </div>
-                  );
-                })}
+          {/* 다시 채우는 생수 → 서몬 VOD 위로 이동 */}
+          {!isLoading && sermons.length > 0 && (() => {
+            const perPage = 5;
+            const totalPages = Math.ceil(sermons.length / perPage);
+            const pagedSermons = sermons.slice(sermonPage * perPage, (sermonPage + 1) * perPage);
+            return (
+              <div className="arc">
+                <h2 className="arc-t">💧 다시 채우는 생수</h2>
+                <p className="arc-s">최근 은혜로운 말씀 모음</p>
+                <div className="smb">
+                  <div className="mhb">최신 설교 영상 <span>▲</span></div>
+                  {pagedSermons.map(s => {
+                    const p = parseTitle(s.title);
+                    return (
+                      <div key={s.id} className="sr" onClick={() => { if (s.videoId) { setActiveVideo(s.videoId); setActiveVideoTitle(p.sermonTitle || s.title); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} style={{ cursor: 'pointer', background: activeVideo === s.videoId ? 'rgba(251,191,36,0.08)' : undefined, borderLeft: activeVideo === s.videoId ? '3px solid #FBBF24' : undefined }}>
+                        <span className="rb" style={{ background: s.category === '주일오전' ? '#9f1239' : s.category === '수요예배' ? '#0f766e' : '#475569' }}>{s.category}</span>
+                        <span className="rt">{p.sermonTitle || s.title}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#888', marginRight: '10px' }}>{s.date}</span>
+                        <button className="rbt">{activeVideo === s.videoId ? '재생중' : '재생'}</button>
+                      </div>
+                    );
+                  })}
+                </div>
+                {totalPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '15px', flexWrap: 'wrap' }}>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button key={i} onClick={() => setSermonPage(i)} style={{
+                        width: '36px', height: '36px', borderRadius: '50%', border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', transition: 'all 0.2s',
+                        background: sermonPage === i ? '#5b272f' : 'rgba(91,39,47,0.08)',
+                        color: sermonPage === i ? 'white' : '#5b272f',
+                        boxShadow: sermonPage === i ? '0 4px 12px rgba(91,39,47,0.25)' : 'none',
+                      }}>{i + 1}</button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </>)}
 
         {/* ===== 교회소식 탭 ===== */}
