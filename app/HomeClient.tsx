@@ -447,10 +447,7 @@ export default function HomeClient() {
                         {parsed.worship && <div style={{ color: '#FBBF24', fontSize: '0.9rem', fontWeight: '700', padding: '4px 14px', background: 'rgba(0,0,0,0.25)', borderRadius: '20px', display: 'inline-block' }}>{parsed.worship}</div>}
                         <h3 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1.4', wordBreak: 'keep-all', margin: '5px 0' }}>"{parsed.sermonTitle}"</h3>
                       </div>
-                      <div className="l-summary-overlay">
-                        <h4 style={{ color: '#FFEB3B', marginBottom: '15px' }}>{activeVideo === s.videoId ? '🔊 재생 중' : '✨ 터치하여 재생'}</h4>
-                        <div style={{ fontSize: `${fontSize}rem`, color: 'white' }}><p>{activeVideo === s.videoId ? '상단에서 영상을 시청하세요' : '은혜의 말씀을 영상으로 들어보세요.'}</p></div>
-                      </div>
+
                     </div>
                   );
                 })}
@@ -766,7 +763,7 @@ export default function HomeClient() {
 
 
         /* ━━━ 시스템 컨트롤 (A+/A-/다크모드) ━━━ */
-        .sys-ctrl{position:fixed;top:80px;right:16px;z-index:2100;display:flex;gap:6px;padding:4px;background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);border-radius:28px;border:1px solid rgba(197,165,90,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+        .sys-ctrl{position:fixed;top:12px;right:16px;z-index:2100;display:flex;gap:6px;padding:4px;background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);border-radius:28px;border:1px solid rgba(197,165,90,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.06)}
         .lt .sys-ctrl{background:rgba(255,255,255,0.85);border-color:rgba(197,165,90,0.2)}
         .dk .sys-ctrl{background:rgba(15,23,42,0.7);border-color:rgba(197,165,90,0.2)}
         .sys-btn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:#8B7355;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s}
@@ -803,9 +800,7 @@ export default function HomeClient() {
         .ll{display:flex;flex-direction:column;gap:25px}
         .lc{position:relative;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);cursor:pointer;min-height:200px}
         .lh{padding:40px 30px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:200px}
-        .l-summary-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;opacity:0;transition:opacity 0.3s}
-        .lc:hover .l-summary-overlay{opacity:1}
-        .l-summary-overlay p{line-height:1.8;margin-bottom:10px;font-weight:500}
+
 
         .arc{margin-top:60px}
         .arc-t{font-size:1.6rem;font-weight:800;margin-bottom:10px}
@@ -851,7 +846,7 @@ export default function HomeClient() {
           .sr{flex-direction:column;align-items:flex-start;gap:10px}
           .rbt{width:100%;padding:10px}
           .bn{display:flex}
-          .sys-ctrl{top:68px;right:60px;gap:4px;padding:3px}
+          .sys-ctrl{top:10px;right:60px;gap:4px;padding:3px}
           .sys-btn{width:30px;height:30px}
         }
       `}</style>
