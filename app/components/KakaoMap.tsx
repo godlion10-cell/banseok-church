@@ -21,8 +21,8 @@ const CHURCH_ADDRESS = '거제시 연초면 소오비길 40-6';
 const CHURCH_FULL_ADDRESS = '경상남도 거제시 연초면 소오비길 40-6';
 const CHURCH_NAME = '거제반석교회';
 // Fallback 좌표 (Geocoder 실패 시에만 사용)
-const FALLBACK_LAT = 34.868;
-const FALLBACK_LNG = 128.694;
+const FALLBACK_LAT = 34.9099;
+const FALLBACK_LNG = 128.6472;
 
 interface KakaoMapProps {
   height?: string;
