@@ -82,6 +82,41 @@ export default function HomeClient() {
   const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [nextWorship, setNextWorship] = useState(getNextWorship(new Date()));
+  const [showFloatingBulletin, setShowFloatingBulletin] = useState(false);
+  const [bulletinPos, setBulletinPos] = useState({ x: 0, y: 0 });
+  const bulletinDragRef = useRef<{ dragging: boolean; offsetX: number; offsetY: number }>({ dragging: false, offsetX: 0, offsetY: 0 });
+  const floatingBulletinRef = useRef<HTMLDivElement>(null);
+
+  // 📄 플로팅 주보 드래그 핸들러 (화면 경계 제한)
+  const handleBulletinDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const el = floatingBulletinRef.current;
+    if (!el) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const rect = el.getBoundingClientRect();
+    bulletinDragRef.current = { dragging: true, offsetX: clientX - rect.left, offsetY: clientY - rect.top };
+    e.preventDefault();
+  };
+  useEffect(() => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!bulletinDragRef.current.dragging) return;
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const el = floatingBulletinRef.current;
+      if (!el) return;
+      const w = el.offsetWidth, h = el.offsetHeight;
+      const maxX = window.innerWidth - w, maxY = window.innerHeight - h;
+      const newX = Math.max(0, Math.min(clientX - bulletinDragRef.current.offsetX, maxX));
+      const newY = Math.max(0, Math.min(clientY - bulletinDragRef.current.offsetY, maxY));
+      setBulletinPos({ x: newX, y: newY });
+    };
+    const handleEnd = () => { bulletinDragRef.current.dragging = false; };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+    return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleEnd); window.removeEventListener('touchmove', handleMove); window.removeEventListener('touchend', handleEnd); };
+  }, []);
 
   // 🤫 비밀 관리자 진입: 푸터 5번 클릭
   const secretClickCount = useRef(0);
@@ -240,7 +275,8 @@ export default function HomeClient() {
         <button className="ch-hamburger" onClick={() => setShowMobileMenu(!showMobileMenu)}>{showMobileMenu ? '✕' : '☰'}</button>
       </header>
 
-      {/* ━━━ 시스템 컨트롤 (가+/가-/다크모드) — 상단 우측 고정 ━━━ */}
+
+      {/* ━━━ 시스템 컨트롤 — 왼쪽 고정 (fixed) ━━━ */}
       <div className="sys-ctrl">
         <button onClick={() => { setFontSize(prev => { const next = Math.min(prev + 2, 24); document.documentElement.style.fontSize = next + 'px'; return next; }); }} className="sys-btn" aria-label="글자 크게">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 19L10.2 5h3.6L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M7.5 14h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><path d="M19 5h3M20.5 3.5v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
@@ -258,16 +294,12 @@ export default function HomeClient() {
       </div>
 
       <div className="ct">
-        {/* 🔴 실시간 방송 / 🎬 VOD 인라인 플레이어 (Master-Detail) */}
-        {(isLive && liveVideoId) || activeVideo ? (
+        {/* 📺 VOD 인라인 플레이어 */}
+        {activeVideo ? (
           <div className="live-section">
             <div className="live-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {isLive && liveVideoId && !activeVideo ? (
-                  <><span className="live-blink">● LIVE</span><strong>생방송 예배가 진행 중입니다</strong></>
-                ) : (
-                  <><span style={{ color: '#FBBF24' }}>▶</span><strong style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70vw' }}>{activeVideoTitle || '영상 재생 중'}</strong></>
-                )}
+                <span style={{ color: '#FBBF24' }}>▶</span><strong style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70vw' }}>{activeVideoTitle || '영상 재생 중'}</strong>
               </div>
               {activeVideo && (
                 <button onClick={() => { setActiveVideo(null); setActiveVideoTitle(''); }} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px', padding: '6px 14px', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem', flexShrink: 0 }}>✕ 닫기</button>
@@ -275,7 +307,7 @@ export default function HomeClient() {
             </div>
             <div className="live-player-wrap">
               <iframe
-                src={`https://www.youtube.com/embed/${activeVideo || liveVideoId}?autoplay=1&mute=0&rel=0&modestbranding=1`}
+                src={`https://www.youtube.com/embed/${activeVideo}?autoplay=1&mute=0&rel=0&modestbranding=1`}
                 title={activeVideoTitle || '예배 방송'}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -388,9 +420,32 @@ export default function HomeClient() {
           {/* 히어로: 활성 영상이 없을 때만 표시 */}
           {!activeVideo && (
             <div className="hero" style={{ background: 'linear-gradient(135deg, #1E1F30, #2a1a2e)', padding: '35px 20px', borderRadius: '20px' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>✝️</div>
-              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#E8D5C4', marginBottom: '16px' }}>온라인 예배</h3>
-              {/* 다음 예배 카운트다운 */}
+              {isLive && liveVideoId ? (
+                <>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>✝️</div>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#E8D5C4', marginBottom: '16px' }}>온라인 예배</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', marginBottom: '15px' }}>
+                    <span className="live-blink" style={{ fontSize: '1rem', color: '#FF4444' }}>● LIVE</span>
+                    <strong style={{ color: '#E8D5C4', fontSize: '1.2rem' }}>생방송 예배가 진행 중입니다</strong>
+                  </div>
+                  <div className="live-player-wrap" style={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '15px' }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${liveVideoId}?autoplay=1&mute=0&rel=0&modestbranding=1`}
+                      title="예배 생방송"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="live-player"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button onClick={() => { setShowFloatingBulletin(true); setBulletinPos({ x: Math.min(window.innerWidth - 340, window.innerWidth - 20), y: 80 }); }} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', color: '#E8D5C4', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>📄 주보 보기</button>
+                    <a href={`https://www.youtube.com/watch?v=${liveVideoId}`} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 24px', background: '#FF0000', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 700, textAlign: 'center', textDecoration: 'none', fontSize: '0.85rem' }}>▶ 유튜브에서 보기</a>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>✝️</div>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#E8D5C4', marginBottom: '16px' }}>온라인 예배</h3>
               <div style={{ marginBottom: '18px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '10px' }}>
                   <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>다음 예배는</span>
@@ -418,6 +473,8 @@ export default function HomeClient() {
                 </div>
               </div>
               <button className="bb" onClick={() => setShowBulletin(true)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#E8D5C4', padding: '12px 28px', borderRadius: '30px', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }}>📄 이번 주 스마트 주보 보기</button>
+                </>
+              )}
             </div>
           )}
           {/* 카테고리 필터 — '전체' 제거, 버튼명 변경 */}
@@ -636,6 +693,48 @@ export default function HomeClient() {
 
       {/* 🎬 레거시 팝업 제거됨 — Master-Detail 인라인 플레이어로 대체 */}
 
+      {/* 📄 플로팅 주보 위젯 (라이브 시 드래그 가능, 화면 경계 제한) */}
+      {showFloatingBulletin && (
+        <div
+          ref={floatingBulletinRef}
+          className="floating-bulletin"
+          style={{ left: bulletinPos.x, top: bulletinPos.y }}
+        >
+          <div className="fb-header" onMouseDown={handleBulletinDragStart} onTouchStart={handleBulletinDragStart}>
+            <span>📄 이번 주 주보</span>
+            <button onClick={() => setShowFloatingBulletin(false)} className="fb-close">✕</button>
+          </div>
+          <div className="fb-body">
+            {bulletinData ? (
+              <>
+                <h3 style={{ fontSize: '1rem', color: '#5b272f', textAlign: 'center', margin: '0 0 5px' }}>{bulletinData.worshipType || '주일 예배 순서'}</h3>
+                <div style={{ textAlign: 'center', color: '#888', marginBottom: '12px', fontSize: '0.8rem' }}>{bulletinData.date}</div>
+                {bulletinData.worshipOrder?.map((order: any, idx: number) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #eee', fontSize: '0.82rem' }}>
+                    <span style={{ fontWeight: 'bold', color: '#444' }}>{order.item}</span>
+                    <span style={{ textAlign: 'right', flex: 1, marginLeft: '8px', color: '#666' }}>{order.detail}</span>
+                  </div>
+                ))}
+                {bulletinData.announcements?.length > 0 && (
+                  <>
+                    <h4 style={{ fontSize: '0.85rem', color: '#5b272f', marginTop: '12px', marginBottom: '6px', borderBottom: '1px solid #eee', paddingBottom: '4px' }}>교회 소식</h4>
+                    <ul style={{ paddingLeft: '16px', fontSize: '0.8rem', color: '#444', lineHeight: '1.5', margin: 0 }}>
+                      {bulletinData.announcements.map((ann: string, idx: number) => (
+                        <li key={idx} style={{ marginBottom: '4px' }}>{ann}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#888', fontSize: '0.85rem' }}>
+                📄 아직 이번 주 주보가 등록되지 않았습니다.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 📲 앱 설치 가이드 모달 */}
       {showInstallGuide && (
         <div className="mbg" onClick={() => setShowInstallGuide(false)}>
@@ -780,15 +879,14 @@ export default function HomeClient() {
         .dk .map-placeholder{background:#1E293B;color:#ccc}
 
 
-        /* ━━━ 시스템 컨트롤 (A+/A-/다크모드) ━━━ */
-        .sys-ctrl{position:fixed;top:12px;right:16px;z-index:2100;display:flex;gap:6px;padding:4px;background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);border-radius:28px;border:1px solid rgba(197,165,90,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.06)}
-        .lt .sys-ctrl{background:rgba(255,255,255,0.85);border-color:rgba(197,165,90,0.2)}
-        .dk .sys-ctrl{background:rgba(15,23,42,0.7);border-color:rgba(197,165,90,0.2)}
-        .sys-btn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:#8B7355;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s}
-        .sys-btn:hover{background:rgba(197,165,90,0.12);color:#C5A55A;transform:scale(1.1)}
+        /* ━━━ 시스템 컨트롤 — 오른쪽 고정 (fixed) ━━━ */
+        .sys-ctrl{position:fixed;top:150px;right:16px;z-index:2100;display:flex;flex-direction:column;gap:6px;padding:7px;background:rgba(255,255,255,0.95);backdrop-filter:blur(16px);border-radius:14px;border:2px solid rgba(193,156,114,0.4);box-shadow:0 4px 24px rgba(0,0,0,0.12)}
+        .dk .sys-ctrl{background:rgba(15,23,42,0.9);border-color:rgba(197,165,90,0.4)}
+        .sys-btn{width:36px;height:36px;border-radius:50%;border:none;background:rgba(91,39,47,0.06);color:#5b272f;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s;font-weight:700}
+        .sys-btn:hover{background:rgba(193,156,114,0.2);color:#C5A55A;transform:scale(1.12)}
         .sys-btn:active{transform:scale(0.92)}
-        .dk .sys-btn{color:#C5A55A}
-        .dk .sys-btn:hover{background:rgba(197,165,90,0.15)}
+        .dk .sys-btn{color:#E5B871;background:rgba(229,184,113,0.1)}
+        .dk .sys-btn:hover{background:rgba(197,165,90,0.25)}
         .sys-dark{}
 
 
@@ -864,9 +962,20 @@ export default function HomeClient() {
           .sr{flex-direction:column;align-items:flex-start;gap:10px}
           .rbt{width:100%;padding:10px}
           .bn{display:flex}
-          .sys-ctrl{top:10px;right:60px;gap:4px;padding:3px}
-          .sys-btn{width:30px;height:30px}
+          .sys-ctrl{right:10px;top:70px;gap:4px;padding:4px}
+          .sys-btn{width:32px;height:32px}
+          .floating-bulletin{width:280px!important;max-height:50vh!important}
         }
+
+        /* ━━━ 플로팅 주보 위젯 ━━━ */
+        .floating-bulletin{position:fixed;z-index:8000;width:320px;max-height:60vh;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);border:1px solid rgba(197,165,90,0.3);overflow:hidden;display:flex;flex-direction:column}
+        .dk .floating-bulletin{background:#1E293B;border-color:rgba(197,165,90,0.3)}
+        .fb-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:linear-gradient(135deg,#5b272f,#7a3a44);color:white;cursor:grab;user-select:none;font-size:0.9rem;font-weight:700}
+        .fb-header:active{cursor:grabbing}
+        .fb-close{background:rgba(255,255,255,0.2);border:none;color:white;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+        .fb-close:hover{background:rgba(255,255,255,0.35)}
+        .fb-body{flex:1;overflow-y:auto;padding:14px;font-size:0.85rem}
+        .dk .fb-body{color:#ccc}
       `}</style>
     </div>
   );
