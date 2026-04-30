@@ -557,19 +557,27 @@ export default function HomeClient() {
           <div className="tab-content">
             <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>📢 반석교회 소식</h3></div>
             {(() => {
-              // 중복 제거: 동일 제목은 첫 번째만 유지
-              const unique = newsItems.filter(
-                (item: any, idx: number, arr: any[]) => arr.findIndex((n: any) => n.title === item.title) === idx
-              );
+              // 모든 소식을 개별 항목으로 분리 (박스 안의 1,2,3... → 각각 별도 박스)
+              const allItems: string[] = [];
+              newsItems.forEach((n: any) => {
+                const text = `${n.title ? n.title + '\n' : ''}${n.content || ''}`;
+                // 번호 패턴(1. 2. 3. 또는 1) 2) 등)으로 분리 시도
+                const numbered = text.split(/\n/).filter((l: string) => l.trim());
+                numbered.forEach((line: string) => {
+                  // "1. 내용" "2. 내용" 패턴이면 번호 제거
+                  const cleaned = line.replace(/^\s*\d+[\.\)\-\s]+/, '').trim();
+                  if (cleaned.length > 0) allItems.push(cleaned);
+                });
+              });
+              // 중복 제거 (동일 텍스트는 첫 번째만)
+              const unique = allItems.filter((item, idx, arr) => arr.indexOf(item) === idx);
               return unique.length > 0 ? (
                 <div className="news-box-list">
-                  {unique.map((n: any, idx: number) => (
-                    <div key={n.id || idx} className="news-box">
+                  {unique.map((item, idx) => (
+                    <div key={idx} className="news-box">
                       <div className="news-box-badge">{idx + 1}</div>
                       <div className="news-box-content">
-                        <h3 className="news-box-title">{n.title}</h3>
-                        <div className="news-box-divider" />
-                        <p className="news-box-text">{n.content}</p>
+                        <p className="news-box-text">{item}</p>
                       </div>
                     </div>
                   ))}
