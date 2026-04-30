@@ -552,21 +552,30 @@ export default function HomeClient() {
           })()}
         </>)}
 
-        {/* ===== 교회소식 탭 (그리드 박스 시스템) ===== */}
+        {/* ===== 교회소식 탭 (바둑판 그리드) ===== */}
         {activeTab === '교회소식' && (
           <div className="tab-content">
             <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>📢 반석교회 소식</h3></div>
             {(() => {
-              // 중복 제거: 동일 제목은 첫 번째만 유지
-              const unique = newsItems.filter(
-                (item: any, idx: number, arr: any[]) => arr.findIndex((n: any) => n.title === item.title) === idx
-              );
+              // 모든 소식을 개별 항목으로 분리 → 바둑판 그리드
+              const allItems: string[] = [];
+              newsItems.forEach((n: any) => {
+                const text = (n.content || '').trim();
+                // 줄바꾼으로 분리
+                const lines = text.split(/\n/).map((l: string) => l.trim()).filter((l: string) => l.length > 0);
+                lines.forEach((line: string) => {
+                  // 번호 접두사 제거 (1. 2) 3- 등)
+                  const cleaned = line.replace(/^\s*\d+[\.)\-\s]+/, '').trim();
+                  if (cleaned.length > 0) allItems.push(cleaned);
+                });
+              });
+              // 중복 제거
+              const unique = allItems.filter((item, idx, arr) => arr.indexOf(item) === idx);
               return unique.length > 0 ? (
                 <div className="news-grid-box">
-                  {unique.map((n: any, idx: number) => (
-                    <div key={n.id || idx} className="news-box">
-                      <div className="news-box-num">{idx + 1}</div>
-                      <p className="news-box-text">{n.content}</p>
+                  {unique.map((item, idx) => (
+                    <div key={idx} className="news-box">
+                      <p className="news-box-text"><strong>{idx + 1}.</strong> {item}</p>
                     </div>
                   ))}
                 </div>
@@ -853,16 +862,16 @@ export default function HomeClient() {
           .vm-stone{flex-direction:column;text-align:center;gap:15px}
         }
 
-        /* 교회소식 — 그리드 박스 시스템 */
-        .news-grid-box{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:25px}
-        .news-box{background:white;border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #c19c72;transition:transform 0.2s,box-shadow 0.2s;position:relative}
-        .news-box:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
-        .dk .news-box{background:#1E293B;border-top-color:#C5A55A}
-        .news-box-num{position:absolute;top:-14px;left:20px;width:28px;height:28px;border-radius:50%;background:#5b272f;color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;box-shadow:0 2px 8px rgba(91,39,47,0.3)}
-        .dk .news-box-num{background:#C5A55A;color:#0F172A}
-        .news-box-text{color:#444;font-size:0.9rem;line-height:1.8;margin:8px 0 0;white-space:pre-line;word-break:keep-all}
+        /* 교회소식 — 바둑판 그리드 */
+        .news-grid-box{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:25px}
+        .news-box{background:white;border-radius:12px;padding:18px 20px;box-shadow:0 1px 8px rgba(0,0,0,0.05);border-left:3px solid #c19c72;transition:transform 0.2s,box-shadow 0.2s}
+        .news-box:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.08)}
+        .dk .news-box{background:#1E293B;border-left-color:#C5A55A}
+        .news-box-text{color:#444;font-size:0.9rem;line-height:1.75;margin:0;word-break:keep-all}
+        .news-box-text strong{color:#5b272f;font-size:1rem}
         .dk .news-box-text{color:#bbb}
-        @media(max-width:768px){.news-grid-box{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}}
+        .dk .news-box-text strong{color:#E5B871}
+        @media(max-width:768px){.news-grid-box{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}}
 
         /* 예배안내 */
         .worship-wrap{margin-top:25px}
