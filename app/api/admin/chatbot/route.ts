@@ -24,7 +24,9 @@ const ADMIN_SYSTEM_PROMPT = `너는 거제반석교회 시스템을 총괄하는
 ## 액션 코드 시스템
 사장님이 데이터 조작을 명령하면, 응답 끝에 반드시 해당 액션 코드를 붙여라:
 - [ACTION: ADD_SERMON] — 설교 추가 요청
-- [ACTION: ADD_NEWS] — 교회 소식 추가 요청 (반드시 order 번호를 순서대로 지정. 예: 1번 소식, 2번 소식. 이미 등록된 소식과 제목이 동일하면 중복이므로 추가하지 말 것)
+- [ACTION: ADD_NEWS] — 교회 소식 추가 (그리드 박스 1개 = News 레코드 1개. 각 소식을 개별 항목으로 분리하여 order 번호를 순서대로 지정. 중복 제목은 추가하지 말 것)
+- [ACTION: DELETE_NEWS] — 교회 소식 삭제 (제목 또는 번호로 삭제)
+- [ACTION: CLEAR_NEWS] — 교회 소식 전체 삭제
 - [ACTION: UPDATE_SCHEDULE] — 예배 일정 수정 요청
 - [ACTION: UPDATE_WORSHIP_ORDER] — 예배 순서 수정 요청
 - [ACTION: BULLETIN_UPDATE] — 주보 이미지 분석 및 온라인 주보 업데이트 요청
@@ -33,6 +35,16 @@ const ADMIN_SYSTEM_PROMPT = `너는 거제반석교회 시스템을 총괄하는
 - [ACTION: PASTORAL_CHECK] — 심방 레이더 확인 요청
 - [ACTION: NONE] — 단순 질문/대화 (액션 불필요)
 
+## 교회소식 그리드 박스 구조
+홈페이지 '교회소식' 탭에는 소식이 가로세로 그리드(3열) 박스로 표시됨.
+DB의 News 테이블에서 각 레코드가 1개의 그리드 박스임.
+- title: 소식 제목 (중복 방지용)
+- content: 소식 내용 (박스에 표시되는 전체 텍스트)
+- order: 순서 번호 (1, 2, 3...)
+
+사장님이 소식 이미지를 첨부하면, 이미지를 분석하여 각 소식 항목을 개별 그리드 박스로 분류하여 추가해라.
+ADD_NEWS 시 newsItems 배열에 각 항목을 {title, content, order} 객체로 넣어라.
+
 ## 응답 형식
 반드시 아래 JSON 형식으로만 답변하세요:
 {
@@ -40,7 +52,8 @@ const ADMIN_SYSTEM_PROMPT = `너는 거제반석교회 시스템을 총괄하는
   "actionCode": "ACTION_CODE (위 목록 중 하나)",
   "actionLabel": "버튼 텍스트 (선택사항, 없으면 null)",
   "actionLink": "이동할 경로 (선택사항, 없으면 null)",
-  "dbCommand": "실행할 DB 명령 설명 (선택사항, 없으면 null)"
+  "dbCommand": "실행할 DB 명령 설명 (선택사항, 없으면 null)",
+  "newsItems": [{"title": "제목", "content": "내용", "order": 1}] // ADD_NEWS 시만 필수, 아니면 null
 }`;
 
 export async function POST(req: Request) {
@@ -225,6 +238,50 @@ export async function POST(req: Request) {
           }
           autoProcessed = true;
         } catch { /* 무시 */ }
+      }
+
+      // 📢 교회소식 추가 — newsItems 배열을 DB에 자동 저장
+      if (actionCode === 'ADD_NEWS' && parsed.newsItems && Array.isArray(parsed.newsItems)) {
+        try {
+          const existing = await prisma.news.findMany({ select: { title: true } });
+          const existingTitles = new Set(existing.map((n: any) => n.title));
+          let added = 0;
+          for (const item of parsed.newsItems) {
+            if (item.title && item.content && !existingTitles.has(item.title)) {
+              await prisma.news.create({ data: { title: item.title, content: item.content, order: item.order || 0 } });
+              added++;
+            }
+          }
+          parsed.reply += `\n\n✅ 교회소식 ${added}건이 그리드 박스로 등록되었습니다.`;
+          autoProcessed = true;
+        } catch (e: any) {
+          parsed.reply += `\n\n❌ 소식 등록 실패: ${e.message}`;
+        }
+      }
+
+      // 🗑️ 교회소식 삭제 — 제목으로 삭제
+      if (actionCode === 'DELETE_NEWS' && parsed.dbCommand) {
+        try {
+          const titleMatch = parsed.dbCommand.match(/["「」“”]([^"\u300c\u300d\u201c\u201d]+)["「」“”]/);
+          if (titleMatch) {
+            await prisma.news.deleteMany({ where: { title: titleMatch[1] } });
+            parsed.reply += `\n\n✅ '📢 ${titleMatch[1]}' 소식이 삭제되었습니다.`;
+            autoProcessed = true;
+          }
+        } catch (e: any) {
+          parsed.reply += `\n\n❌ 삭제 실패: ${e.message}`;
+        }
+      }
+
+      // 🗑️ 교회소식 전체 삭제
+      if (actionCode === 'CLEAR_NEWS') {
+        try {
+          const result = await prisma.news.deleteMany({});
+          parsed.reply += `\n\n✅ 교회소식 ${result.count}건이 전체 삭제되었습니다.`;
+          autoProcessed = true;
+        } catch (e: any) {
+          parsed.reply += `\n\n❌ 전체 삭제 실패: ${e.message}`;
+        }
       }
 
       return NextResponse.json({
