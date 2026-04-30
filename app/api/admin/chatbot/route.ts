@@ -116,11 +116,8 @@ export async function POST(req: Request) {
     }
 
     // ━━━ 멀티모달 파일 처리 유틸리티 ━━━
-    // base64 데이터에서 접두사 완전 제거 — 이중 안전장치
     const fileToGenerativePart = (base64Data: string, mimeType: string) => {
-      // 1차: 정규식으로 "data:image/png;base64," 접두사 제거
       let cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
-      // 2차: 혹시 정규식이 놓쳤으면 콤마 기준으로 한번 더
       if (cleanBase64.includes(',')) {
         cleanBase64 = cleanBase64.split(',').pop() || cleanBase64;
       }
@@ -133,14 +130,14 @@ export async function POST(req: Request) {
       };
     };
 
-    // 멀티모달 지원 파일 타입 (Gemini가 직접 분석 가능)
+    // 멀티모달 지원 파일 타입
     const MULTIMODAL_TYPES = [
-      'image/png', 'image/jpeg', 'image/webp', 'image/gif',  // 이미지
-      'application/pdf',                                       // PDF
+      'image/png', 'image/jpeg', 'image/webp', 'image/gif',
+      'application/pdf',
     ];
     const isMultimodalFile = file && MULTIMODAL_TYPES.some(t => file.type?.startsWith(t.split('/')[0]) || file.type === t);
 
-    // 텍스트 기반 파일 (프롬프트에 내용 주입)
+    // 텍스트 기반 파일
     let fileContext = '';
     if (file && !isMultimodalFile) {
       try {
@@ -155,9 +152,8 @@ export async function POST(req: Request) {
 
     const fullPrompt = `${ADMIN_SYSTEM_PROMPT}${timeContext}${dbStatus}${fileContext}\n\n[이전 대화]\n${recentHistory || '(첫 대화)'}\n\n[사장님의 명령]\n${message}`;
 
-    // ━━━ 5️⃣ Gemini AI 호출 (3단계 Fallback + 멀티모달) ━━━
+    // ━━━ 5️⃣ Gemini AI 호출 ━━━
     const genAI = new GoogleGenerativeAI(apiKey);
-    // 멀티모달은 flash 모델만 (flash-lite는 이미지/PDF 미지원)
     const MODELS = isMultimodalFile 
       ? ['gemini-2.5-flash', 'gemini-2.5-pro'] 
       : ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
@@ -171,16 +167,10 @@ export async function POST(req: Request) {
         const model = genAI.getGenerativeModel({ model: modelName });
 
         if (isMultimodalFile && file) {
-          // 🖼️📄 멀티모달: 시스템 프롬프트 + 첨부 파일 + 사장님 명령 → 동시 전송
           const filePart = fileToGenerativePart(file.base64, file.type);
           console.log(`📦 [멀티모달] 파일 파트 생성 완료: ${file.type}, ${Math.round(filePart.inlineData.data.length * 0.75 / 1024)}KB`);
-          
-          result = await model.generateContent([
-            fullPrompt,       // 시스템 프롬프트 + DB현황 + 이전대화 + 사장님 명령
-            filePart           // 첨부 파일 (이미지/PDF)
-          ]);
+          result = await model.generateContent([fullPrompt, filePart]);
         } else {
-          // 텍스트만 (파일 내용은 이미 fullPrompt에 주입됨)
           result = await model.generateContent(fullPrompt);
         }
 
@@ -219,12 +209,10 @@ export async function POST(req: Request) {
     // ━━━ 7️⃣ JSON 파싱 → 액션 코드 추출 ━━━
     try {
       const parsed = JSON.parse(rawText);
-
-      // 액션 코드에 따른 자동 처리
       const actionCode = parsed.actionCode || 'NONE';
       let autoProcessed = false;
 
-      // 심방 레이더 확인 요청 시 자동으로 데이터 첨부
+      // 심방 레이더 확인
       if (actionCode === 'PASTORAL_CHECK') {
         try {
           const cases = await prisma.pastoralCare.findMany({
@@ -259,17 +247,39 @@ export async function POST(req: Request) {
         }
       }
 
-      // 🗑️ 교회소식 삭제 — 제목으로 삭제
-      if (actionCode === 'DELETE_NEWS' && parsed.dbCommand) {
+      // 🗑️ 교회소식 삭제 — 번호 또는 키워드로 삭제
+      if (actionCode === 'DELETE_NEWS') {
         try {
-          const titleMatch = parsed.dbCommand.match(/["「」“”]([^"\u300c\u300d\u201c\u201d]+)["「」“”]/);
-          if (titleMatch) {
-            await prisma.news.deleteMany({ where: { title: titleMatch[1] } });
-            parsed.reply += `\n\n✅ '📢 ${titleMatch[1]}' 소식이 삭제되었습니다.`;
-            autoProcessed = true;
+          const allText = [parsed.dbCommand, parsed.reply, message].filter(Boolean).join(' ');
+          let deleted = false;
+          // 1차: 번호로 삭제 (예: "3번 삭제")
+          const numMatch = allText.match(/(\d+)\s*번/);
+          if (numMatch) {
+            const idx = parseInt(numMatch[1]);
+            const allNews = await prisma.news.findMany({ orderBy: { order: 'asc' } });
+            if (allNews[idx - 1]) {
+              const t = allNews[idx - 1];
+              await prisma.news.delete({ where: { id: t.id } });
+              parsed.reply = `${idx}번 그리드 박스 '${t.title}' 삭제 완료, 사장님.`;
+              deleted = true;
+            }
           }
+          // 2차: 키워드 매칭
+          if (!deleted) {
+            const allNews = await prisma.news.findMany();
+            for (const n of allNews) {
+              if (allText.includes(n.title)) {
+                await prisma.news.delete({ where: { id: n.id } });
+                parsed.reply = `'${n.title}' 소식 삭제 완료, 사장님.`;
+                deleted = true;
+                break;
+              }
+            }
+          }
+          if (!deleted) parsed.reply += '\n삭제 대상을 찾지 못했습니다. "3번 삭제" 형태로 명령해주세요.';
+          autoProcessed = true;
         } catch (e: any) {
-          parsed.reply += `\n\n❌ 삭제 실패: ${e.message}`;
+          parsed.reply += `\n삭제 실패: ${e.message}`;
         }
       }
 
