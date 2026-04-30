@@ -631,27 +631,27 @@ export default function HomeClient() {
                 <div className="loc-item"><span className="loc-label">⏰ 예배</span><span>주일 오전 9시 / 11시, 수요 오후 7:30, 금요 오후 8시</span></div>
                 <div className="loc-item"><span className="loc-label">📺 유튜브</span><span style={{ color: '#c19c72', fontWeight: 600 }}>@petros-church</span></div>
               </div>
-              {/* 📍 교회 위치 지도 (iframe embed — API키 불필요) */}
+              {/* 📍 교회 위치 지도 — 바로 보이는 깔끔한 지도 */}
               <div style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', border: '1px solid #e8ddd0' }}>
                 <iframe
-                  src="https://map.kakao.com/link/map/거제반석교회,34.9099,128.6472"
+                  src="https://maps.google.com/maps?q=반석교회+거제시+연초면+소오비길+40-6&t=&z=16&ie=UTF8&iwloc=&output=embed"
                   style={{ width: '100%', height: '350px', border: 'none' }}
                   allowFullScreen
                   loading="lazy"
-                  title="거제반석교회 위치"
+                  title="반석교회 위치"
                 />
                 <div style={{ padding: '12px 18px', background: isDarkMode ? '#1E293B' : '#FDFBF7', textAlign: 'center' }}>
                   <p style={{ margin: '0 0 10px', fontSize: '0.9rem', fontWeight: 600, color: isDarkMode ? '#e0d5c8' : '#5b272f' }}>📍 경상남도 거제시 연초면 소오비길 40-6</p>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <a href="https://map.kakao.com/link/to/거제반석교회,34.9099,128.6472" target="_blank" rel="noopener noreferrer"
+                    <a href="https://map.kakao.com/link/to/반석교회,34.9099,128.6472" target="_blank" rel="noopener noreferrer"
                       style={{ padding: '10px 18px', background: '#FEE500', color: '#3C1E1E', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontSize: '0.85rem' }}>
                       🚗 카카오내비
                     </a>
-                    <a href={`nmap://navigation?dlat=34.9099&dlng=128.6472&dname=${encodeURIComponent('거제반석교회')}&appname=banseok`}
+                    <a href={`nmap://navigation?dlat=34.9099&dlng=128.6472&dname=${encodeURIComponent('반석교회')}&appname=banseok`}
                       style={{ padding: '10px 18px', background: '#1EC800', color: 'white', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontSize: '0.85rem' }}>
                       🧭 네이버내비
                     </a>
-                    <a href={`tmap://route?goalname=${encodeURIComponent('거제반석교회')}&goaly=34.9099&goalx=128.6472`}
+                    <a href={`tmap://route?goalname=${encodeURIComponent('반석교회')}&goaly=34.9099&goalx=128.6472`}
                       style={{ padding: '10px 18px', background: '#1A73E8', color: 'white', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontSize: '0.85rem' }}>
                       🚙 T맵
                     </a>
