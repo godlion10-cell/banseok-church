@@ -300,8 +300,8 @@ export async function POST(req: Request) {
         success: true,
         reply: parsed.reply || '명령을 수행했습니다, 사장님.',
         actionCode,
-        actionLabel: parsed.actionLabel || null,
-        actionLink: parsed.actionLink || null,
+        actionLabel: autoProcessed ? null : (parsed.actionLabel || null),
+        actionLink: autoProcessed ? null : (parsed.actionLink || null),
         dbCommand: parsed.dbCommand || null,
         autoProcessed,
         model: usedModel
