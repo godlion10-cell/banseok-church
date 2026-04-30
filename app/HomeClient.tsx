@@ -70,6 +70,9 @@ export default function HomeClient() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('설교말씀');
   const [showBulletin, setShowBulletin] = useState(false);
+  const [bulletinData, setBulletinData] = useState<any>(null);
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [dbSchedules, setDbSchedules] = useState<any[]>([]);
   const [showMapModal, setShowMapModal] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [sermons, setSermons] = useState<any[]>([]);
@@ -186,6 +189,26 @@ export default function HomeClient() {
     }
     return { date: '', worship: '', sermonTitle: title };
   };
+
+  // 📋 주보 + 교회소식 + 예배안내 DB 로딩
+  useEffect(() => {
+    fetch('/api/admin/bulletin', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.bulletin) setBulletinData(data.bulletin);
+      })
+      .catch(e => console.error('주보 로딩 실패:', e));
+
+    fetch('/api/content', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          if (data.news?.length > 0) setNewsItems(data.news);
+          if (data.schedules?.length > 0) setDbSchedules(data.schedules);
+        }
+      })
+      .catch(e => console.error('콘텐츠 로딩 실패:', e));
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);
@@ -461,11 +484,19 @@ export default function HomeClient() {
         {activeTab === '교회소식' && (
           <div className="tab-content">
             <div className="hero"><h3 style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>📢 반석교회 소식</h3></div>
-            <div className="news-grid">
-              {[{ title: '헌영 및 등록 안내', content: '헌영하고 축하합니다! 반석교회는 대한예수교장로회 소속으로 활동 중입니다.\n📺 유튜브: @petros-church\n🏦 십일조헌금: 농협 131-017-687642\n🏦 감사헌금: 농협 131-018-242250' }, { title: '홈페이지 및 교회 소식', content: '반석교회 홈페이지가 새롭게 만들어졌습니다!' }, { title: '부활주일 감사', content: '할렐루야! 오늘은 부활주일입니다.' }, { title: '부활절 이벤트 동참', content: '본당 입구에 좋아하는 말씀 구절을 적어주세요.' }, { title: '오늘 세례식 안내', content: '세인 세례: 은혜를 나누시고 헌영해 주세요.' }, { title: '부활절 합동예배', content: '오늘 오후에는 거제지역 합동예배로 모입니다. (거정교회 / 14:30)' }, { title: '찬생목 축제 일정', content: '다음 주일에는 찬양생목 축제하는 시간을 갖습니다.' }, { title: '성전 보수 공사', content: '본당 바닥 및 냉방 벽 공사가 시작됩니다. 기도 부탁드립니다.' }, { title: '선교 지원 소개', content: '은혜를 나누시고 헌영하고 축하합니다.' }, { title: '선교사 성경캠프 참여', content: '5월 5주간 진행 예정입니다.' }].map((n, idx) => (
-                <div key={idx} className="news-card"><h3>{idx + 1}. {n.title}</h3><p style={{ whiteSpace: 'pre-line' }}>{n.content}</p></div>
-              ))}
-            </div>
+            {newsItems.length > 0 ? (
+              <div className="news-grid">
+                {newsItems.map((n: any, idx: number) => (
+                  <div key={n.id || idx} className="news-card"><h3>{idx + 1}. {n.title}</h3><p style={{ whiteSpace: 'pre-line' }}>{n.content}</p></div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '50px 20px', color: '#94A3B8' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '15px', opacity: 0.4 }}>📢</div>
+                <p style={{ fontSize: '1.05rem', fontWeight: '600' }}>아직 등록된 교회 소식이 없습니다.</p>
+                <p style={{ fontSize: '0.9rem', marginTop: '8px' }}>관리자가 소식을 등록하면 자동으로 표시됩니다.</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -476,8 +507,17 @@ export default function HomeClient() {
             <div className="worship-wrap">
               <div className="worship-table-wrap">
                 <table className="schedule-tbl"><tbody>
-                  {[{ title: '주일예배 (1부)', time: '오전 09:00', place: '2층 본당', officer: '이주민 목사' }, { title: '주일예배 (2부)', time: '오전 11:00', place: '2층 본당', officer: '이주민 목사' }, { title: '주일오후예배', time: '오후 01:50', place: '2층 본당', officer: '이주민 목사' }, { title: '주일 첫소망', time: '오전 10:00', place: '3층 교육관', officer: '김미정' }, { title: '주일 대예배', time: '오전 11:00', place: '3층 교육관', officer: '김미정' }, { title: '수요 저녁예배', time: '수 07:30', place: '2층 본당', officer: '이주민 목사' }, { title: '금요기도회', time: '금 08:00', place: '2층 본당', officer: '이주민 목사' }, { title: '새벽예배', time: '오전 05:30', place: '2층 본당', officer: '이주민 목사' }].map((s, i) => (
-                    <tr key={i} className="worship-row"><th>{s.title}</th><td><span className="sch-time">{s.time}</span></td><td>{s.place}</td><td>{s.officer}</td></tr>
+                  {(dbSchedules.length > 0 ? dbSchedules : [
+                    { title: '주일예배 (1부)', time: '오전 09:00', place: '2층 본당', officer: '이주민 목사' },
+                    { title: '주일예배 (2부)', time: '오전 11:00', place: '2층 본당', officer: '이주민 목사' },
+                    { title: '주일오후예배', time: '오후 01:50', place: '2층 본당', officer: '이주민 목사' },
+                    { title: '주일 첫소망', time: '오전 10:00', place: '3층 교육관', officer: '김미정' },
+                    { title: '주일 대예배', time: '오전 11:00', place: '3층 교육관', officer: '김미정' },
+                    { title: '수요 저녁예배', time: '수 07:30', place: '2층 본당', officer: '이주민 목사' },
+                    { title: '금요기도회', time: '금 08:00', place: '2층 본당', officer: '이주민 목사' },
+                    { title: '새벽예배', time: '오전 05:30', place: '2층 본당', officer: '이주민 목사' },
+                  ]).map((s: any, i: number) => (
+                    <tr key={s.id || i} className="worship-row"><th>{s.title}</th><td><span className="sch-time">{s.time}</span></td><td>{s.place}</td><td>{s.officer}</td></tr>
                   ))}
                 </tbody></table>
                 <div className="worship-verse">
@@ -524,12 +564,41 @@ export default function HomeClient() {
       {/* 스마트 주보 모달 */}
       {showBulletin && (
         <div className="mbg" onClick={() => setShowBulletin(false)}>
-          <div className="bm" onClick={e => e.stopPropagation()}>
-            <h2>주일 예배 순서</h2>
-            <div className="br"><span>신앙고백</span><span>사도신경</span></div>
-            <div className="br"><span>찬송</span><span>28장 (복의 근원 강림하사)</span></div>
-            <div className="br"><span>대표기도</span><span>홍길동 장로</span></div>
-            <button className="clb" onClick={() => setShowBulletin(false)}>닫기</button>
+          <div className="bm" onClick={e => e.stopPropagation()} style={{ padding: '30px', maxHeight: '85vh', overflowY: 'auto' }}>
+            {bulletinData ? (
+              <>
+                <h2 style={{ fontSize: '1.4rem', color: '#5b272f', textAlign: 'center', marginBottom: '5px', marginTop: '0' }}>{bulletinData.worshipType || '주일 예배 순서'}</h2>
+                <div style={{ textAlign: 'center', color: '#888', marginBottom: '20px', fontSize: '0.9rem' }}>{bulletinData.date}</div>
+                
+                {bulletinData.worshipOrder && bulletinData.worshipOrder.length > 0 ? (
+                  bulletinData.worshipOrder.map((order: any, idx: number) => (
+                    <div className="br" key={idx}>
+                      <span style={{ fontWeight: 'bold', color: '#444' }}>{order.item}</span>
+                      <span style={{ textAlign: 'right', flex: 1, marginLeft: '10px' }}>{order.detail}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>예배 순서 정보가 없습니다.</div>
+                )}
+
+                {bulletinData.announcements && bulletinData.announcements.length > 0 && (
+                  <>
+                    <h3 style={{ fontSize: '1.1rem', color: '#5b272f', marginTop: '25px', marginBottom: '10px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>교회 소식</h3>
+                    <ul style={{ paddingLeft: '20px', fontSize: '0.9rem', color: '#444', lineHeight: '1.6', margin: 0 }}>
+                      {bulletinData.announcements.map((ann: string, idx: number) => (
+                        <li key={idx} style={{ marginBottom: '8px' }}>{ann}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '30px', color: '#888' }}>
+                <div style={{ marginBottom: '10px', fontSize: '2rem' }}>📄</div>
+                아직 이번 주 주보가 등록되지 않았습니다.
+              </div>
+            )}
+            <button className="clb" onClick={() => setShowBulletin(false)} style={{ background: '#f5f0eb', color: '#5b272f' }}>닫기</button>
           </div>
         </div>
       )}
