@@ -171,7 +171,8 @@ h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 700; color: var(--color-primary
 }
 
 /* ── body 패딩 (네비바 공간 확보) ── */
-body {
+/* 홈('/')에서는 TopNavBar 숨김 → padding 불필요 */
+body.has-topnav {
   padding-top: 80px !important; /* PC: 상단 네비바 높이만큼 */
 }
 
@@ -191,7 +192,7 @@ body {
     background: rgba(253, 245, 234, 0.95);
   }
 
-  body {
+  body.has-topnav {
     padding-top: 0 !important;
     padding-bottom: 90px !important; /* 모바일: 하단 네비바 높이만큼 */
   }

@@ -1,14 +1,26 @@
 "use client";
 import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function TopNavBar() {
   const router = useRouter();
   const pathname = usePathname();
+  const isHome = pathname === '/';
+
+  // 하위 페이지에서만 body에 padding-top 클래스 적용
+  useEffect(() => {
+    if (isHome) {
+      document.body.classList.remove('has-topnav');
+    } else {
+      document.body.classList.add('has-topnav');
+    }
+    return () => document.body.classList.remove('has-topnav');
+  }, [isHome]);
 
   // 메인 홈페이지('/')에서는 숨김
-  if (pathname === '/') return null;
+  if (isHome) return null;
 
   return (
     <nav className="premium-nav">
